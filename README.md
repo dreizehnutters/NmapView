@@ -44,6 +44,8 @@
 Want to see what it looks like?
 👉 [**Check out the live sample report**](https://möbius.band/report.html)
 
+[![Report Screenshot](./sample/full.png)](https://möbius.band/report.html)
+
 ---
 
 ## 🧭 Report Structure Overview
