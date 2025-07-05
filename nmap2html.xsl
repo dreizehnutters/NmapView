@@ -78,7 +78,7 @@ Andreas Hontzia (@honze_net) & LRVT (@l4rm4nd) & Fabian Kopp (@dreizehnutters)
               </ul>
               <ul class="navbar-nav ms-auto">
                 <li class="nav-link">
-                  Temaplte: V3.0
+                  Template: V3.0
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="https://github.com/dreizehnutters/NmapView">
