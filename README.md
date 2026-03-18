@@ -34,7 +34,7 @@ nmap -sV -O --script="default,vulners,http-headers,ssl-cert,banner" -oX nmap-sca
 
 ## Generated Report
 
-[![Report Screenshot](./sample/output.gif)](./samples/report.html)
+[![Report Screenshot](./samples/output.gif)](./samples/report.html)
 
 
 The generated report includes:
