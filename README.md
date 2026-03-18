@@ -1,68 +1,82 @@
-<div align="center" width="100%">
-    <h1>nmap-bootstrap-xsl</h1>
-    <p>An Nmap XSL implementation with Bootstrap.<br>Allows Nmap XML port scan results to be converted into beautiful HTML reports.</p><p>
-    <a target="_blank" href="https://haxxnet.github.io/nmap-bootstrap-xsl/report.html">> Demo HTML Report <</a><p>
-    <a target="_blank" href="https://github.com/l4rm4nd"><img src="https://img.shields.io/badge/maintainer-LRVT-orange" /></a>
-    <a target="_blank" href="https://GitHub.com/Haxxnet/nmap-bootstrap-xsl/graphs/contributors/"><img src="https://img.shields.io/github/contributors/Haxxnet/nmap-bootstrap-xsl.svg" /></a><br>
-    <a target="_blank" href="https://GitHub.com/Haxxnet/nmap-bootstrap-xsl/commits/"><img src="https://img.shields.io/github/last-commit/Haxxnet/nmap-bootstrap-xsl.svg" /></a>
-    <a target="_blank" href="https://GitHub.com/Haxxnet/nmap-bootstrap-xsl/issues/"><img src="https://img.shields.io/github/issues/Haxxnet/nmap-bootstrap-xsl.svg" /></a>
-    <a target="_blank" href="https://github.com/Haxxnet/nmap-bootstrap-xsl/issues?q=is%3Aissue+is%3Aclosed"><img src="https://img.shields.io/github/issues-closed/Haxxnet/nmap-bootstrap-xsl.svg" /></a><br>
-        <a target="_blank" href="https://github.com/Haxxnet/nmap-bootstrap-xsl/stargazers"><img src="https://img.shields.io/github/stars/Haxxnet/nmap-bootstrap-xsl.svg?style=social&label=Star" /></a>
-    <a target="_blank" href="https://github.com/Haxxnet/nmap-bootstrap-xsl/network/members"><img src="https://img.shields.io/github/forks/Haxxnet/nmap-bootstrap-xsl.svg?style=social&label=Fork" /></a>
-    <a target="_blank" href="https://github.com/Haxxnet/nmap-bootstrap-xsl/watchers"><img src="https://img.shields.io/github/watchers/Haxxnet/nmap-bootstrap-xsl.svg?style=social&label=Watch" /></a><p>
-    <a href="https://www.buymeacoffee.com/LRVT" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
-</div>
+# NmapView
 
-## 🔥 Features
+![License](https://img.shields.io/github/license/dreizehnutters/NmapView)
 
-- Bootstrap Datatable filters and search bars
-- Export functionality like Copy, CSV, Excel and PDF
-- Automatic classification of web network services to a separate audit space with clickable HTTP/HTTPS URLs
-- Nmap CLI flag explanation via https://explainshell.com
-- Dynamic keyword highlighting via JS (e.g. keywords like password, login, insecure)
-- Quick glance at HTTP titles and SSL certificate information (CN, Expiry etc.)
-- Hostname and IP address listing of scan targets
-- Indication for encrypted network services (plaintext vs. SSL/STARTTLS)
-- Links to 3rd party services such as a CVE database by Pentest Factory, an SSL scan service by Qualys and an HTTP security header scan service by securityheaders.com
-    
-## ✨ Requirements
-- xsltproc — command line xslt processor
+NmapView turns raw Nmap XML into a single, portable HTML report — no backend, no database, just one file you can open, share, or archive.
 
-````
-sudo apt install xsltproc
-````
+Nmaps XML data is powerful but difficult to explore at scale. Large scans quickly become hard to navigate, summarise, and share. NmapView focuses on turning that raw output into something analysts can actually work with.
 
-## 🎓 Usage
+> This software must not be used by military or secret service organisations.
 
-### Converting Nmap XML
+## Why Use It
 
-You can convert an already existing Nmap XML file into a nicely formatted HTML report by executing the following commands:
+- No pipeline needed - works directly from standard Nmap XML
+- One file output - easy to share, archive, or attach to reports
+- Adds search, sorting, and export through DataTables
+- Detailed views for web services, certificates, CPEs, Vulners links, and service inventory
+- Keeps the end-user path simple: download one XSL file and run `xsltproc`
 
-````
-# download the nmap bootstrap xsl
-wget https://raw.githubusercontent.com/Haxxnet/nmap-bootstrap-xsl/main/nmap-bootstrap.xsl
 
-# convert your nmap xml file into html
-xsltproc -o report.html nmap-bootstrap.xsl <nmap.xml>
-````
+## Quick Start
 
-The resulting Nmap HTML report `report.html` can be directly opened with any web browser of your choice. 
+Download the latest standalone stylesheet from GitHub Releases and render a report:
 
-### Applying XSL in advance
+```bash
+curl -fsSL -o nmap2html.xsl https://github.com/dreizehnutters/NmapView/releases/latest/download/nmap2html-standalone.xsl
+xsltproc -o report.html nmap2html.xsl nmap-scan.xml
+```
 
-If you have not yet started your Nmap port scan, you can also apply the bootstrap XSL in your Nmap CLI command as follows:
+For best results, include service detection, OS detection, and relevant scripts during nmap scans
 
-````
-nmap -sS -Pn --stylesheet https://raw.githubusercontent.com/Haxxnet/nmap-bootstrap-xsl/main/nmap-bootstrap.xsl scanme.nmap.org
-````
+```bash
+nmap -sV -O --script="default,vulners,http-headers,ssl-cert,banner" -oX nmap-scan.xml <target>
+```
 
-The resulting Nmap XML file can be directly opened with a supported web browser. The bootstrap XSL will already be applied.
+## Generated Report
 
-> **Note**:
-> Nonetheless, it is recommended to convert the XML file into an HTML report. This ensures that the final Nmap bootstrap report is supported by all web browsers and that clients, to which you'll hopefully send your port scanning results, can easily categorize and open the file with the default OS application - a web browser.
+[![Report Screenshot](./sample/output.gif)](./samples/report.html)
 
-## 💎 Acknowledgment & Credits
 
-Many thanks to the following individuals:
+The generated report includes:
 
-- ❤ [honze-net](https://github.com/honze-net) for [nmap-bootstrap-xsl](https://github.com/honze-net/nmap-bootstrap-xsl)
+- interactive host and service tables
+- CSV, Excel, PDF, JSON, and clipboard export
+- service inventory and distribution views
+- web service URLs and HTTP titles
+- certificate metadata and weak-TLS indicators
+- per-host deep-dive sections with script output and linked findings
+
+## Typical Use Cases
+
+- Internal network assessments
+- Pentest reporting
+- Asset/service inventory generation
+- Sharing scan results with non-technical stakeholders
+
+## What The Report Covers
+
+- `Scanned Hosts`: online state, OS guess, MAC/vendor, hostnames, and open port counts
+- `Open Services`: flat searchable service inventory with versions, CPEs, and Vulners/script findings
+- `Web/SSL Services`: URLs, titles, redirects, and certificate metadata
+- `Service Inventory`: grouped service prevalence by host and port
+- `Online Hosts`: per-host accordion with open ports, service details, and script output
+- `Charts`: service distribution and communication/service heatmaps
+
+## Requirements
+
+- `xsltproc` to render the report
+- Nmap XML input created with `-oX`
+- Internet access in the browser for CDN-hosted JS/CSS assets used by the report UI
+
+No Python / Node / backend required
+
+## For Contributors
+
+PRs are welcome
+
+- `xsl/`: split XSL source
+- `tools/build_xsl.py`: build the standalone stylesheet from source
+
+## Feedback
+
+If the project is useful, star it - open issues for bugs or feature requests.
