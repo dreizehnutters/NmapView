@@ -17,12 +17,13 @@ Andreas Hontzia (@honze_net) & LRVT (@l4rm4nd) & Fabian Kopp (@dreizehnutters)
       <xsl:call-template name="render-head"/>
       <body>
         <xsl:call-template name="render-navbar"/>
-        <div class="container" style="min-width: fit-content;">
+        <div class="container-fluid px-4" style="min-width: fit-content;">
           <xsl:call-template name="render-summary"/>
           <xsl:call-template name="render-scanned-hosts"/>
           <xsl:call-template name="render-open-services"/>
           <xsl:call-template name="render-service-inventory"/>
           <xsl:call-template name="render-web-services"/>
+          <xsl:call-template name="render-visualizations"/>
           <xsl:call-template name="render-online-hosts"/>
         </div>
         <xsl:call-template name="render-footer"/>

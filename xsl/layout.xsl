@@ -3,13 +3,12 @@
   <xsl:template name="render-head">
       <head>
         <meta name="referrer" content="no-referrer"/>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-        <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.1/b-3.2.3/b-colvis-3.2.3/b-html5-3.2.3/b-print-3.2.3/fh-4.0.2/datatables.min.css" rel="stylesheet" integrity="sha384-npHSxFxHOYzZ5rh7dTSWQz9iiFPD5EpGhraeLyrNOwAtnwNrZfEbDcA4aFwnYQKL" crossorigin="anonymous"/>
-        <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.1/b-3.2.3/b-colvis-3.2.3/b-html5-3.2.3/b-print-3.2.3/fh-4.0.2/datatables.min.js" integrity="sha384-AG5MJFbmBt6aryW6LS46cM1vt7UNBHkLZiCWbnKHdW3B+a3iZjlcZybzBx57ayaY" crossorigin="anonymous"/>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"/>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"/>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"/>
-        <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" integrity="sha384-8cEu0XVLh4s92OG4Ua4ZS75MN//b+0KqyCrhQqaXgHMVHnKC3DNVhwUyH5spa1J2" crossorigin="anonymous"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"/>
+        <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.7/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/fh-4.0.5/datatables.min.css" rel="stylesheet" crossorigin="anonymous"/>
+        <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.7/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/fh-4.0.5/datatables.min.js" crossorigin="anonymous"/>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.20/pdfmake.min.js" crossorigin="anonymous"/>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.20/vfs_fonts.js" crossorigin="anonymous"/>
+        <script src="https://cdn.plot.ly/plotly-3.3.0.min.js" crossorigin="anonymous"></script>
         <style>
           a {
             text-decoration: none !important;
@@ -41,6 +40,157 @@
             border-radius: 999px;
             font-size: 14px;
           }
+
+          .host-list {
+            display: grid;
+            gap: 1rem;
+          }
+
+          .host-entry {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            background: #fff;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            overflow: hidden;
+          }
+
+          .host-entry-summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 1rem 1.25rem;
+            background: #f8f9fa;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
+          .host-entry-summary::-webkit-details-marker {
+            display: none;
+          }
+
+          .host-entry-summary::before {
+            content: "+";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 999px;
+            background: #0d6efd;
+            color: #fff;
+            font-weight: 700;
+            flex: 0 0 auto;
+          }
+
+          .host-entry[open] .host-entry-summary::before {
+            content: "-";
+          }
+
+          .host-entry-anchor {
+            display: block;
+            position: relative;
+            top: -4rem;
+            visibility: hidden;
+            width: 0;
+            height: 0;
+          }
+
+          .host-entry-label {
+            flex: 1 1 auto;
+          }
+
+          .host-entry-body {
+            padding: 1.25rem;
+          }
+
+          .certificate-block {
+            display: grid;
+            gap: 0.2rem;
+            max-width: 26rem;
+          }
+
+          .certificate-row {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+          }
+
+          .certificate-label {
+            font-weight: 600;
+          }
+
+          .certificate-value {
+            display: inline;
+          }
+
+          .http-title-block {
+            max-width: 20rem;
+          }
+
+          .http-title-value {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .summary-command {
+            margin: 1rem 0 0;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.65);
+          }
+
+          .summary-command summary {
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            color: #6c757d;
+            font-size: 0.95rem;
+            font-weight: 600;
+          }
+
+          .summary-command pre {
+            margin: 0;
+            padding: 0 1rem 1rem;
+            font-size: 0.9rem;
+            background: transparent;
+            border: 0;
+            color: #495057;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+          }
+
+          #mainNavbar {
+            border-bottom: 1px solid #dee2e6;
+          }
+
+          #navbarNav {
+            width: 100%;
+          }
+
+          #navbarToggle {
+            margin-left: auto;
+          }
+
+          @media (max-width: 991.98px) {
+            #navbarNav {
+              padding-top: 0.75rem;
+            }
+
+            #navbarNav .navbar-nav {
+              gap: 0.25rem;
+            }
+          }
+
+          @media (min-width: 992px) {
+            #navbarNav {
+              display: flex !important;
+              align-items: center;
+              justify-content: space-between;
+            }
+          }
         </style>
         <title>NmapView Report - Interactive Nmap Scan Summary</title>
       </head>
@@ -48,28 +198,36 @@
   <xsl:template name="render-navbar">
         <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
           <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"/>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <button class="navbar-toggler" type="button" id="navbarToggle" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"/>
+            </button>
+            <div id="navbarNav" hidden="hidden">
               <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                  <a class="nav-link" href="#scannedhosts">Scanned Hosts</a>
+                  <a class="nav-link" href="#summary">Summary</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#openservices">Open Services</a>
+                  <a class="nav-link" href="#scannedhosts">Host Overview</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#webservices">Web/SSL Services</a>
+                  <a class="nav-link" href="#openservices">Service Overview</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#serviceinventory">Service Inventory</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#onlinehosts">Online Hosts</a>
+                  <a class="nav-link" href="#webservices">Web &amp; TLS Services</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#visualizations">Visualizations</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#onlinehosts">Host Details</a>
                 </li>
               </ul>
               <ul class="navbar-nav ms-auto">
-                <li class="nav-link">
-                  Template: V3.0
+                <li class="nav-item">
+                  <span class="nav-link">v3.0.1</span>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="https://github.com/dreizehnutters/NmapView">
@@ -90,20 +248,14 @@
         </nav>
   </xsl:template>
   <xsl:template name="render-summary">
-          <div id="jumbotron-container" class="bg-light p-4 rounded my-5 shadow-sm">
-            <h2 class="display-6 text-primary">Port Scanning Results</h2>
+          <div id="summary" class="bg-light p-4 rounded my-5 shadow-sm">
+            <h2 class="display-6 text-primary">Scan Summary</h2>
             <h5 class="mb-3">
               <small class="text-muted">
                 Nmap Version: <xsl:value-of select="/nmaprun/@version"/> <br/>
                 Scan Duration: <xsl:value-of select="/nmaprun/@startstr"/> - <xsl:value-of select="/nmaprun/runstats/finished/@timestr"/>
               </small>
             </h5>
-            <pre class="border rounded bg-white p-3 overflow-auto" style="white-space: pre-wrap; word-wrap: break-word;">
-              <xsl:attribute name="text">
-                <xsl:value-of select="/nmaprun/@args"/>
-              </xsl:attribute>
-              <xsl:value-of select="/nmaprun/@args"/>
-            </pre>
             <div class="d-flex gap-3 my-3">
               <p class="mb-0">
                 <b class="badge bg-info p-2"><xsl:value-of select="/nmaprun/runstats/hosts/@total"/> Hosts scanned</b>
@@ -113,6 +265,15 @@
               <div class="progress-bar bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><xsl:attribute name="style">width:<xsl:value-of select="/nmaprun/runstats/hosts/@up div /nmaprun/runstats/hosts/@total * 100"/>%;</xsl:attribute><xsl:value-of select="/nmaprun/runstats/hosts/@up"/> Hosts up</div>
               <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><xsl:attribute name="style">width:<xsl:value-of select="/nmaprun/runstats/hosts/@down div /nmaprun/runstats/hosts/@total * 100"/>%;</xsl:attribute><xsl:value-of select="/nmaprun/runstats/hosts/@down"/> Hosts down</div>
             </div>
+            <details class="summary-command">
+              <summary>Show Nmap command</summary>
+              <pre>
+                <xsl:attribute name="text">
+                  <xsl:value-of select="/nmaprun/@args"/>
+                </xsl:attribute>
+                <xsl:value-of select="/nmaprun/@args"/>
+              </pre>
+            </details>
           </div>
   </xsl:template>
   <xsl:template name="render-footer">
@@ -238,17 +399,102 @@
             });
           }
 
+          function initializeNavbarToggle() {
+            const toggle = document.getElementById("navbarToggle");
+            const menu = document.getElementById("navbarNav");
+            if (!toggle || !menu) return;
+
+            function syncNavbar() {
+              if (window.innerWidth >= 992) {
+                menu.hidden = false;
+                toggle.setAttribute("aria-expanded", "true");
+                return;
+              }
+
+              const expanded = toggle.getAttribute("aria-expanded") === "true";
+              menu.hidden = !expanded;
+            }
+
+            toggle.addEventListener("click", () => {
+              const expanded = toggle.getAttribute("aria-expanded") === "true";
+              toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+              menu.hidden = expanded;
+            });
+
+            window.addEventListener("resize", syncNavbar);
+            syncNavbar();
+          }
+
+          function openLinkedHost(hash) {
+            if (!hash || !hash.startsWith("#onlinehosts-")) {
+              return null;
+            }
+
+            const target = document.querySelector(hash);
+            if (!target) {
+              return null;
+            }
+
+            const hostEntry = target.closest("details");
+            if (hostEntry) {
+              hostEntry.open = true;
+            }
+
+            return target;
+          }
+
+          function initializeHostToggle() {
+            const toggle = document.getElementById("toggle-all-hosts");
+            const hostList = document.getElementById("onlinehosts-list");
+            if (!toggle || !hostList) return;
+
+            const hostEntries = Array.from(hostList.querySelectorAll("details.host-entry"));
+            if (hostEntries.length === 0) {
+              toggle.hidden = true;
+              return;
+            }
+
+            function syncLabel() {
+              const allOpen = hostEntries.every(entry => entry.open);
+              toggle.textContent = allOpen ? "Collapse all" : "Expand all";
+              toggle.setAttribute("aria-expanded", allOpen ? "true" : "false");
+            }
+
+            toggle.addEventListener("click", () => {
+              const shouldOpen = !hostEntries.every(entry => entry.open);
+              hostEntries.forEach(entry => {
+                entry.open = shouldOpen;
+              });
+              syncLabel();
+            });
+
+            hostEntries.forEach(entry => {
+              entry.addEventListener("toggle", syncLabel);
+            });
+
+            syncLabel();
+          }
+
           function initializeDataTable(selector) {
+            const exportNames = {
+              "#table-services": "nmapview-open-services",
+              "#table-overview": "nmapview-scanned-hosts",
+              "#web-services": "nmapview-web-services",
+              "#service-inventory": "nmapview-service-inventory"
+            };
+            const exportName = exportNames[selector] || "nmapview-table-export";
             const buttons = [
               {
                 extend: 'copyHtml5',
                 text: 'Copy',
+                title: exportName,
                 exportOptions: { orthogonal: 'export' },
                 className: 'btn btn-light'
               },
               {
                 extend: 'csvHtml5',
                 text: 'CSV',
+                filename: exportName,
                 fieldSeparator: ';',
                 exportOptions: { orthogonal: 'export' },
                 className: 'btn btn-light'
@@ -256,6 +502,7 @@
               {
                 extend: 'excelHtml5',
                 text: 'Excel',
+                filename: exportName,
                 autoFilter: true,
                 exportOptions: { orthogonal: 'export' },
                 className: 'btn btn-light'
@@ -263,6 +510,8 @@
               {
                 extend: 'pdfHtml5',
                 text: 'PDF',
+                filename: exportName,
+                title: exportName,
                 orientation: 'landscape',
                 pageSize: 'LEGAL',
                 download: 'open',
@@ -288,7 +537,7 @@
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
-                  a.download = 'table-export.json';
+                  a.download = `${exportName}.json`;
                   a.click();
                   URL.revokeObjectURL(url);
                 }
@@ -300,7 +549,7 @@
                 extend: 'copyHtml5',
                 text: 'Copy URLs',
                 header: false,
-                title: '',
+                title: exportName,
                 exportOptions: {  columns: [-1], orthogonal: 'export' },
                 className: 'btn btn-light'
               });
@@ -322,6 +571,8 @@
         ]]></script>
         <script>
           $(document).ready(function() {
+              initializeNavbarToggle();
+              initializeHostToggle();
               initializeDataTable('#table-services');
               initializeDataTable('#table-overview');
               initializeDataTable('#web-services');
@@ -330,10 +581,19 @@
 
               $("a[href^='#onlinehosts-']").click(function(event) {
                   event.preventDefault();
+                  const target = openLinkedHost(this.hash);
+                  if (!target) {
+                    return;
+                  }
                   $('html,body').animate({
-                      scrollTop: ($(this.hash).offset().top - 60)
+                      scrollTop: ($(target).offset().top - 60)
                   }, 500);
               });
+
+              const initialTarget = openLinkedHost(window.location.hash);
+              if (initialTarget) {
+                $('html,body').scrollTop($(initialTarget).offset().top - 60);
+              }
           });
         </script>
         <script>
@@ -365,16 +625,17 @@
                     name: service,
                     type: 'bar',
                     orientation: 'h',
-                    marker: {
-                        color: colorPalette[index % colorPalette.length]
-                    },
-                    text: service,
-                    textposition: 'inside',
-                    insidetextanchor: 'start',
-                    hoverinfo: 'text+x',
-                    textfont: {
-                        color: 'white',
-                        size: 12
+	                    marker: {
+	                        color: colorPalette[index % colorPalette.length]
+	                    },
+	                    text: service,
+	                    hovertext: `Service: ${service}; Hosts: ${count}`,
+	                    textposition: 'inside',
+	                    insidetextanchor: 'start',
+	                    hoverinfo: 'text',
+	                    textfont: {
+	                        color: 'white',
+	                        size: 12
                     }
                 }));
 
@@ -452,28 +713,36 @@
                 ports.map(port => openServices[host][port] ? 1 : 0)
               );
 
-              const zText = hosts.map(host =>
-                ports.map(port => openServices[host][port] || "")
-              );
+	              const zText = hosts.map(host =>
+	                ports.map(port => openServices[host][port] || "")
+	              );
+	              const hoverData = hosts.map(host =>
+	                ports.map(port => [
+	                  host,
+	                  String(port),
+	                  openServices[host][port] || "No open service"
+	                ])
+	              );
 
-              const data = [{
-                z: z,
-                x: ports.map(String),
-                y: hosts,
-                text: zText,
-                type: "heatmap",
-                colorscale: [[0, "white"], [1, "#2ca02c"]],
-                showscale: false,
-                hoverongaps: false,
-                hoverinfo: "x+y+text",
-                text: zText
-              }];
+	              const data = [{
+	                z: z,
+	                x: ports.map(String),
+	                y: hosts,
+	                text: zText,
+	                customdata: hoverData,
+	                type: "heatmap",
+	                colorscale: [[0, "white"], [1, "#2ca02c"]],
+	                showscale: false,
+	                hoverongaps: false,
+	                hovertemplate: "Host: %{customdata[0]}<br>Port: %{customdata[1]}<br>Service: %{customdata[2]}<extra></extra>",
+	                text: zText
+	              }];
 
               const dynamicHeight = Math.max(600, hosts.length * 20);
               portHostMatrix.style.height = dynamicHeight + "px";
 
-              const layout = {
-                title: "",
+	            const layout = {
+	              title: "",
                 xaxis: {
                   title: { text: "Port" },
                   side: "top",
@@ -526,25 +795,29 @@
               .sort((a, b) => b.total - a.total)
               .map(item => item.index);
 
-            const sortedServices = sortedIndices.map(index => services[index]);
-            const sortedTotals = sortedIndices.map(index => serviceTotals[index]);
-            const sortedZ = sortedIndices.map(index => z[index]);
-            const zText = sortedZ.map(row => row.map(value => value > 0 ? value.toString() : ""));
-            const yLabels = sortedServices.map((service, index) => `${service} (${sortedTotals[index]})`);
+	            const sortedServices = sortedIndices.map(index => services[index]);
+	            const sortedTotals = sortedIndices.map(index => serviceTotals[index]);
+	            const sortedZ = sortedIndices.map(index => z[index]);
+	            const zText = sortedZ.map(row => row.map(value => value > 0 ? value.toString() : ""));
+	            const hoverData = sortedServices.map((service, index) =>
+	              ports.map(port => [String(port), service, String(sortedTotals[index])])
+	            );
+	            const yLabels = sortedServices.map((service, index) => `${service} (${sortedTotals[index]})`);
 
-            const data = [{
-              z: sortedZ,
-              x: ports.map(String),
-              y: yLabels,
-              text: zText,
-              type: "heatmap",
-              colorscale: "Portland",
-              showscale: true,
-              hoverongaps: false,
-              hoverinfo: "x+y+text",
-              texttemplate: "%{text}",
-              textfont: { color: "black", size: 12 }
-            }];
+	            const data = [{
+	              z: sortedZ,
+	              x: ports.map(String),
+	              y: yLabels,
+	              text: zText,
+	              customdata: hoverData,
+	              type: "heatmap",
+	              colorscale: "Portland",
+	              showscale: true,
+	              hoverongaps: false,
+	              hovertemplate: "Port: %{customdata[0]}<br>Service: %{customdata[1]}<br>Total: %{customdata[2]}<br>Occurrences: %{z}<extra></extra>",
+	              texttemplate: "%{text}",
+	              textfont: { color: "black", size: 12 }
+	            }];
 
             const dynamicHeight = Math.max(600, sortedServices.length * 20);
             protocolPortMatrix.style.height = dynamicHeight + "px";
@@ -581,11 +854,59 @@
               height: dynamicHeight,
               dragmode: false,
               shapes: horizontalLines
-            };
+	            };
 
-            Plotly.newPlot("protocolPortMatrix", data, layout, matrixConfig);
-          });
-        ]]></script>
+	            Plotly.newPlot("protocolPortMatrix", data, layout, matrixConfig);
+
+	            const openPortsPerHostChart = document.getElementById("openPortsPerHostChart");
+	            if (openPortsPerHostChart) {
+	              const hostOpenPortCounts = hosts
+	                .map(host => ({
+	                  host,
+	                  count: Object.keys(openServices[host]).length
+	                }))
+	                .sort((a, b) => b.count - a.count || a.host.localeCompare(b.host));
+
+	              const data = [{
+	                type: "bar",
+	                orientation: "h",
+	                y: hostOpenPortCounts.map(entry => entry.host),
+	                x: hostOpenPortCounts.map(entry => entry.count),
+	                text: hostOpenPortCounts.map(entry => String(entry.count)),
+	                textposition: "auto",
+	                marker: {
+	                  color: "#0d6efd"
+	                },
+	                hovertemplate: "%{y}<br>Open ports: %{x}<extra></extra>"
+	              }];
+
+	              const dynamicHeight = Math.max(320, hostOpenPortCounts.length * 28);
+	              openPortsPerHostChart.style.height = dynamicHeight + "px";
+
+	              const layout = {
+	                title: "",
+	                margin: { t: 20, l: 180, r: 30, b: 50 },
+	                width: window.innerWidth * 0.95,
+	                height: dynamicHeight,
+	                xaxis: {
+	                  title: { text: "Open ports" },
+	                  automargin: true,
+	                  fixedrange: true
+	                },
+	                yaxis: {
+	                  title: { text: "Host" },
+	                  automargin: true,
+	                  fixedrange: true,
+	                  autorange: "reversed"
+	                },
+	                showlegend: false,
+	                dragmode: false
+	              };
+
+	              Plotly.newPlot("openPortsPerHostChart", data, layout, matrixConfig);
+	            }
+	          });
+	        ]]></script>
 
         <script>console.log("Made by dreizehnutters")</script>
   </xsl:template>

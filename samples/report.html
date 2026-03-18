@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="referrer" content="no-referrer">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.1/b-3.2.3/b-colvis-3.2.3/b-html5-3.2.3/b-print-3.2.3/fh-4.0.2/datatables.min.css" rel="stylesheet" integrity="sha384-npHSxFxHOYzZ5rh7dTSWQz9iiFPD5EpGhraeLyrNOwAtnwNrZfEbDcA4aFwnYQKL" crossorigin="anonymous">
-<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.1/b-3.2.3/b-colvis-3.2.3/b-html5-3.2.3/b-print-3.2.3/fh-4.0.2/datatables.min.js" integrity="sha384-AG5MJFbmBt6aryW6LS46cM1vt7UNBHkLZiCWbnKHdW3B+a3iZjlcZybzBx57ayaY" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script><script src="https://cdn.plot.ly/plotly-3.0.1.min.js" integrity="sha384-8cEu0XVLh4s92OG4Ua4ZS75MN//b+0KqyCrhQqaXgHMVHnKC3DNVhwUyH5spa1J2" crossorigin="anonymous"></script><style>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.7/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/fh-4.0.5/datatables.min.css" rel="stylesheet" crossorigin="anonymous">
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.7/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/fh-4.0.5/datatables.min.js" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.20/pdfmake.min.js" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.20/vfs_fonts.js" crossorigin="anonymous"></script><script src="https://cdn.plot.ly/plotly-3.3.0.min.js" crossorigin="anonymous"></script><style>
           a {
             text-decoration: none !important;
           }
@@ -36,40 +36,204 @@
             border-radius: 999px;
             font-size: 14px;
           }
+
+          .host-list {
+            display: grid;
+            gap: 1rem;
+          }
+
+          .host-entry {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            background: #fff;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            overflow: hidden;
+          }
+
+          .host-entry-summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 1rem 1.25rem;
+            background: #f8f9fa;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
+          .host-entry-summary::-webkit-details-marker {
+            display: none;
+          }
+
+          .host-entry-summary::before {
+            content: "+";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 999px;
+            background: #0d6efd;
+            color: #fff;
+            font-weight: 700;
+            flex: 0 0 auto;
+          }
+
+          .host-entry[open] .host-entry-summary::before {
+            content: "-";
+          }
+
+          .host-entry-anchor {
+            display: block;
+            position: relative;
+            top: -4rem;
+            visibility: hidden;
+            width: 0;
+            height: 0;
+          }
+
+          .host-entry-label {
+            flex: 1 1 auto;
+          }
+
+          .host-entry-body {
+            padding: 1.25rem;
+          }
+
+          .certificate-block {
+            display: grid;
+            gap: 0.2rem;
+            max-width: 26rem;
+          }
+
+          .certificate-row {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+          }
+
+          .certificate-label {
+            font-weight: 600;
+          }
+
+          .certificate-value {
+            display: inline;
+          }
+
+          .http-title-block {
+            max-width: 20rem;
+          }
+
+          .http-title-value {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .summary-command {
+            margin: 1rem 0 0;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.65);
+          }
+
+          .summary-command summary {
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            color: #6c757d;
+            font-size: 0.95rem;
+            font-weight: 600;
+          }
+
+          .summary-command pre {
+            margin: 0;
+            padding: 0 1rem 1rem;
+            font-size: 0.9rem;
+            background: transparent;
+            border: 0;
+            color: #495057;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+          }
+
+          #mainNavbar {
+            border-bottom: 1px solid #dee2e6;
+          }
+
+          #navbarNav {
+            width: 100%;
+          }
+
+          #navbarToggle {
+            margin-left: auto;
+          }
+
+          @media (max-width: 991.98px) {
+            #navbarNav {
+              padding-top: 0.75rem;
+            }
+
+            #navbarNav .navbar-nav {
+              gap: 0.25rem;
+            }
+          }
+
+          @media (min-width: 992px) {
+            #navbarNav {
+              display: flex !important;
+              align-items: center;
+              justify-content: space-between;
+            }
+          }
         </style>
 <title>NmapView Report - Interactive Nmap Scan Summary</title>
 </head>
 <body>
 <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-light bg-light fixed-top"><div class="container-fluid">
-<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"></button><div class="collapse navbar-collapse" id="navbarNav">
+<button class="navbar-toggler" type="button" id="navbarToggle" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button><div id="navbarNav" hidden="hidden">
 <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="#scannedhosts">Scanned Hosts</a></li>
-<li class="nav-item"><a class="nav-link" href="#openservices">Open Services</a></li>
-<li class="nav-item"><a class="nav-link" href="#webservices">Web/SSL Services</a></li>
+<li class="nav-item"><a class="nav-link" href="#summary">Summary</a></li>
+<li class="nav-item"><a class="nav-link" href="#scannedhosts">Host Overview</a></li>
+<li class="nav-item"><a class="nav-link" href="#openservices">Service Overview</a></li>
 <li class="nav-item"><a class="nav-link" href="#serviceinventory">Service Inventory</a></li>
-<li class="nav-item"><a class="nav-link" href="#onlinehosts">Online Hosts</a></li>
+<li class="nav-item"><a class="nav-link" href="#webservices">Web &amp; TLS Services</a></li>
+<li class="nav-item"><a class="nav-link" href="#visualizations">Visualizations</a></li>
+<li class="nav-item"><a class="nav-link" href="#onlinehosts">Host Details</a></li>
 </ul>
 <ul class="navbar-nav ms-auto">
-<li class="nav-link">
-                  Template: V3.0
-                </li>
+<li class="nav-item"><span class="nav-link">v3.0.1</span></li>
 <li class="nav-item"><a class="nav-link" href="https://github.com/dreizehnutters/NmapView"><svg height="100" width="100" viewbox="0 0 100 100" style="max-height: 42px; width: auto;"><line x1="50" x2="50" y2="33" y1="0" stroke-width="3" stroke="#808080"></line><line x1="25" x2="25" y2="66" y1="33" stroke-width="3" stroke="#808080"></line><line x1="75" x2="75" y2="66" y1="33" stroke-width="3" stroke="#808080"></line><line x1="2" x2="2" y2="99" y1="66" stroke-width="3" stroke="#808080"></line><line x1="47" x2="47" y2="99" y1="66" stroke-width="3" stroke="#808080"></line><line x1="53" x2="53" y2="99" y1="66" stroke-width="3" stroke="#808080"></line><line x1="98" x2="98" y2="99" y1="66" stroke-width="3" stroke="#808080"></line></svg></a></li>
 </ul>
 </div>
-</div></nav><div class="container" style="min-width: fit-content;">
-<div id="jumbotron-container" class="bg-light p-4 rounded my-5 shadow-sm">
-<h2 class="display-6 text-primary">Port Scanning Results</h2>
+</div></nav><div class="container-fluid px-4" style="min-width: fit-content;">
+<div id="summary" class="bg-light p-4 rounded my-5 shadow-sm">
+<h2 class="display-6 text-primary">Scan Summary</h2>
 <h5 class="mb-3"><small class="text-muted">
                 Nmap Version: 7.95<br>
                 Scan Duration: Fri May 30 06:00:33 2025 - Fri May 30 06:05:40 2025</small></h5>
-<pre class="border rounded bg-white p-3 overflow-auto" style="white-space: pre-wrap; word-wrap: break-word;" text="/usr/lib/nmap/nmap --privileged -v -d1 -Pn -T3 --max-retries=2 --min-rate=100 --stats-every=10 --open -p22,25,53,80,443,445,5060,5432,5901,6001,8000,8181,8182,8183,8184,8185,8186,8834,9090,33660,49000,49200,49443,55035,58655 -sV &quot;--script=default or vulners or http-headers or http-server-header or https-redirect or banner or smb-* or *-version&quot; -O --version-intensity 7 -oA /home/kali/Desktop/dummy_scan/nmap-scope-1748595504/version_D3FZ -iL scope">/usr/lib/nmap/nmap --privileged -v -d1 -Pn -T3 --max-retries=2 --min-rate=100 --stats-every=10 --open -p22,25,53,80,443,445,5060,5432,5901,6001,8000,8181,8182,8183,8184,8185,8186,8834,9090,33660,49000,49200,49443,55035,58655 -sV "--script=default or vulners or http-headers or http-server-header or https-redirect or banner or smb-* or *-version" -O --version-intensity 7 -oA /home/kali/Desktop/dummy_scan/nmap-scope-1748595504/version_D3FZ -iL scope</pre>
 <div class="d-flex gap-3 my-3"><p class="mb-0"><b class="badge bg-info p-2">5 Hosts scanned</b></p></div>
 <div class="progress">
 <div class="progress-bar bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:80%;">4 Hosts up</div>
 <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:20%;">1 Hosts down</div>
 </div>
+<details class="summary-command"><summary>Show Nmap command</summary><pre text="/usr/lib/nmap/nmap --privileged -v -d1 -Pn -T3 --max-retries=2 --min-rate=100 --stats-every=10 --open -p22,25,53,80,443,445,5060,5432,5901,6001,8000,8181,8182,8183,8184,8185,8186,8834,9090,33660,49000,49200,49443,55035,58655 -sV &quot;--script=default or vulners or http-headers or http-server-header or https-redirect or banner or smb-* or *-version&quot; -O --version-intensity 7 -oA /home/kali/Desktop/dummy_scan/nmap-scope-1748595504/version_D3FZ -iL scope">/usr/lib/nmap/nmap --privileged -v -d1 -Pn -T3 --max-retries=2 --min-rate=100 --stats-every=10 --open -p22,25,53,80,443,445,5060,5432,5901,6001,8000,8181,8182,8183,8184,8185,8186,8834,9090,33660,49000,49200,49443,55035,58655 -sV "--script=default or vulners or http-headers or http-server-header or https-redirect or banner or smb-* or *-version" -O --version-intensity 7 -oA /home/kali/Desktop/dummy_scan/nmap-scope-1748595504/version_D3FZ -iL scope</pre></details>
 </div>
-<h2 id="scannedhosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Scanned Hosts</h2>
+<h2 id="scannedhosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Host Overview</h2>
+<div id="serviceCounts" class="d-none">
+<span class="service" data-service="ssh" data-portid="22" data-porto="tcp"></span><span class="service" data-service="ssl/smtp" data-portid="25" data-porto="tcp"></span><span class="service" data-service="http" data-portid="80" data-porto="tcp"></span><span class="service" data-service="ssl/http" data-portid="443" data-porto="tcp"></span><span class="service" data-service="ssh" data-portid="22" data-porto="tcp"></span><span class="service" data-service="http" data-portid="80" data-porto="tcp"></span><span class="service" data-service="ssh" data-portid="22" data-porto="tcp"></span><span class="service" data-service="microsoft-ds" data-portid="445" data-porto="tcp"></span><span class="service" data-service="ssl/postgresql" data-portid="5432" data-porto="tcp"></span><span class="service" data-service="vnc" data-portid="5901" data-porto="tcp"></span><span class="service" data-service="X11" data-portid="6001" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8000" data-porto="tcp"></span><span class="service" data-service="ssl/unknown" data-portid="8834" data-porto="tcp"></span><span class="service" data-service="ssl/http" data-portid="9090" data-porto="tcp"></span><span class="service" data-service="tcpwrapped" data-portid="53" data-porto="tcp"></span><span class="service" data-service="domain" data-portid="53" data-porto="udp"></span><span class="service" data-service="http" data-portid="80" data-porto="tcp"></span><span class="service" data-service="ntp" data-portid="123" data-porto="udp"></span><span class="service" data-service="ssl/http" data-portid="443" data-porto="tcp"></span><span class="service" data-service="sip" data-portid="5060" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8181" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8182" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8183" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8184" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8185" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8186" data-porto="tcp"></span><span class="service" data-service="http" data-portid="33660" data-porto="tcp"></span><span class="service" data-service="http" data-portid="49000" data-porto="tcp"></span><span class="service" data-service="http" data-portid="49200" data-porto="tcp"></span><span class="service" data-service="ssl/http" data-portid="49443" data-porto="tcp"></span><span class="service" data-service="tcpwrapped" data-portid="55035" data-porto="tcp"></span><span class="service" data-service="ssl/unknown" data-portid="58655" data-porto="tcp"></span>
+</div>
+<div class="my-4 row" style="margin: 20px 0;"><div id="flex-container" class="d-flex flex-wrap gap-4 align-items-start">
+<div class="chart-container" style="flex: 1; max-width: 75%;">
+<h4 class="fs-6 mt-4">Service Distribution Across Hosts</h4>
+<div id="serviceChart" style="width: 100%; height: 250px"></div>
+</div>
+<div class="list-container">
+<h3 class="fs-5 mb-3">Most Common Services</h3>
+<ul id="topServicesLedger" class="list-group" style="font-size: 16px; color: #333; font-weight: bold;"></ul>
+</div>
+</div></div>
 <div class="table-responsive"><table id="table-overview" class="table table-striped table-hover align-middle" role="grid">
 <thead class="table-light"><tr>
 <th scope="col">State</th>
@@ -135,22 +299,7 @@
 </tbody>
 </table></div>
 <hr class="my-4">
-<h2 id="openservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Open Services</h2>
-<div class="my-4 row" style="margin: 20px 0;">
-<div id="serviceCounts" class="d-none">
-<span class="service" data-service="ssh" data-portid="22" data-porto="tcp"></span><span class="service" data-service="ssl/smtp" data-portid="25" data-porto="tcp"></span><span class="service" data-service="http" data-portid="80" data-porto="tcp"></span><span class="service" data-service="ssl/http" data-portid="443" data-porto="tcp"></span><span class="service" data-service="ssh" data-portid="22" data-porto="tcp"></span><span class="service" data-service="http" data-portid="80" data-porto="tcp"></span><span class="service" data-service="ssh" data-portid="22" data-porto="tcp"></span><span class="service" data-service="microsoft-ds" data-portid="445" data-porto="tcp"></span><span class="service" data-service="ssl/postgresql" data-portid="5432" data-porto="tcp"></span><span class="service" data-service="vnc" data-portid="5901" data-porto="tcp"></span><span class="service" data-service="X11" data-portid="6001" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8000" data-porto="tcp"></span><span class="service" data-service="ssl/unknown" data-portid="8834" data-porto="tcp"></span><span class="service" data-service="ssl/http" data-portid="9090" data-porto="tcp"></span><span class="service" data-service="tcpwrapped" data-portid="53" data-porto="tcp"></span><span class="service" data-service="domain" data-portid="53" data-porto="udp"></span><span class="service" data-service="http" data-portid="80" data-porto="tcp"></span><span class="service" data-service="ntp" data-portid="123" data-porto="udp"></span><span class="service" data-service="ssl/http" data-portid="443" data-porto="tcp"></span><span class="service" data-service="sip" data-portid="5060" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8181" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8182" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8183" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8184" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8185" data-porto="tcp"></span><span class="service" data-service="http" data-portid="8186" data-porto="tcp"></span><span class="service" data-service="http" data-portid="33660" data-porto="tcp"></span><span class="service" data-service="http" data-portid="49000" data-porto="tcp"></span><span class="service" data-service="http" data-portid="49200" data-porto="tcp"></span><span class="service" data-service="ssl/http" data-portid="49443" data-porto="tcp"></span><span class="service" data-service="tcpwrapped" data-portid="55035" data-porto="tcp"></span><span class="service" data-service="ssl/unknown" data-portid="58655" data-porto="tcp"></span>
-</div>
-<div id="flex-container" class="d-flex flex-wrap gap-4 align-items-start">
-<div class="chart-container" style="flex: 1; max-width: 75%;">
-<h4 class="fs-6 mt-4">Service Distribution Across Hosts</h4>
-<div id="serviceChart" style="width: 100%; height: 250px"></div>
-</div>
-<div class="list-container">
-<h3 class="fs-5 mb-3">Top 5 Services</h3>
-<ul id="topServicesLedger" class="list-group" style="font-size: 16px; color: #333; font-weight: bold;"></ul>
-</div>
-</div>
-</div>
+<h2 id="openservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Service Overview</h2>
 <div class="table-responsive"><table id="table-services" class="table table-striped table-hover align-middle" role="grid">
 <thead class="table-light"><tr>
 <th scope="col">Hostname</th>
@@ -160,7 +309,7 @@
 <th scope="col">Service</th>
 <th scope="col">Product</th>
 <th scope="col">Version</th>
-<th scope="col">Extra</th>
+<th scope="col">Extra Info</th>
 <th scope="col">CPE</th>
 <th scope="col">Exploits</th>
 </tr></thead>
@@ -8391,12 +8540,8 @@
 </tr>
 </tbody>
 </table></div>
-<h4 class="fs-6 mt-4">Communication Matrix</h4>
-<div id="portHostMatrix" style="width: 100%;"></div>
-<h4 class="fs-6 mt-4">Service Heatmap</h4>
-<div id="protocolPortMatrix" style="width: 100%;"></div>
 <hr class="my-4">
-<h2 id="webservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Web/SSL Services</h2>
+<h2 id="webservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Web &amp; TLS Services</h2>
 <div class="table-responsive"><table id="web-services" class="table table-striped table-hover table-bordered align-middle dataTable" role="grid">
 <thead class="table-light"><tr>
 <th scope="col">Hostname</th>
@@ -8417,25 +8562,21 @@
 <td>ssl/smtp</td>
 <td>Postfix smtpd</td>
 <td></td>
-<td></td>
-<td><table class="table table-sm table-borderless mb-0">
-<tr>
-<td>Subject</td>
-<td><i>insecure.com</i></td>
-</tr>
-<tr>
-<td>Issuer</td>
-<td><i>R11 – Let's Encrypt</i></td>
-</tr>
-<tr>
-<td>Expiry</td>
-<td><i>2025-08-21T09:09:37</i></td>
-</tr>
-<tr>
-<td>SigAlgo</td>
-<td><i>sha256WithRSAEncryption</i></td>
-</tr>
-</table></td>
+<td><div class="http-title-block"></div></td>
+<td><div class="certificate-block">
+<div class="certificate-row">
+<span class="certificate-label">Subject: </span><i class="certificate-value">insecure.com</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Issuer: </span><i class="certificate-value">R11 – Let's Encrypt</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Expiry: </span><i class="certificate-value">2025-08-21T09:09:37</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">SigAlgo: </span><i class="certificate-value">sha256WithRSAEncryption</i>
+</div>
+</div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://scanme2.nmap.org:25">https://scanme2.nmap.org:25</a></td>
 </tr>
 <tr>
@@ -8445,8 +8586,8 @@
 <td>http</td>
 <td>Apache httpd</td>
 <td>2.4.6</td>
-<td><i>Did not follow redirect to https://nmap.org/</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="Did not follow redirect to https://nmap.org/">Did not follow redirect to https://nmap.org/</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://scanme2.nmap.org:80">https://scanme2.nmap.org:80</a></td>
 </tr>
 <tr>
@@ -8456,25 +8597,21 @@
 <td>ssl/http</td>
 <td>Apache httpd</td>
 <td>2.4.6</td>
-<td><i>Did not follow redirect to https://nmap.org/</i></td>
-<td><table class="table table-sm table-borderless mb-0">
-<tr>
-<td>Subject</td>
-<td><i>insecure.com</i></td>
-</tr>
-<tr>
-<td>Issuer</td>
-<td><i>R11 – Let's Encrypt</i></td>
-</tr>
-<tr>
-<td>Expiry</td>
-<td><i>2025-08-21T09:09:37</i></td>
-</tr>
-<tr>
-<td>SigAlgo</td>
-<td><i>sha256WithRSAEncryption</i></td>
-</tr>
-</table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="Did not follow redirect to https://nmap.org/">Did not follow redirect to https://nmap.org/</i></div></td>
+<td><div class="certificate-block">
+<div class="certificate-row">
+<span class="certificate-label">Subject: </span><i class="certificate-value">insecure.com</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Issuer: </span><i class="certificate-value">R11 – Let's Encrypt</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Expiry: </span><i class="certificate-value">2025-08-21T09:09:37</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">SigAlgo: </span><i class="certificate-value">sha256WithRSAEncryption</i>
+</div>
+</div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://scanme2.nmap.org:443">https://scanme2.nmap.org:443</a></td>
 </tr>
 <tr>
@@ -8484,8 +8621,8 @@
 <td>http</td>
 <td>Apache httpd</td>
 <td>2.4.7</td>
-<td><i>Go ahead and ScanMe!</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="Go ahead and ScanMe!">Go ahead and ScanMe!</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://scanme.nmap.org:80">https://scanme.nmap.org:80</a></td>
 </tr>
 <tr>
@@ -8495,25 +8632,21 @@
 <td>ssl/postgresql</td>
 <td>PostgreSQL DB</td>
 <td>9.6.0 or later</td>
-<td></td>
-<td><table class="table table-sm table-borderless mb-0">
-<tr>
-<td>Subject</td>
-<td><i>root</i></td>
-</tr>
-<tr>
-<td>Issuer</td>
-<td><i>root</i></td>
-</tr>
-<tr>
-<td>Expiry</td>
-<td><i>2034-11-28T12:30:07</i></td>
-</tr>
-<tr>
-<td>SigAlgo</td>
-<td><i>sha256WithRSAEncryption</i></td>
-</tr>
-</table></td>
+<td><div class="http-title-block"></div></td>
+<td><div class="certificate-block">
+<div class="certificate-row">
+<span class="certificate-label">Subject: </span><i class="certificate-value">root</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Issuer: </span><i class="certificate-value">root</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Expiry: </span><i class="certificate-value">2034-11-28T12:30:07</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">SigAlgo: </span><i class="certificate-value">sha256WithRSAEncryption</i>
+</div>
+</div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://localhost:5432">https://localhost:5432</a></td>
 </tr>
 <tr>
@@ -8523,8 +8656,8 @@
 <td>http</td>
 <td>SimpleHTTPServer</td>
 <td>0.6</td>
-<td><i>Directory listing for /</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="Directory listing for /">Directory listing for /</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://localhost:8000">https://localhost:8000</a></td>
 </tr>
 <tr>
@@ -8534,25 +8667,21 @@
 <td>ssl/unknown</td>
 <td></td>
 <td></td>
-<td></td>
-<td><table class="table table-sm table-borderless mb-0">
-<tr>
-<td>Subject</td>
-<td><i>kali – Nessus Users United</i></td>
-</tr>
-<tr>
-<td>Issuer</td>
-<td><i>Nessus Certification Authority – Nessus Users United</i></td>
-</tr>
-<tr>
-<td>Expiry</td>
-<td><i>2029-02-25T08:43:41</i></td>
-</tr>
-<tr>
-<td>SigAlgo</td>
-<td><i>sha256WithRSAEncryption</i></td>
-</tr>
-</table></td>
+<td><div class="http-title-block"></div></td>
+<td><div class="certificate-block">
+<div class="certificate-row">
+<span class="certificate-label">Subject: </span><i class="certificate-value">kali – Nessus Users United</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Issuer: </span><i class="certificate-value">Nessus Certification Authority – Nessus Users United</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Expiry: </span><i class="certificate-value">2029-02-25T08:43:41</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">SigAlgo: </span><i class="certificate-value">sha256WithRSAEncryption</i>
+</div>
+</div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://localhost:8834">https://localhost:8834</a></td>
 </tr>
 <tr>
@@ -8562,25 +8691,21 @@
 <td>ssl/http</td>
 <td>Werkzeug httpd</td>
 <td>3.1.3</td>
-<td><i>updog - /home/kali/audit_results/nmap_merge/tmp</i></td>
-<td><table class="table table-sm table-borderless mb-0">
-<tr>
-<td>Subject</td>
-<td><i>* – Dummy Certificate</i></td>
-</tr>
-<tr>
-<td>Issuer</td>
-<td><i>* – Dummy Certificate</i></td>
-</tr>
-<tr>
-<td>Expiry</td>
-<td><i>2026-05-30T08:33:29</i></td>
-</tr>
-<tr>
-<td>SigAlgo</td>
-<td><i>sha256WithRSAEncryption</i></td>
-</tr>
-</table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="updog - /home/kali/audit_results/nmap_merge/tmp">updog - /home/kali/audit_results/nmap_merge/tmp</i></div></td>
+<td><div class="certificate-block">
+<div class="certificate-row">
+<span class="certificate-label">Subject: </span><i class="certificate-value">* – Dummy Certificate</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Issuer: </span><i class="certificate-value">* – Dummy Certificate</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Expiry: </span><i class="certificate-value">2026-05-30T08:33:29</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">SigAlgo: </span><i class="certificate-value">sha256WithRSAEncryption</i>
+</div>
+</div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://localhost:9090">https://localhost:9090</a></td>
 </tr>
 <tr>
@@ -8590,10 +8715,12 @@
 <td>http</td>
 <td>FRITZ!Box http config</td>
 <td></td>
-<td><i>
+<td><div class="http-title-block"><i class="http-title-value" title="
       FRITZ!Box
-  </i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+  ">
+      FRITZ!Box
+  </i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:80">https://fritz.box:80</a></td>
 </tr>
 <tr>
@@ -8603,27 +8730,25 @@
 <td>ssl/http</td>
 <td>FRITZ!Box http config</td>
 <td></td>
-<td><i>
+<td><div class="http-title-block"><i class="http-title-value" title="
       FRITZ!Box
-  </i></td>
-<td><table class="table table-sm table-borderless mb-0">
-<tr>
-<td>Subject</td>
-<td><i>10.115.99.126</i></td>
-</tr>
-<tr>
-<td>Issuer</td>
-<td><i>10.115.99.126</i></td>
-</tr>
-<tr>
-<td>Expiry</td>
-<td><i>2038-01-15T07:12:20</i></td>
-</tr>
-<tr>
-<td>SigAlgo</td>
-<td><i>sha256WithRSAEncryption</i></td>
-</tr>
-</table></td>
+  ">
+      FRITZ!Box
+  </i></div></td>
+<td><div class="certificate-block">
+<div class="certificate-row">
+<span class="certificate-label">Subject: </span><i class="certificate-value">10.115.99.126</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Issuer: </span><i class="certificate-value">10.115.99.126</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Expiry: </span><i class="certificate-value">2038-01-15T07:12:20</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">SigAlgo: </span><i class="certificate-value">sha256WithRSAEncryption</i>
+</div>
+</div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:443">https://fritz.box:443</a></td>
 </tr>
 <tr>
@@ -8633,8 +8758,8 @@
 <td>http</td>
 <td>AVM FRITZ!Box 7300-series WAP http config</td>
 <td></td>
-<td><i>Hinweis: Die Internetseite ist gesperrt.</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="Hinweis: Die Internetseite ist gesperrt.">Hinweis: Die Internetseite ist gesperrt.</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:8181">https://fritz.box:8181</a></td>
 </tr>
 <tr>
@@ -8644,8 +8769,8 @@
 <td>http</td>
 <td>AVM FRITZ!Box WLAN 7170 WAP http config</td>
 <td></td>
-<td><i>Hinweis: Die Internetnutzung ist gesperrt.</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="Hinweis: Die Internetnutzung ist gesperrt.">Hinweis: Die Internetnutzung ist gesperrt.</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:8182">https://fritz.box:8182</a></td>
 </tr>
 <tr>
@@ -8655,8 +8780,8 @@
 <td>http</td>
 <td>AVM FRITZ!Box WLAN 7170 WAP http config</td>
 <td></td>
-<td><i>Did not follow redirect to http://fritz.box/firmware_update_notify.lua</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="Did not follow redirect to http://fritz.box/firmware_update_notify.lua">Did not follow redirect to http://fritz.box/firmware_update_notify.lua</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:8183">https://fritz.box:8183</a></td>
 </tr>
 <tr>
@@ -8666,8 +8791,8 @@
 <td>http</td>
 <td>AVM FRITZ!Box WLAN 7170 WAP http config</td>
 <td></td>
-<td><i>Did not follow redirect to http://fritz.box/tools/kids_not_allowed.lua?account=default-192.168.178.82</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="Did not follow redirect to http://fritz.box/tools/kids_not_allowed.lua?account=default-192.168.178.82">Did not follow redirect to http://fritz.box/tools/kids_not_allowed.lua?account=default-192.168.178.82</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:8184">https://fritz.box:8184</a></td>
 </tr>
 <tr>
@@ -8677,8 +8802,8 @@
 <td>http</td>
 <td>AVM FRITZ!Box WLAN 7170 WAP http config</td>
 <td></td>
-<td><i>Did not follow redirect to http://192.168.179.1:8186/untrusted_guest.lua</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="Did not follow redirect to http://192.168.179.1:8186/untrusted_guest.lua">Did not follow redirect to http://192.168.179.1:8186/untrusted_guest.lua</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:8185">https://fritz.box:8185</a></td>
 </tr>
 <tr>
@@ -8688,8 +8813,8 @@
 <td>http</td>
 <td>AVM FRITZ!Box WLAN 7170 WAP http config</td>
 <td></td>
-<td><i>404 Not Found (ERR_NOT_FOUND)</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="404 Not Found (ERR_NOT_FOUND)">404 Not Found (ERR_NOT_FOUND)</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:8186">https://fritz.box:8186</a></td>
 </tr>
 <tr>
@@ -8699,8 +8824,8 @@
 <td>http</td>
 <td>AVM FRITZ!Box WLAN 7170 WAP http config</td>
 <td></td>
-<td><i>404 Not Found (ERR_ACCESS_DENIED)</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="404 Not Found (ERR_ACCESS_DENIED)">404 Not Found (ERR_ACCESS_DENIED)</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:33660">https://fritz.box:33660</a></td>
 </tr>
 <tr>
@@ -8710,8 +8835,8 @@
 <td>http</td>
 <td>AVM FRITZ!Box WLAN 7170 WAP http config</td>
 <td></td>
-<td><i>404 Not Found (ERR_NOT_FOUND)</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="404 Not Found (ERR_NOT_FOUND)">404 Not Found (ERR_NOT_FOUND)</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:49000">https://fritz.box:49000</a></td>
 </tr>
 <tr>
@@ -8721,8 +8846,8 @@
 <td>http</td>
 <td>AVM FRITZ!Box WLAN 7170 WAP http config</td>
 <td></td>
-<td><i>404 Not Found (ERR_NOT_FOUND)</i></td>
-<td><table class="table table-sm table-borderless mb-0"></table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="404 Not Found (ERR_NOT_FOUND)">404 Not Found (ERR_NOT_FOUND)</i></div></td>
+<td><div class="certificate-block"></div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:49200">https://fritz.box:49200</a></td>
 </tr>
 <tr>
@@ -8732,25 +8857,21 @@
 <td>ssl/http</td>
 <td>AVM FRITZ!Box WLAN 7170 WAP http config</td>
 <td></td>
-<td><i>404 Not Found (ERR_NOT_FOUND)</i></td>
-<td><table class="table table-sm table-borderless mb-0">
-<tr>
-<td>Subject</td>
-<td><i>10.115.99.126</i></td>
-</tr>
-<tr>
-<td>Issuer</td>
-<td><i>10.115.99.126</i></td>
-</tr>
-<tr>
-<td>Expiry</td>
-<td><i>2038-01-15T07:12:20</i></td>
-</tr>
-<tr>
-<td>SigAlgo</td>
-<td><i>sha256WithRSAEncryption</i></td>
-</tr>
-</table></td>
+<td><div class="http-title-block"><i class="http-title-value" title="404 Not Found (ERR_NOT_FOUND)">404 Not Found (ERR_NOT_FOUND)</i></div></td>
+<td><div class="certificate-block">
+<div class="certificate-row">
+<span class="certificate-label">Subject: </span><i class="certificate-value">10.115.99.126</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Issuer: </span><i class="certificate-value">10.115.99.126</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Expiry: </span><i class="certificate-value">2038-01-15T07:12:20</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">SigAlgo: </span><i class="certificate-value">sha256WithRSAEncryption</i>
+</div>
+</div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:49443">https://fritz.box:49443</a></td>
 </tr>
 <tr>
@@ -8760,35 +8881,53 @@
 <td>ssl/unknown</td>
 <td></td>
 <td></td>
-<td></td>
-<td><table class="table table-sm table-borderless mb-0">
-<tr>
-<td>Subject</td>
-<td><i>avmnexus-d424dd1268d2</i></td>
-</tr>
-<tr>
-<td>Issuer</td>
-<td><i>avmnexus-d424dd1268d2</i></td>
-</tr>
-<tr>
-<td>Expiry</td>
-<td><i>2038-01-16T00:00:57</i></td>
-</tr>
-<tr>
-<td>SigAlgo</td>
-<td><i>sha256WithRSAEncryption</i></td>
-</tr>
-</table></td>
+<td><div class="http-title-block"></div></td>
+<td><div class="certificate-block">
+<div class="certificate-row">
+<span class="certificate-label">Subject: </span><i class="certificate-value">avmnexus-d424dd1268d2</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Issuer: </span><i class="certificate-value">avmnexus-d424dd1268d2</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">Expiry: </span><i class="certificate-value">2038-01-16T00:00:57</i>
+</div>
+<div class="certificate-row">
+<span class="certificate-label">SigAlgo: </span><i class="certificate-value">sha256WithRSAEncryption</i>
+</div>
+</div></td>
 <td><a target="_blank" rel="noopener noreferrer" href="https://fritz.box:58655">https://fritz.box:58655</a></td>
 </tr>
 </tbody>
 </table></div>
 <hr class="my-4">
-<h2 id="onlinehosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Online Hosts</h2>
-<div class="accordion" id="accordionOnlineHosts">
-<div class="accordion-item">
-<h2 class="accordion-header" id="heading-50-116-1-184"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" id="onlinehosts-50-116-1-184" data-bs-target="#collapse-50-116-1-184" aria-controls="collapse-50-116-1-184">50.116.1.184 - scanme2.nmap.org</button></h2>
-<div id="collapse-50-116-1-184" class="accordion-collapse collapse" aria-labelledby="heading-50-116-1-184" data-bs-parent="#accordionOnlineHosts"><div class="accordion-body">
+<h2 id="visualizations" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Visualizations</h2>
+<div id="matrixCount" class="d-none">
+<div class="host" data-host="50.116.1.184">
+<span class="port" data-port="22" data-conf="10" data-service="tcp:ssh"></span><span class="port" data-port="25" data-conf="10" data-service="tcp:smtp"></span><span class="port" data-port="80" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="443" data-conf="10" data-service="tcp:ssl/http"></span>
+</div>
+<div class="host" data-host="45.33.32.156">
+<span class="port" data-port="22" data-conf="10" data-service="tcp:ssh"></span><span class="port" data-port="80" data-conf="10" data-service="tcp:http"></span>
+</div>
+<div class="host" data-host="172.172.172.172"></div>
+<div class="host" data-host="127.0.0.1">
+<span class="port" data-port="22" data-conf="10" data-service="tcp:ssh"></span><span class="port" data-port="445" data-conf="10" data-service="tcp:microsoft-ds"></span><span class="port" data-port="5432" data-conf="10" data-service="tcp:postgresql"></span><span class="port" data-port="5901" data-conf="10" data-service="tcp:vnc"></span><span class="port" data-port="6001" data-conf="10" data-service="tcp:X11"></span><span class="port" data-port="8000" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="8834" data-conf="3" data-service="tcp:ssl/nessus-xmlrpc"></span><span class="port" data-port="9090" data-conf="10" data-service="tcp:ssl/http"></span>
+</div>
+<div class="host" data-host="192.168.178.1">
+<span class="port" data-port="53" data-conf="8" data-service="tcp:tcpwrapped"></span><span class="port" data-port="53" data-conf="10" data-service="udp:domain"></span><span class="port" data-port="80" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="123" data-conf="10" data-service="udp:ntp"></span><span class="port" data-port="443" data-conf="10" data-service="tcp:ssl/http"></span><span class="port" data-port="5060" data-conf="10" data-service="tcp:sip"></span><span class="port" data-port="8181" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="8182" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="8183" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="8184" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="8185" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="8186" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="33660" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="49000" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="49200" data-conf="10" data-service="tcp:http"></span><span class="port" data-port="49443" data-conf="10" data-service="tcp:ssl/http"></span><span class="port" data-port="55035" data-conf="8" data-service="tcp:tcpwrapped"></span><span class="port" data-port="58655" data-conf="3" data-service="tcp:ssl/unknown"></span>
+</div>
+</div>
+<h4 class="fs-6 mt-4">Open Ports Per Host</h4>
+<div id="openPortsPerHostChart" style="width: 100%;"></div>
+<h4 class="fs-6 mt-4">Host-Port Matrix</h4>
+<div id="portHostMatrix" style="width: 100%;"></div>
+<h4 class="fs-6 mt-4">Service-Port Heatmap</h4>
+<div id="protocolPortMatrix" style="width: 100%;"></div>
+<hr class="my-4">
+<h2 id="onlinehosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Host Details</h2>
+<div class="host-controls mb-3"><button type="button" class="btn btn-outline-secondary btn-sm" id="toggle-all-hosts" aria-controls="onlinehosts-list" aria-expanded="false">Expand all</button></div>
+<div class="host-list" id="onlinehosts-list">
+<details class="host-entry" id="host-entry-50-116-1-184"><summary class="host-entry-summary"><span class="host-entry-anchor" id="onlinehosts-50-116-1-184"></span><span class="host-entry-label">50.116.1.184 - scanme2.nmap.org</span></summary><div class="host-entry-body">
 <h4 class="fs-6">Hostnames</h4>
 <ul>
 <li>scanme2.nmap.org (user)
@@ -10087,11 +10226,7 @@ SHA-1: 4d29:39bd:aa57:59ed:20f8:50e0:fe76:8436:f676:c612</pre>
                         </h5>
 <p><strong>Device Type:</strong>general purpose<br><strong>Running:</strong>LinuxLinux4.X
                             (97%)<br><strong>OS CPE:</strong><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel:4">cpe:/o:linux:linux_kernel:4</a></p>
-</div></div>
-</div>
-<div class="accordion-item">
-<h2 class="accordion-header" id="heading-45-33-32-156"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" id="onlinehosts-45-33-32-156" data-bs-target="#collapse-45-33-32-156" aria-controls="collapse-45-33-32-156">45.33.32.156 - scanme.nmap.org</button></h2>
-<div id="collapse-45-33-32-156" class="accordion-collapse collapse" aria-labelledby="heading-45-33-32-156" data-bs-parent="#accordionOnlineHosts"><div class="accordion-body">
+</div></details><details class="host-entry" id="host-entry-45-33-32-156"><summary class="host-entry-summary"><span class="host-entry-anchor" id="onlinehosts-45-33-32-156"></span><span class="host-entry-label">45.33.32.156 - scanme.nmap.org</span></summary><div class="host-entry-body">
 <h4 class="fs-6">Hostnames</h4>
 <ul>
 <li>scanme.nmap.org (user)
@@ -10967,11 +11102,7 @@ Credits query returned unknown hash dca0b7de8bbaa81dc5d447ed2896c46c</pre>
                         </h5>
 <p><strong>Device Type:</strong>general purpose<br><strong>Running:</strong>LinuxLinux4.X
                             (98%)<br><strong>OS CPE:</strong><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel:4">cpe:/o:linux:linux_kernel:4</a></p>
-</div></div>
-</div>
-<div class="accordion-item">
-<h2 class="accordion-header" id="heading-127-0-0-1"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" id="onlinehosts-127-0-0-1" data-bs-target="#collapse-127-0-0-1" aria-controls="collapse-127-0-0-1">127.0.0.1 - localhost</button></h2>
-<div id="collapse-127-0-0-1" class="accordion-collapse collapse" aria-labelledby="heading-127-0-0-1" data-bs-parent="#accordionOnlineHosts"><div class="accordion-body">
+</div></details><details class="host-entry" id="host-entry-127-0-0-1"><summary class="host-entry-summary"><span class="host-entry-anchor" id="onlinehosts-127-0-0-1"></span><span class="host-entry-label">127.0.0.1 - localhost</span></summary><div class="host-entry-body">
 <h4 class="fs-6">Hostnames</h4>
 <ul><li>localhost (PTR)
                           </li></ul>
@@ -11272,11 +11403,7 @@ SHA-1: 8b7b:6168:9793:bde0:9988:41da:2b5d:4c80:51b4:9951</pre>
                             (100%)<br><strong>OS CPE:</strong><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel:5">cpe:/o:linux:linux_kernel:5</a></p>
 <p><strong>Device Type:</strong>general purpose<br><strong>Running:</strong>LinuxLinux6.X
                             (100%)<br><strong>OS CPE:</strong><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel:6">cpe:/o:linux:linux_kernel:6</a></p>
-</div></div>
-</div>
-<div class="accordion-item">
-<h2 class="accordion-header" id="heading-192-168-178-1"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" id="onlinehosts-192-168-178-1" data-bs-target="#collapse-192-168-178-1" aria-controls="collapse-192-168-178-1">192.168.178.1 (D4:24:DD:12:68:D2 - AVM Audiovisuelles Marketing und Computersysteme GmbH) - fritz.box</button></h2>
-<div id="collapse-192-168-178-1" class="accordion-collapse collapse" aria-labelledby="heading-192-168-178-1" data-bs-parent="#accordionOnlineHosts"><div class="accordion-body">
+</div></details><details class="host-entry" id="host-entry-192-168-178-1"><summary class="host-entry-summary"><span class="host-entry-anchor" id="onlinehosts-192-168-178-1"></span><span class="host-entry-label">192.168.178.1 (D4:24:DD:12:68:D2 - AVM Audiovisuelles Marketing und Computersysteme GmbH) - fritz.box</span></summary><div class="host-entry-body">
 <h4 class="fs-6">Hostnames</h4>
 <ul><li>fritz.box (PTR)
                           </li></ul>
@@ -12051,8 +12178,7 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
                             (100%)<br><strong>OS CPE:</strong><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel:3">cpe:/o:linux:linux_kernel:3</a></p>
 <p><strong>Device Type:</strong>general purpose<br><strong>Running:</strong>LinuxLinux4.X
                             (100%)<br><strong>OS CPE:</strong><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel:4">cpe:/o:linux:linux_kernel:4</a></p>
-</div></div>
-</div>
+</div></details>
 </div>
 </div>
 <hr class="my-3">
@@ -12170,17 +12296,102 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
             });
           }
 
+          function initializeNavbarToggle() {
+            const toggle = document.getElementById("navbarToggle");
+            const menu = document.getElementById("navbarNav");
+            if (!toggle || !menu) return;
+
+            function syncNavbar() {
+              if (window.innerWidth >= 992) {
+                menu.hidden = false;
+                toggle.setAttribute("aria-expanded", "true");
+                return;
+              }
+
+              const expanded = toggle.getAttribute("aria-expanded") === "true";
+              menu.hidden = !expanded;
+            }
+
+            toggle.addEventListener("click", () => {
+              const expanded = toggle.getAttribute("aria-expanded") === "true";
+              toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+              menu.hidden = expanded;
+            });
+
+            window.addEventListener("resize", syncNavbar);
+            syncNavbar();
+          }
+
+          function openLinkedHost(hash) {
+            if (!hash || !hash.startsWith("#onlinehosts-")) {
+              return null;
+            }
+
+            const target = document.querySelector(hash);
+            if (!target) {
+              return null;
+            }
+
+            const hostEntry = target.closest("details");
+            if (hostEntry) {
+              hostEntry.open = true;
+            }
+
+            return target;
+          }
+
+          function initializeHostToggle() {
+            const toggle = document.getElementById("toggle-all-hosts");
+            const hostList = document.getElementById("onlinehosts-list");
+            if (!toggle || !hostList) return;
+
+            const hostEntries = Array.from(hostList.querySelectorAll("details.host-entry"));
+            if (hostEntries.length === 0) {
+              toggle.hidden = true;
+              return;
+            }
+
+            function syncLabel() {
+              const allOpen = hostEntries.every(entry => entry.open);
+              toggle.textContent = allOpen ? "Collapse all" : "Expand all";
+              toggle.setAttribute("aria-expanded", allOpen ? "true" : "false");
+            }
+
+            toggle.addEventListener("click", () => {
+              const shouldOpen = !hostEntries.every(entry => entry.open);
+              hostEntries.forEach(entry => {
+                entry.open = shouldOpen;
+              });
+              syncLabel();
+            });
+
+            hostEntries.forEach(entry => {
+              entry.addEventListener("toggle", syncLabel);
+            });
+
+            syncLabel();
+          }
+
           function initializeDataTable(selector) {
+            const exportNames = {
+              "#table-services": "nmapview-open-services",
+              "#table-overview": "nmapview-scanned-hosts",
+              "#web-services": "nmapview-web-services",
+              "#service-inventory": "nmapview-service-inventory"
+            };
+            const exportName = exportNames[selector] || "nmapview-table-export";
             const buttons = [
               {
                 extend: 'copyHtml5',
                 text: 'Copy',
+                title: exportName,
                 exportOptions: { orthogonal: 'export' },
                 className: 'btn btn-light'
               },
               {
                 extend: 'csvHtml5',
                 text: 'CSV',
+                filename: exportName,
                 fieldSeparator: ';',
                 exportOptions: { orthogonal: 'export' },
                 className: 'btn btn-light'
@@ -12188,6 +12399,7 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
               {
                 extend: 'excelHtml5',
                 text: 'Excel',
+                filename: exportName,
                 autoFilter: true,
                 exportOptions: { orthogonal: 'export' },
                 className: 'btn btn-light'
@@ -12195,6 +12407,8 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
               {
                 extend: 'pdfHtml5',
                 text: 'PDF',
+                filename: exportName,
+                title: exportName,
                 orientation: 'landscape',
                 pageSize: 'LEGAL',
                 download: 'open',
@@ -12220,7 +12434,7 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
-                  a.download = 'table-export.json';
+                  a.download = `${exportName}.json`;
                   a.click();
                   URL.revokeObjectURL(url);
                 }
@@ -12232,7 +12446,7 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
                 extend: 'copyHtml5',
                 text: 'Copy URLs',
                 header: false,
-                title: '',
+                title: exportName,
                 exportOptions: {  columns: [-1], orthogonal: 'export' },
                 className: 'btn btn-light'
               });
@@ -12253,6 +12467,8 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
 
         </script><script>
           $(document).ready(function() {
+              initializeNavbarToggle();
+              initializeHostToggle();
               initializeDataTable('#table-services');
               initializeDataTable('#table-overview');
               initializeDataTable('#web-services');
@@ -12261,10 +12477,19 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
 
               $("a[href^='#onlinehosts-']").click(function(event) {
                   event.preventDefault();
+                  const target = openLinkedHost(this.hash);
+                  if (!target) {
+                    return;
+                  }
                   $('html,body').animate({
-                      scrollTop: ($(this.hash).offset().top - 60)
+                      scrollTop: ($(target).offset().top - 60)
                   }, 500);
               });
+
+              const initialTarget = openLinkedHost(window.location.hash);
+              if (initialTarget) {
+                $('html,body').scrollTop($(initialTarget).offset().top - 60);
+              }
           });
         </script><script>
            document.addEventListener("DOMContentLoaded", function() {
@@ -12295,16 +12520,17 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
                     name: service,
                     type: 'bar',
                     orientation: 'h',
-                    marker: {
-                        color: colorPalette[index % colorPalette.length]
-                    },
-                    text: service,
-                    textposition: 'inside',
-                    insidetextanchor: 'start',
-                    hoverinfo: 'text+x',
-                    textfont: {
-                        color: 'white',
-                        size: 12
+	                    marker: {
+	                        color: colorPalette[index % colorPalette.length]
+	                    },
+	                    text: service,
+	                    hovertext: `Service: ${service}; Hosts: ${count}`,
+	                    textposition: 'inside',
+	                    insidetextanchor: 'start',
+	                    hoverinfo: 'text',
+	                    textfont: {
+	                        color: 'white',
+	                        size: 12
                     }
                 }));
 
@@ -12379,28 +12605,36 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
                 ports.map(port => openServices[host][port] ? 1 : 0)
               );
 
-              const zText = hosts.map(host =>
-                ports.map(port => openServices[host][port] || "")
-              );
+	              const zText = hosts.map(host =>
+	                ports.map(port => openServices[host][port] || "")
+	              );
+	              const hoverData = hosts.map(host =>
+	                ports.map(port => [
+	                  host,
+	                  String(port),
+	                  openServices[host][port] || "No open service"
+	                ])
+	              );
 
-              const data = [{
-                z: z,
-                x: ports.map(String),
-                y: hosts,
-                text: zText,
-                type: "heatmap",
-                colorscale: [[0, "white"], [1, "#2ca02c"]],
-                showscale: false,
-                hoverongaps: false,
-                hoverinfo: "x+y+text",
-                text: zText
-              }];
+	              const data = [{
+	                z: z,
+	                x: ports.map(String),
+	                y: hosts,
+	                text: zText,
+	                customdata: hoverData,
+	                type: "heatmap",
+	                colorscale: [[0, "white"], [1, "#2ca02c"]],
+	                showscale: false,
+	                hoverongaps: false,
+	                hovertemplate: "Host: %{customdata[0]}<br>Port: %{customdata[1]}<br>Service: %{customdata[2]}<extra></extra>",
+	                text: zText
+	              }];
 
               const dynamicHeight = Math.max(600, hosts.length * 20);
               portHostMatrix.style.height = dynamicHeight + "px";
 
-              const layout = {
-                title: "",
+	            const layout = {
+	              title: "",
                 xaxis: {
                   title: { text: "Port" },
                   side: "top",
@@ -12453,25 +12687,29 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
               .sort((a, b) => b.total - a.total)
               .map(item => item.index);
 
-            const sortedServices = sortedIndices.map(index => services[index]);
-            const sortedTotals = sortedIndices.map(index => serviceTotals[index]);
-            const sortedZ = sortedIndices.map(index => z[index]);
-            const zText = sortedZ.map(row => row.map(value => value > 0 ? value.toString() : ""));
-            const yLabels = sortedServices.map((service, index) => `${service} (${sortedTotals[index]})`);
+	            const sortedServices = sortedIndices.map(index => services[index]);
+	            const sortedTotals = sortedIndices.map(index => serviceTotals[index]);
+	            const sortedZ = sortedIndices.map(index => z[index]);
+	            const zText = sortedZ.map(row => row.map(value => value > 0 ? value.toString() : ""));
+	            const hoverData = sortedServices.map((service, index) =>
+	              ports.map(port => [String(port), service, String(sortedTotals[index])])
+	            );
+	            const yLabels = sortedServices.map((service, index) => `${service} (${sortedTotals[index]})`);
 
-            const data = [{
-              z: sortedZ,
-              x: ports.map(String),
-              y: yLabels,
-              text: zText,
-              type: "heatmap",
-              colorscale: "Portland",
-              showscale: true,
-              hoverongaps: false,
-              hoverinfo: "x+y+text",
-              texttemplate: "%{text}",
-              textfont: { color: "black", size: 12 }
-            }];
+	            const data = [{
+	              z: sortedZ,
+	              x: ports.map(String),
+	              y: yLabels,
+	              text: zText,
+	              customdata: hoverData,
+	              type: "heatmap",
+	              colorscale: "Portland",
+	              showscale: true,
+	              hoverongaps: false,
+	              hovertemplate: "Port: %{customdata[0]}<br>Service: %{customdata[1]}<br>Total: %{customdata[2]}<br>Occurrences: %{z}<extra></extra>",
+	              texttemplate: "%{text}",
+	              textfont: { color: "black", size: 12 }
+	            }];
 
             const dynamicHeight = Math.max(600, sortedServices.length * 20);
             protocolPortMatrix.style.height = dynamicHeight + "px";
@@ -12508,10 +12746,58 @@ SHA-1: 0401:44c9:ddcc:10a8:fabf:54f4:1eff:f16b:3267:624d</pre>
               height: dynamicHeight,
               dragmode: false,
               shapes: horizontalLines
-            };
+	            };
 
-            Plotly.newPlot("protocolPortMatrix", data, layout, matrixConfig);
-          });
-        </script><script>console.log("Made by dreizehnutters")</script>
+	            Plotly.newPlot("protocolPortMatrix", data, layout, matrixConfig);
+
+	            const openPortsPerHostChart = document.getElementById("openPortsPerHostChart");
+	            if (openPortsPerHostChart) {
+	              const hostOpenPortCounts = hosts
+	                .map(host => ({
+	                  host,
+	                  count: Object.keys(openServices[host]).length
+	                }))
+	                .sort((a, b) => b.count - a.count || a.host.localeCompare(b.host));
+
+	              const data = [{
+	                type: "bar",
+	                orientation: "h",
+	                y: hostOpenPortCounts.map(entry => entry.host),
+	                x: hostOpenPortCounts.map(entry => entry.count),
+	                text: hostOpenPortCounts.map(entry => String(entry.count)),
+	                textposition: "auto",
+	                marker: {
+	                  color: "#0d6efd"
+	                },
+	                hovertemplate: "%{y}<br>Open ports: %{x}<extra></extra>"
+	              }];
+
+	              const dynamicHeight = Math.max(320, hostOpenPortCounts.length * 28);
+	              openPortsPerHostChart.style.height = dynamicHeight + "px";
+
+	              const layout = {
+	                title: "",
+	                margin: { t: 20, l: 180, r: 30, b: 50 },
+	                width: window.innerWidth * 0.95,
+	                height: dynamicHeight,
+	                xaxis: {
+	                  title: { text: "Open ports" },
+	                  automargin: true,
+	                  fixedrange: true
+	                },
+	                yaxis: {
+	                  title: { text: "Host" },
+	                  automargin: true,
+	                  fixedrange: true,
+	                  autorange: "reversed"
+	                },
+	                showlegend: false,
+	                dragmode: false
+	              };
+
+	              Plotly.newPlot("openPortsPerHostChart", data, layout, matrixConfig);
+	            }
+	          });
+	        </script><script>console.log("Made by dreizehnutters")</script>
 </body>
 </html>

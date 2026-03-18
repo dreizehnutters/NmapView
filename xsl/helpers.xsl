@@ -79,20 +79,19 @@
     <xsl:param name="primary"/>
     <xsl:param name="secondary" select="''"/>
     <xsl:if test="string($primary) != '' or string($secondary) != ''">
-      <tr>
-        <td>
+      <div class="certificate-row">
+        <span class="certificate-label">
           <xsl:value-of select="$label"/>
-        </td>
-        <td>
-          <i>
-            <xsl:value-of select="$primary"/>
-            <xsl:if test="string($secondary) != ''">
-              <xsl:text> – </xsl:text>
-              <xsl:value-of select="$secondary"/>
-            </xsl:if>
-          </i>
-        </td>
-      </tr>
+          <xsl:text>: </xsl:text>
+        </span>
+        <i class="certificate-value">
+          <xsl:value-of select="$primary"/>
+          <xsl:if test="string($secondary) != ''">
+            <xsl:text> – </xsl:text>
+            <xsl:value-of select="$secondary"/>
+          </xsl:if>
+        </i>
+      </div>
     </xsl:if>
   </xsl:template>
 
@@ -142,5 +141,12 @@
         </xsl:for-each>
       </ul>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="render-empty-state">
+    <xsl:param name="message"/>
+    <p class="text-muted fst-italic mb-3">
+      <xsl:value-of select="$message"/>
+    </p>
   </xsl:template>
 </xsl:stylesheet>
