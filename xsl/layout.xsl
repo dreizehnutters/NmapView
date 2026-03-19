@@ -162,8 +162,61 @@
             word-wrap: break-word;
           }
 
+          .summary-progress {
+            height: 1.75rem;
+            font-size: 0.95rem;
+          }
+
+          .summary-progress .progress-bar {
+            font-weight: 600;
+          }
+
+          .summary-progress .progress-bar.bg-warning {
+            color: #212529;
+          }
+
+          .keyword-highlight-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            margin-top: 1rem;
+          }
+
+          .keyword-highlight-controls .form-control {
+            flex: 1 1 20rem;
+            min-width: 16rem;
+          }
+
+          .keyword-highlight-controls .btn-warning {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+            color: #212529;
+          }
+
+          .keyword-highlight-controls .btn-warning:hover,
+          .keyword-highlight-controls .btn-warning:focus,
+          .keyword-highlight-controls .btn-warning:active {
+            background-color: #dde1e5;
+            border-color: #c6cbd1;
+            color: #212529;
+          }
+
+          .keyword-highlight-mark {
+            background: #fff3a3;
+            color: inherit;
+            padding: 0 0.15em;
+            border-radius: 0.2rem;
+          }
+
           #mainNavbar {
             border-bottom: 1px solid #dee2e6;
+          }
+
+          .navbar-version-link {
+            display: flex;
+            align-items: center;
+            height: 100%;
           }
 
           #navbarNav {
@@ -227,7 +280,7 @@
               </ul>
               <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                  <span class="nav-link">v3.0.1</span>
+                  <a class="nav-link navbar-version-link" href="https://github.com/dreizehnutters/NmapView">NmapView v3.0.1</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="https://github.com/dreizehnutters/NmapView">
@@ -248,22 +301,106 @@
         </nav>
   </xsl:template>
   <xsl:template name="render-summary">
+          <xsl:variable name="total-hosts" select="count(/nmaprun/host)"/>
+          <xsl:variable name="up-hosts" select="count(/nmaprun/host[status/@state='up'])"/>
+          <xsl:variable name="down-hosts" select="count(/nmaprun/host[status/@state='down'])"/>
+          <xsl:variable name="open-ports" select="count(/nmaprun/host/ports/port[state/@state='open'])"/>
+          <xsl:variable name="unique-services" select="count(//host/ports/port[state/@state='open' and service/@name]
+            [generate-id() = generate-id(
+              key('serviceGroup',
+                concat(
+                  substring('ssl/', 1, (service/@tunnel = 'ssl') * string-length('ssl/')),
+                  service/@name,
+                  '-',
+                  @protocol
+                )
+              )[1]
+            )])"/>
+          <xsl:variable name="web-tls-endpoints" select="count(/nmaprun/host/ports/port[(@protocol='tcp') and (state/@state='open') and (starts-with(service/@name, 'http') or script[@id='ssl-cert'])])"/>
+          <xsl:variable name="duration-seconds" select="number(/nmaprun/runstats/finished/@time) - number(/nmaprun/@start)"/>
+          <xsl:variable name="duration-hours" select="floor($duration-seconds div 3600)"/>
+          <xsl:variable name="duration-minutes" select="floor(($duration-seconds mod 3600) div 60)"/>
+          <xsl:variable name="duration-remainder-seconds" select="floor($duration-seconds mod 60)"/>
           <div id="summary" class="bg-light p-4 rounded my-5 shadow-sm">
             <h2 class="display-6 text-primary">Scan Summary</h2>
             <h5 class="mb-3">
               <small class="text-muted">
                 Nmap Version: <xsl:value-of select="/nmaprun/@version"/> <br/>
                 Scan Duration: <xsl:value-of select="/nmaprun/@startstr"/> - <xsl:value-of select="/nmaprun/runstats/finished/@timestr"/>
+                <xsl:text> (</xsl:text>
+                <xsl:if test="$duration-hours &gt; 0">
+                  <xsl:value-of select="$duration-hours"/>
+                  <xsl:text>h </xsl:text>
+                </xsl:if>
+                <xsl:if test="$duration-minutes &gt; 0 or $duration-hours &gt; 0">
+                  <xsl:value-of select="$duration-minutes"/>
+                  <xsl:text>m </xsl:text>
+                </xsl:if>
+                <xsl:value-of select="$duration-remainder-seconds"/>
+                <xsl:text>s)</xsl:text>
               </small>
             </h5>
-            <div class="d-flex gap-3 my-3">
-              <p class="mb-0">
-                <b class="badge bg-info p-2"><xsl:value-of select="/nmaprun/runstats/hosts/@total"/> Hosts scanned</b>
-              </p>
+            <div class="row g-3 mb-4">
+              <div class="col-6 col-lg-3">
+                <div class="border rounded bg-white h-100 p-3">
+                  <div class="text-muted small text-uppercase">Hosts Scanned</div>
+                  <div class="fs-4 fw-semibold">
+                    <xsl:value-of select="$total-hosts"/>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-lg-3">
+                <div class="border rounded bg-white h-100 p-3">
+                  <div class="text-muted small text-uppercase">Open Ports</div>
+                  <div class="fs-4 fw-semibold">
+                    <xsl:value-of select="$open-ports"/>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-lg-3">
+                <div class="border rounded bg-white h-100 p-3">
+                  <div class="text-muted small text-uppercase">Unique Services</div>
+                  <div class="fs-4 fw-semibold">
+                    <xsl:value-of select="$unique-services"/>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-lg-3">
+                <div class="border rounded bg-white h-100 p-3">
+                  <div class="text-muted small text-uppercase">Web/TLS Endpoints</div>
+                  <div class="fs-4 fw-semibold">
+                    <xsl:value-of select="$web-tls-endpoints"/>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="progress">
-              <div class="progress-bar bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><xsl:attribute name="style">width:<xsl:value-of select="/nmaprun/runstats/hosts/@up div /nmaprun/runstats/hosts/@total * 100"/>%;</xsl:attribute><xsl:value-of select="/nmaprun/runstats/hosts/@up"/> Hosts up</div>
-              <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><xsl:attribute name="style">width:<xsl:value-of select="/nmaprun/runstats/hosts/@down div /nmaprun/runstats/hosts/@total * 100"/>%;</xsl:attribute><xsl:value-of select="/nmaprun/runstats/hosts/@down"/> Hosts down</div>
+            <div class="progress summary-progress">
+              <div class="progress-bar bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                <xsl:attribute name="style">
+                  <xsl:text>width:</xsl:text>
+                  <xsl:choose>
+                    <xsl:when test="$total-hosts &gt; 0">
+                      <xsl:value-of select="$up-hosts div $total-hosts * 100"/>
+                    </xsl:when>
+                    <xsl:otherwise>0</xsl:otherwise>
+                  </xsl:choose>
+                  <xsl:text>%;</xsl:text>
+                </xsl:attribute>
+                <xsl:value-of select="$up-hosts"/> Hosts up
+              </div>
+              <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                <xsl:attribute name="style">
+                  <xsl:text>width:</xsl:text>
+                  <xsl:choose>
+                    <xsl:when test="$total-hosts &gt; 0">
+                      <xsl:value-of select="$down-hosts div $total-hosts * 100"/>
+                    </xsl:when>
+                    <xsl:otherwise>0</xsl:otherwise>
+                  </xsl:choose>
+                  <xsl:text>%;</xsl:text>
+                </xsl:attribute>
+                <xsl:value-of select="$down-hosts"/> Hosts down
+              </div>
             </div>
             <details class="summary-command">
               <summary>Show Nmap command</summary>
@@ -274,6 +411,17 @@
                 <xsl:value-of select="/nmaprun/@args"/>
               </pre>
             </details>
+            <div class="keyword-highlight-controls" aria-label="Keyword highlighter">
+              <input
+                type="text"
+                id="keywordHighlightInput"
+                class="form-control"
+                placeholder="sha1, login, password, md5"
+                aria-label="Comma-separated keywords to highlight"
+              />
+              <button type="button" class="btn btn-warning" id="highlightKeywordsButton">Highlight Keywords</button>
+              <button type="button" class="btn btn-outline-secondary" id="resetHighlightsButton">Reset</button>
+            </div>
           </div>
   </xsl:template>
   <xsl:template name="render-footer">
@@ -281,7 +429,7 @@
         <footer class="footer bg-light py-3">
           <div class="container">
             <p class="text-muted mb-0">
-              If you have any questions, encounter a bug, or have suggestions for improvements, please don’t hesitate to <a href="https://github.com/dreizehnutters/NmapView">open an issue on GitHub</a>. Your feedback helps improve the tool for everyone.</p>
+              Generated with <a href="https://github.com/dreizehnutters/NmapView">NmapView</a>.</p>
           </div>
         </footer>
   </xsl:template>
@@ -568,11 +716,164 @@
             });
           }
 
+          function escapeRegex(text) {
+            return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          }
+
+          function unwrapHighlight(node) {
+            const parent = node.parentNode;
+            if (!parent) return;
+
+            while (node.firstChild) {
+              parent.insertBefore(node.firstChild, node);
+            }
+            parent.removeChild(node);
+          }
+
+          function clearKeywordHighlights() {
+            document.querySelectorAll("mark.keyword-highlight-mark").forEach(unwrapHighlight);
+          }
+
+          function parseHighlightTerms(raw) {
+            return [...new Set(
+              (raw || "")
+                .split(",")
+                .map(term => term.trim())
+                .filter(Boolean)
+            )];
+          }
+
+          function highlightTextNode(textNode, regex) {
+            const text = textNode.nodeValue;
+            if (!text || !regex.test(text)) {
+              regex.lastIndex = 0;
+              return 0;
+            }
+
+            regex.lastIndex = 0;
+            const fragment = document.createDocumentFragment();
+            let lastIndex = 0;
+            let matchCount = 0;
+            let match;
+
+            while ((match = regex.exec(text)) !== null) {
+              const matchText = match[0];
+              const matchIndex = match.index;
+
+              if (matchIndex > lastIndex) {
+                fragment.appendChild(document.createTextNode(text.slice(lastIndex, matchIndex)));
+              }
+
+              const mark = document.createElement("mark");
+              mark.className = "keyword-highlight-mark";
+              mark.textContent = matchText;
+              fragment.appendChild(mark);
+              lastIndex = matchIndex + matchText.length;
+              matchCount++;
+            }
+
+            if (lastIndex < text.length) {
+              fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+            }
+
+            textNode.parentNode.replaceChild(fragment, textNode);
+            regex.lastIndex = 0;
+            return matchCount;
+          }
+
+          function highlightKeywords(rawTerms) {
+            clearKeywordHighlights();
+
+            const terms = parseHighlightTerms(rawTerms);
+            if (terms.length === 0) {
+              return 0;
+            }
+
+            const container = document.getElementById("reportContent");
+            if (!container) {
+              return 0;
+            }
+
+            const regex = new RegExp(`(${terms.map(escapeRegex).join("|")})`, "gi");
+            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+              acceptNode(node) {
+                const parent = node.parentElement;
+                if (!parent) return NodeFilter.FILTER_REJECT;
+
+                if (parent.closest(".keyword-highlight-controls")) {
+                  return NodeFilter.FILTER_REJECT;
+                }
+
+                const tagName = parent.tagName;
+                if (["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "INPUT", "MARK"].includes(tagName)) {
+                  return NodeFilter.FILTER_REJECT;
+                }
+
+                if (!node.nodeValue || !node.nodeValue.trim()) {
+                  return NodeFilter.FILTER_REJECT;
+                }
+
+                return NodeFilter.FILTER_ACCEPT;
+              }
+            });
+
+            const textNodes = [];
+            let currentNode;
+            while ((currentNode = walker.nextNode())) {
+              textNodes.push(currentNode);
+            }
+
+            let matchCount = 0;
+            textNodes.forEach(node => {
+              matchCount += highlightTextNode(node, regex);
+            });
+
+            if (matchCount > 0) {
+              document.querySelectorAll("mark.keyword-highlight-mark").forEach(mark => {
+                const hostEntry = mark.closest("details.host-entry");
+                if (hostEntry) {
+                  hostEntry.open = true;
+                }
+              });
+
+              const firstMatch = document.querySelector("mark.keyword-highlight-mark");
+              if (firstMatch) {
+                firstMatch.scrollIntoView({ behavior: "smooth", block: "center" });
+              }
+            }
+
+            return matchCount;
+          }
+
+          function initializeKeywordHighlighter() {
+            const input = document.getElementById("keywordHighlightInput");
+            const highlightButton = document.getElementById("highlightKeywordsButton");
+            const resetButton = document.getElementById("resetHighlightsButton");
+            if (!input || !highlightButton || !resetButton) return;
+
+            highlightButton.addEventListener("click", () => {
+              highlightKeywords(input.value);
+            });
+
+            resetButton.addEventListener("click", () => {
+              clearKeywordHighlights();
+              input.focus();
+            });
+
+            input.addEventListener("keydown", event => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                highlightKeywords(input.value);
+              }
+            });
+          }
+
         ]]></script>
         <script>
           $(document).ready(function() {
               initializeNavbarToggle();
               initializeHostToggle();
+              initializeKeywordHighlighter();
               initializeDataTable('#table-services');
               initializeDataTable('#table-overview');
               initializeDataTable('#web-services');

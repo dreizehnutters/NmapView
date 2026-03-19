@@ -5,24 +5,6 @@
           <h2 id="serviceinventory" class="fs-4 mt-5 mb-3 bg-light p-3 rounded d-flex justify-content-between align-items-center">Service Inventory<small class="text-muted ms-auto"><em>Note: Nmap's service detection might produce false positives.</em></small></h2>
           <xsl:choose>
             <xsl:when test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
-              <div id="matrixCount" class="d-none">
-                <xsl:for-each select="//host">
-                  <div class="host" data-host="{(hostnames/hostname/@name)[1] | (address[1]/@addr)[1]}">
-                    <xsl:for-each select="ports/port[state/@state='open' and service/@name]">
-                      <span class="port" data-port="{@portid}" data-conf="{service/@conf}">
-                        <xsl:attribute name="data-service">
-                          <xsl:value-of select="@protocol"/>
-                          <xsl:text>:</xsl:text>
-                          <xsl:if test="service/@tunnel = 'ssl'">
-                            <xsl:text>ssl/</xsl:text>
-                          </xsl:if>
-                          <xsl:value-of select="service/@name"/>
-                        </xsl:attribute>
-                      </span>
-                    </xsl:for-each>
-                  </div>
-                </xsl:for-each>
-              </div>
               <div class="table-responsive">
                 <table id="service-inventory" class="table table-striped table-hover table-bordered dataTable align-middle" role="grid">
                   <thead class="table-light">
@@ -104,7 +86,14 @@
             <xsl:when test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
               <div id="matrixCount" class="d-none">
                 <xsl:for-each select="//host">
-                  <div class="host" data-host="{(hostnames/hostname/@name)[1] | (address[1]/@addr)[1]}">
+                  <div class="host">
+                    <xsl:attribute name="data-host">
+                      <xsl:value-of select="address[1]/@addr"/>
+                      <xsl:if test="string(hostnames/hostname[1]/@name) != ''">
+                        <xsl:text> - </xsl:text>
+                        <xsl:value-of select="hostnames/hostname[1]/@name"/>
+                      </xsl:if>
+                    </xsl:attribute>
                     <xsl:for-each select="ports/port[state/@state='open' and service/@name]">
                       <span class="port" data-port="{@portid}" data-conf="{service/@conf}">
                         <xsl:attribute name="data-service">
