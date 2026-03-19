@@ -9,6 +9,8 @@ Use it to turn scan output into something you can triage faster, share with a cl
 
 [![Report Screenshot](./.github/assets/sample.gif)](https://möbius.band/report.html)
 
+<p><a target="_blank" href="https://möbius.band/report.html">&gt; Demo HTML Report &lt;</a></p>
+
 ## Quick Start
 
 Download the latest standalone stylesheet, render your XML, and open the report:
