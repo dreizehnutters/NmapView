@@ -1,0 +1,22 @@
+name: Report HTML Regression
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  report-html-regression:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install xsltproc
+        run: sudo apt-get update && sudo apt-get install -y xsltproc libxml2-utils
+
+      - name: Validate repository rules
+        run: bash tests/validate_repo_rules.sh
+
+      - name: Validate XSL tooling
+        run: bash tests/validate_xsl_tooling.sh
