@@ -15,8 +15,8 @@
                       <th scope="col">Service</th>
                       <th scope="col">Product</th>
                       <th scope="col">Version</th>
-                      <th scope="col">HTTP-Title</th>
-                      <th scope="col">SSL Certificate</th>
+                      <th scope="col" class="web-http-column">HTTP</th>
+                      <th scope="col" class="web-cert-column">SSL Certificate</th>
                       <th scope="col">URL</th>
                     </tr>
                   </thead>
@@ -25,6 +25,75 @@
                       <xsl:for-each select="ports/port[(@protocol='tcp') and (state/@state='open') and (starts-with(service/@name, 'http') or script[@id='ssl-cert'])]">
                         <xsl:variable name="hostname" select="../../hostnames/hostname/@name"/>
                         <xsl:variable name="ip" select="../../address[not(@addrtype='mac')][1]/@addr"/>
+                        <xsl:variable name="http-headers-output" select="script[@id='http-headers']/@output"/>
+                        <xsl:variable name="http-fingerprint-output" select="script[@id='fingerprint-strings']/elem[@key='GetRequest']"/>
+                        <xsl:variable name="http-title">
+                          <xsl:choose>
+                            <xsl:when test="count(script[@id='http-title']/elem[@key='title']) &gt; 0">
+                              <xsl:value-of select="script[@id='http-title']/elem[@key='title']"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:value-of select="script[@id='http-title']/@output"/>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-location">
+                          <xsl:choose>
+                            <xsl:when test="count(script[@id='http-title']/elem[@key='redirect_url']) &gt; 0">
+                              <xsl:value-of select="script[@id='http-title']/elem[@key='redirect_url']"/>
+                            </xsl:when>
+                            <xsl:when test="contains($http-headers-output, 'Location:')">
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-headers-output"/>
+                                <xsl:with-param name="label" select="'Location'"/>
+                              </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-fingerprint-output"/>
+                                <xsl:with-param name="label" select="'Location'"/>
+                              </xsl:call-template>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-server">
+                          <xsl:choose>
+                            <xsl:when test="count(script[@id='http-server-header']/elem) &gt; 0">
+                              <xsl:value-of select="script[@id='http-server-header']/elem[1]"/>
+                            </xsl:when>
+                            <xsl:when test="string(script[@id='http-server-header']/@output) != ''">
+                              <xsl:value-of select="script[@id='http-server-header']/@output"/>
+                            </xsl:when>
+                            <xsl:when test="contains($http-headers-output, 'Server:')">
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-headers-output"/>
+                                <xsl:with-param name="label" select="'Server'"/>
+                              </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-fingerprint-output"/>
+                                <xsl:with-param name="label" select="'Server'"/>
+                              </xsl:call-template>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-powered-by">
+                          <xsl:choose>
+                            <xsl:when test="contains($http-headers-output, 'X-Powered-By:')">
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-headers-output"/>
+                                <xsl:with-param name="label" select="'X-Powered-By'"/>
+                              </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-fingerprint-output"/>
+                                <xsl:with-param name="label" select="'X-Powered-By'"/>
+                              </xsl:call-template>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
                         <tr>
                           <td>
                             <xsl:call-template name="render-hostname-or-na">
@@ -48,31 +117,27 @@
                           <td>
                             <xsl:value-of select="service/@version"/>
                           </td>
-                          <td>
-                            <div class="http-title-block">
-                              <xsl:choose>
-                                <xsl:when test="count(script[@id='http-title']/elem[@key='title']) &gt; 0">
-                                  <i class="http-title-value">
-                                    <xsl:attribute name="title">
-                                      <xsl:value-of select="script[@id='http-title']/elem[@key='title']"/>
-                                    </xsl:attribute>
-                                    <xsl:value-of select="script[@id='http-title']/elem[@key='title']"/>
-                                  </i>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                  <xsl:if test="count(script[@id='http-title']/@output) &gt; 0">
-                                    <i class="http-title-value">
-                                      <xsl:attribute name="title">
-                                        <xsl:value-of select="script[@id='http-title']/@output"/>
-                                      </xsl:attribute>
-                                      <xsl:value-of select="script[@id='http-title']/@output"/>
-                                    </i>
-                                  </xsl:if>
-                                </xsl:otherwise>
-                              </xsl:choose>
+                          <td class="web-http-column">
+                            <div class="http-details-block">
+                              <xsl:call-template name="render-http-row">
+                                <xsl:with-param name="label" select="'Title'"/>
+                                <xsl:with-param name="value" select="$http-title"/>
+                              </xsl:call-template>
+                              <xsl:call-template name="render-http-row">
+                                <xsl:with-param name="label" select="'Location'"/>
+                                <xsl:with-param name="value" select="$http-location"/>
+                              </xsl:call-template>
+                              <xsl:call-template name="render-http-row">
+                                <xsl:with-param name="label" select="'Server'"/>
+                                <xsl:with-param name="value" select="$http-server"/>
+                              </xsl:call-template>
+                              <xsl:call-template name="render-http-row">
+                                <xsl:with-param name="label" select="'Powered-By'"/>
+                                <xsl:with-param name="value" select="$http-powered-by"/>
+                              </xsl:call-template>
                             </div>
                           </td>
-                          <td>
+                          <td class="web-cert-column">
                             <div class="certificate-block">
                               <xsl:call-template name="render-certificate-row">
                                 <xsl:with-param name="label" select="'Subject'"/>

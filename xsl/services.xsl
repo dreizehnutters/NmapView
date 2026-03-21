@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:template name="render-open-services">
           <hr class="my-4"/>
-          <h2 id="openservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Service Overview</h2>
+          <h2 id="openservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Open Services</h2>
           <xsl:choose>
             <xsl:when test="count(/nmaprun/host/ports/port[state/@state='open']) &gt; 0">
               <div class="table-responsive">
@@ -61,7 +61,7 @@
                             </xsl:call-template>
                           </td>
                           <td>
-                            <div class="vulners-chunks" data-raw="{.//script[@id='vulners']}"/>
+                            <div class="vulners-chunks" data-raw="{.//script[@id='vulners']/@output}"/>
                           </td>
                         </tr>
                       </xsl:for-each>

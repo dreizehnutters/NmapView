@@ -60,9 +60,12 @@
 
   <xsl:template name="render-nvd-cpe-link">
     <xsl:param name="cpe"/>
-    <a>
+    <a class="cpe-copy" title="Click to copy CPE">
       <xsl:attribute name="href">
         <xsl:text>https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=</xsl:text>
+        <xsl:value-of select="$cpe"/>
+      </xsl:attribute>
+      <xsl:attribute name="data-cpe">
         <xsl:value-of select="$cpe"/>
       </xsl:attribute>
       <xsl:value-of select="$cpe"/>
@@ -71,7 +74,12 @@
 
   <xsl:template name="render-cpe-text">
     <xsl:param name="cpe"/>
-    <xsl:value-of select="$cpe"/>
+    <span class="cpe-copy" title="Click to copy CPE">
+      <xsl:attribute name="data-cpe">
+        <xsl:value-of select="$cpe"/>
+      </xsl:attribute>
+      <xsl:value-of select="$cpe"/>
+    </span>
   </xsl:template>
 
   <xsl:template name="render-certificate-row">
@@ -90,6 +98,34 @@
             <xsl:text> – </xsl:text>
             <xsl:value-of select="$secondary"/>
           </xsl:if>
+        </i>
+      </div>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="extract-header-value">
+    <xsl:param name="text"/>
+    <xsl:param name="label"/>
+    <xsl:variable name="needle" select="concat($label, ':')"/>
+    <xsl:choose>
+      <xsl:when test="contains($text, $needle)">
+        <xsl:value-of select="normalize-space(substring-before(substring-after($text, $needle), '&#xA;'))"/>
+      </xsl:when>
+      <xsl:otherwise/>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="render-http-row">
+    <xsl:param name="label"/>
+    <xsl:param name="value"/>
+    <xsl:if test="string($value) != ''">
+      <div class="certificate-row">
+        <span class="certificate-label">
+          <xsl:value-of select="$label"/>
+          <xsl:text>: </xsl:text>
+        </span>
+        <i class="certificate-value">
+          <xsl:value-of select="$value"/>
         </i>
       </div>
     </xsl:if>

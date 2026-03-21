@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:template name="render-service-inventory">
           <hr class="my-4"/>
-          <h2 id="serviceinventory" class="fs-4 mt-5 mb-3 bg-light p-3 rounded d-flex justify-content-between align-items-center">Service Inventory<small class="text-muted ms-auto"><em>Note: Nmap's service detection might produce false positives.</em></small></h2>
+          <h2 id="serviceinventory" class="fs-4 mt-5 mb-3 bg-light p-3 rounded d-flex justify-content-between align-items-center">Service Summary<small class="text-muted ms-auto"><em>Note: Nmap's service detection might produce false positives.</em></small></h2>
           <xsl:choose>
             <xsl:when test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
               <div class="table-responsive">
@@ -11,7 +11,7 @@
                     <tr>
                       <th scope="col">Service Name</th>
                       <th scope="col">Ports</th>
-                      <th scope="col">#</th>
+                      <th scope="col">Count</th>
                       <th scope="col">Hosts</th>
                     </tr>
                   </thead>

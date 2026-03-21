@@ -107,7 +107,7 @@
           .certificate-block {
             display: grid;
             gap: 0.2rem;
-            max-width: 26rem;
+            max-width: 20rem;
           }
 
           .certificate-row {
@@ -134,6 +134,20 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+          }
+
+          .web-http-column {
+            min-width: 22rem;
+          }
+
+          .web-cert-column {
+            min-width: 16rem;
+          }
+
+          .http-details-block {
+            display: grid;
+            gap: 0.2rem;
+            max-width: 26rem;
           }
 
           .summary-command {
@@ -175,6 +189,34 @@
             color: #212529;
           }
 
+          .vulners-summary {
+            cursor: pointer;
+            color: #495057;
+            font-weight: 600;
+          }
+
+          .vulners-summary::-webkit-details-marker {
+            display: none;
+          }
+
+          .vulners-list {
+            margin-top: 0.5rem;
+          }
+
+          .host-vuln-badge {
+            min-width: 2.5rem;
+            display: inline-flex;
+            justify-content: center;
+          }
+
+          .cpe-copy {
+            cursor: copy;
+          }
+
+          .cpe-copy.copied {
+            color: #0a58ca !important;
+          }
+
           .keyword-highlight-controls {
             display: flex;
             flex-wrap: wrap;
@@ -213,6 +255,16 @@
             border-bottom: 1px solid #dee2e6;
           }
 
+          #summary,
+          #scannedhosts,
+          #openservices,
+          #serviceinventory,
+          #webservices,
+          #visualizations,
+          #onlinehosts {
+            scroll-margin-top: 5.5rem;
+          }
+
           .navbar-version-link {
             display: flex;
             align-items: center;
@@ -244,6 +296,7 @@
               justify-content: space-between;
             }
           }
+
         </style>
         <title>NmapView Report - Interactive Nmap Scan Summary</title>
       </head>
@@ -263,10 +316,10 @@
                   <a class="nav-link" href="#scannedhosts">Host Overview</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#openservices">Service Overview</a>
+                  <a class="nav-link" href="#openservices">Open Services</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#serviceinventory">Service Inventory</a>
+                  <a class="nav-link" href="#serviceinventory">Service Summary</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#webservices">Web &amp; TLS Services</a>
@@ -280,7 +333,7 @@
               </ul>
               <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                  <a class="nav-link navbar-version-link" href="https://github.com/dreizehnutters/NmapView">NmapView v3.0.1</a>
+                  <a class="nav-link navbar-version-link" href="https://github.com/dreizehnutters/NmapView">NmapView v3.2</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="https://github.com/dreizehnutters/NmapView">
@@ -428,8 +481,8 @@
         <hr class="my-3"/>
         <footer class="footer bg-light py-3">
           <div class="container">
-            <p class="text-muted mb-0">
-              Generated with <a href="https://github.com/dreizehnutters/NmapView">NmapView</a>.</p>
+            <p class="text-muted mb-0 text-center">
+              Generated with <a href="https://github.com/dreizehnutters/NmapView">NmapView</a></p>
           </div>
         </footer>
   </xsl:template>
@@ -437,6 +490,74 @@
         <script><![CDATA[
           function appendText(parent, text) {
             parent.appendChild(document.createTextNode(text));
+          }
+
+          function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+          }
+
+          function getDynamicTileSize(columns, rows, options = {}) {
+            const maxWidth = options.maxWidth || Math.max(window.innerWidth - 220, 720);
+            const maxHeight = options.maxHeight || Math.max(window.innerHeight * 0.7, 520);
+            const minSize = options.minSize || 12;
+            const maxSize = options.maxSize || 36;
+
+            if (!columns || !rows) {
+              return maxSize;
+            }
+
+            const widthLimited = Math.floor(maxWidth / columns);
+            const heightLimited = Math.floor(maxHeight / rows);
+            return clamp(Math.min(widthLimited, heightLimited), minSize, maxSize);
+          }
+
+          function truncateLabel(text, maxLength = 42) {
+            if (!text || text.length <= maxLength) {
+              return text;
+            }
+            return `${text.slice(0, maxLength - 1)}…`;
+          }
+
+          async function copyTextToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+              await navigator.clipboard.writeText(text);
+              return;
+            }
+
+            const input = document.createElement("textarea");
+            input.value = text;
+            input.setAttribute("readonly", "");
+            input.style.position = "absolute";
+            input.style.left = "-9999px";
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand("copy");
+            document.body.removeChild(input);
+          }
+
+          function initializeCpeCopy() {
+            document.querySelectorAll(".cpe-copy").forEach(element => {
+              element.addEventListener("click", async () => {
+                const cpe = element.getAttribute("data-cpe");
+                if (!cpe) return;
+
+                try {
+                  await copyTextToClipboard(cpe);
+                  const previousTitle = element.getAttribute("title") || "";
+                  element.setAttribute("title", "Copied");
+                  element.classList.add("copied");
+                  window.setTimeout(() => {
+                    element.setAttribute("title", previousTitle || "Click to copy CPE");
+                    element.classList.remove("copied");
+                  }, 1200);
+                } catch (error) {
+                  element.setAttribute("title", "Copy failed");
+                  window.setTimeout(() => {
+                    element.setAttribute("title", "Click to copy CPE");
+                  }, 1200);
+                }
+              });
+            });
           }
 
           function renderTopServices(sortedServices) {
@@ -467,40 +588,87 @@
               }
 
               const cleaned = raw.replace(/\r\n/g, "\n").trim();
-              const chunks = cleaned.split(/\n\s*\n/).slice(0, 5);
-              const fragment = document.createDocumentFragment();
-              let hasLinks = false;
+              const lines = cleaned
+                .split("\n")
+                .map(line => line.trim())
+                .filter(Boolean);
+              const entries = [];
 
-              chunks.forEach(chunk => {
-                const lines = chunk.trim().split(/\n+/).map(line => line.trim());
-                if (lines.length < 4) return;
+              lines.forEach(line => {
+                if (!line.includes("\t")) {
+                  return;
+                }
 
-                const id = lines[0];
-                const type = lines[2];
-                const score = lines[3];
-                if (!id || !type) return;
+                const parts = line.split("\t").map(part => part.trim()).filter(Boolean);
+                if (parts.length < 3) {
+                  return;
+                }
 
-                const wrapper = document.createElement("div");
-                const label = document.createElement("strong");
-                const link = document.createElement("a");
+                const [id, score, url] = parts;
+                if (!id || !score || !url) {
+                  return;
+                }
 
-                wrapper.style.marginBottom = "0.5em";
-                label.textContent = `CVSS: ${score}`;
-                link.href = `https://vulners.com/${type}/${id}`;
-                link.target = "_blank";
-                link.rel = "noopener noreferrer";
-                link.textContent = id;
+                const urlMatch = url.match(/^https:\/\/vulners\.com\/([^/]+)\/(.+)$/);
+                if (!urlMatch) {
+                  return;
+                }
 
-                wrapper.appendChild(label);
-                appendText(wrapper, " - ");
-                wrapper.appendChild(link);
-                fragment.appendChild(wrapper);
-                hasLinks = true;
+                entries.push({
+                  id,
+                  score: Number(score),
+                  scoreText: score,
+                  href: url
+                });
               });
 
               container.textContent = "";
-              if (hasLinks) {
-                container.appendChild(fragment);
+              if (entries.length > 0) {
+                entries.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id, undefined, {
+                  numeric: true,
+                  sensitivity: "base"
+                }));
+                const visibleEntries = entries.slice(0, 5);
+
+                const details = document.createElement("details");
+                const summary = document.createElement("summary");
+                const list = document.createElement("div");
+
+                details.className = "vulners-details";
+                summary.className = "vulners-summary";
+                list.className = "vulners-list";
+
+                const findingLabel = entries.length === 1 ? "finding" : "findings";
+                summary.textContent = `${entries.length} ${findingLabel}, top CVSS ${entries[0].scoreText}`;
+
+                visibleEntries.forEach(entry => {
+                  const wrapper = document.createElement("div");
+                  const label = document.createElement("strong");
+                  const link = document.createElement("a");
+
+                  wrapper.style.marginBottom = "0.5em";
+                  label.textContent = `CVSS: ${entry.scoreText}`;
+                  link.href = entry.href;
+                  link.target = "_blank";
+                  link.rel = "noopener noreferrer";
+                  link.textContent = entry.id;
+
+                  wrapper.appendChild(label);
+                  appendText(wrapper, " - ");
+                  wrapper.appendChild(link);
+                  list.appendChild(wrapper);
+                });
+
+                if (entries.length > visibleEntries.length) {
+                  const more = document.createElement("div");
+                  more.style.color = "#6c757d";
+                  more.textContent = `Showing top ${visibleEntries.length} of ${entries.length} findings`;
+                  list.appendChild(more);
+                }
+
+                details.appendChild(summary);
+                details.appendChild(list);
+                container.appendChild(details);
                 return;
               }
 
@@ -874,6 +1042,7 @@
               initializeNavbarToggle();
               initializeHostToggle();
               initializeKeywordHighlighter();
+              initializeCpeCopy();
               initializeDataTable('#table-services');
               initializeDataTable('#table-overview');
               initializeDataTable('#web-services');
@@ -1010,14 +1179,22 @@
 
             const portHostMatrix = document.getElementById("portHostMatrix");
             if (portHostMatrix) {
-              const z = hosts.map(host =>
+              const sortedHosts = [...hosts].sort((a, b) => a.localeCompare(b, undefined, {
+                numeric: true,
+                sensitivity: "base"
+              }));
+              const tileSize = getDynamicTileSize(ports.length, sortedHosts.length, {
+                minSize: 14,
+                maxSize: 36
+              });
+              const z = sortedHosts.map(host =>
                 ports.map(port => openServices[host][port] ? 1 : 0)
               );
 
-	              const zText = hosts.map(host =>
+	              const zText = sortedHosts.map(host =>
 	                ports.map(port => openServices[host][port] || "")
 	              );
-	              const hoverData = hosts.map(host =>
+	              const hoverData = sortedHosts.map(host =>
 	                ports.map(port => [
 	                  host,
 	                  String(port),
@@ -1028,19 +1205,24 @@
 	              const data = [{
 	                z: z,
 	                x: ports.map(String),
-	                y: hosts,
+	                y: sortedHosts,
 	                text: zText,
 	                customdata: hoverData,
 	                type: "heatmap",
-	                colorscale: [[0, "white"], [1, "#2ca02c"]],
+	                colorscale: [[0, "#f3f4f6"], [1, "#2ca02c"]],
 	                showscale: false,
+	                xgap: 2,
+	                ygap: 2,
 	                hoverongaps: false,
 	                hovertemplate: "Host: %{customdata[0]}<br>Port: %{customdata[1]}<br>Service: %{customdata[2]}<extra></extra>",
 	                text: zText
 	              }];
 
-              const dynamicHeight = Math.max(600, hosts.length * 20);
+              const dynamicHeight = Math.max(600, sortedHosts.length * tileSize + 160);
+              const dynamicWidth = Math.max(900, ports.length * tileSize + 180);
               portHostMatrix.style.height = dynamicHeight + "px";
+              portHostMatrix.style.width = dynamicWidth + "px";
+              portHostMatrix.style.margin = "0 auto";
 
 	            const layout = {
 	              title: "",
@@ -1067,7 +1249,7 @@
                 },
                 margin: { t: 80, l: 120, r: 50, b: 100 },
                 dragmode: false,
-                width: window.innerWidth * 0.95,
+                width: dynamicWidth,
                 height: dynamicHeight
               };
 
@@ -1099,6 +1281,10 @@
 	            const sortedServices = sortedIndices.map(index => services[index]);
 	            const sortedTotals = sortedIndices.map(index => serviceTotals[index]);
 	            const sortedZ = sortedIndices.map(index => z[index]);
+	            const heatmapTileSize = getDynamicTileSize(ports.length, sortedServices.length, {
+	              minSize: 14,
+	              maxSize: 36
+	            });
 	            const zText = sortedZ.map(row => row.map(value => value > 0 ? value.toString() : ""));
 	            const hoverData = sortedServices.map((service, index) =>
 	              ports.map(port => [String(port), service, String(sortedTotals[index])])
@@ -1120,22 +1306,11 @@
 	              textfont: { color: "black", size: 12 }
 	            }];
 
-            const dynamicHeight = Math.max(600, sortedServices.length * 20);
+            const dynamicHeight = Math.max(600, sortedServices.length * heatmapTileSize + 160);
+            const dynamicWidth = Math.max(900, ports.length * heatmapTileSize + 260);
             protocolPortMatrix.style.height = dynamicHeight + "px";
-
-            const horizontalLines = yLabels.map((_, index) => ({
-              type: "line",
-              xref: "paper",
-              x0: 0,
-              x1: 1,
-              yref: "y",
-              y0: index + 0.5,
-              y1: index + 0.5,
-              line: {
-                color: "rgba(0,0,0,0.2)",
-                width: 1
-              }
-            }));
+            protocolPortMatrix.style.width = dynamicWidth + "px";
+            protocolPortMatrix.style.margin = "0 auto";
 
             const layout = {
               title: "",
@@ -1151,10 +1326,9 @@
                 automargin: true
               },
               margin: { t: 80, l: 200, r: 50, b: 100 },
-              width: window.innerWidth * 0.95,
+              width: dynamicWidth,
               height: dynamicHeight,
-              dragmode: false,
-              shapes: horizontalLines
+              dragmode: false
 	            };
 
 	            Plotly.newPlot("protocolPortMatrix", data, layout, matrixConfig);
@@ -1164,35 +1338,94 @@
 	              const hostOpenPortCounts = hosts
 	                .map(host => ({
 	                  host,
-	                  count: Object.keys(openServices[host]).length
+	                  tcp: Object.entries(openServices[host]).filter(([, service]) => service.startsWith("tcp:")).length,
+	                  udp: Object.entries(openServices[host]).filter(([, service]) => service.startsWith("udp:")).length
 	                }))
-	                .sort((a, b) => b.count - a.count || a.host.localeCompare(b.host));
+	                .map(entry => ({
+                    ...entry,
+                    total: entry.tcp + entry.udp
+                  }))
+	                .sort((a, b) => b.total - a.total || a.host.localeCompare(b.host));
+                const truncatedHosts = hostOpenPortCounts.map(entry => truncateLabel(entry.host));
 
 	              const data = [{
 	                type: "bar",
 	                orientation: "h",
-	                y: hostOpenPortCounts.map(entry => entry.host),
-	                x: hostOpenPortCounts.map(entry => entry.count),
-	                text: hostOpenPortCounts.map(entry => String(entry.count)),
-	                textposition: "auto",
+	                y: truncatedHosts,
+	                x: hostOpenPortCounts.map(entry => entry.udp),
+	                text: hostOpenPortCounts.map(entry => entry.udp > 0 ? `UDP: ${entry.udp}` : ""),
+	                textposition: "inside",
+                  cliponaxis: false,
+                  customdata: hostOpenPortCounts.map(entry => [entry.host, String(entry.tcp), String(entry.udp), String(entry.total)]),
 	                marker: {
-	                  color: "#0d6efd"
+	                  color: "#f59f00",
+                    line: {
+	                      color: "#d17d00",
+                      width: 1
+                    }
 	                },
-	                hovertemplate: "%{y}<br>Open ports: %{x}<extra></extra>"
+                  textfont: {
+                    color: "#ffffff"
+                  },
+	                hovertemplate: "%{customdata[0]}<br>TCP: %{customdata[1]}<br>UDP: %{customdata[2]}<br>Total: %{customdata[3]}<extra></extra>",
+                  hoverlabel: {
+                    bgcolor: "#6c757d",
+                    bordercolor: "#495057",
+                    font: {
+                      color: "#ffffff"
+                    }
+                  }
+	              }, {
+	                type: "bar",
+	                orientation: "h",
+	                y: truncatedHosts,
+	                x: hostOpenPortCounts.map(entry => entry.tcp),
+	                text: hostOpenPortCounts.map(entry => entry.tcp > 0 ? `TCP: ${entry.tcp}` : ""),
+	                textposition: "inside",
+                  insidetextanchor: "end",
+                  cliponaxis: false,
+                  customdata: hostOpenPortCounts.map(entry => [entry.host, String(entry.tcp), String(entry.udp), String(entry.total)]),
+	                marker: {
+	                  color: "#0d6efd",
+                    line: {
+	                      color: "#0a58ca",
+                      width: 1
+                    }
+	                },
+                  textfont: {
+                    color: "#ffffff"
+                  },
+	                hovertemplate: "%{customdata[0]}<br>TCP: %{customdata[1]}<br>UDP: %{customdata[2]}<br>Total: %{customdata[3]}<extra></extra>",
+                  hoverlabel: {
+                    bgcolor: "#6c757d",
+                    bordercolor: "#495057",
+                    font: {
+                      color: "#ffffff"
+                    }
+                  }
 	              }];
 
 	              const dynamicHeight = Math.max(320, hostOpenPortCounts.length * 28);
+                const dynamicWidth = Math.max(900, Math.min(window.innerWidth - 40, 1400));
 	              openPortsPerHostChart.style.height = dynamicHeight + "px";
+                openPortsPerHostChart.style.width = dynamicWidth + "px";
+                openPortsPerHostChart.style.margin = "0 auto";
 
 	              const layout = {
 	                title: "",
-	                margin: { t: 20, l: 180, r: 30, b: 50 },
-	                width: window.innerWidth * 0.95,
+	                margin: { t: 20, l: 220, r: 60, b: 50 },
+	                width: dynamicWidth,
 	                height: dynamicHeight,
 	                xaxis: {
 	                  title: { text: "Open ports" },
 	                  automargin: true,
-	                  fixedrange: true
+	                  fixedrange: true,
+                    showgrid: true,
+                    gridcolor: "rgba(0,0,0,0.08)",
+                    gridwidth: 1,
+                    zeroline: false,
+                    rangemode: "tozero",
+                    dtick: 1
 	                },
 	                yaxis: {
 	                  title: { text: "Host" },
@@ -1200,8 +1433,10 @@
 	                  fixedrange: true,
 	                  autorange: "reversed"
 	                },
+	                barmode: "stack",
 	                showlegend: false,
-	                dragmode: false
+	                dragmode: false,
+                  bargap: 0.2
 	              };
 
 	              Plotly.newPlot("openPortsPerHostChart", data, layout, matrixConfig);

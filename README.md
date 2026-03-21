@@ -39,8 +39,8 @@ nmap -sV -O --script="default,vulners,http-headers,ssl-cert,banner" -oX nmap-sca
 NmapView turns raw Nmap XML into a report you can actually work with during an assessment.
 
 - Host Overview for quick asset triage across host state, OS guesses, vendors, hostnames, and open TCP/UDP port counts
-- Service Overview for cross-host service review with versions, extra info, CPEs, and Vulners-linked exploit context
-- Service Inventory to spot repeated exposure patterns by grouping services by name, port, and host
+- Open Services for cross-host service review with versions, extra info, CPEs, and Vulners-linked exploit context
+- Service Summary to spot repeated exposure patterns by grouping services by name, port, and host
 - Web & TLS Services with clickable URLs, HTTP titles, redirects, and certificate subject, issuer, expiry, and signature details
 - Visualizations including service distribution, open ports per host, host-port matrix, and service-port heatmap
 - Host Details with per-host ports, scripts, service fingerprints, and OS detection output

@@ -15,12 +15,14 @@
                       <th scope="col">OS</th>
                       <th scope="col">Address</th>
                       <th scope="col">Hostname</th>
+                      <th scope="col">Pot. Issues</th>
                       <th scope="col">Open TCP Ports</th>
                       <th scope="col">Open UDP Ports</th>
                     </tr>
                   </thead>
                   <tbody>
                     <xsl:for-each select="/nmaprun/host">
+                      <xsl:variable name="vuln-count" select="count(.//script[@id='vulners']//table[elem[@key='id']])"/>
                       <tr>
                         <td>
                           <span class="badge bg-warning">
@@ -47,6 +49,22 @@
                         </td>
                         <td>
                           <xsl:value-of select="hostnames/hostname/@name"/>
+                        </td>
+                        <td>
+                          <xsl:choose>
+                            <xsl:when test="$vuln-count &gt; 0">
+                              <span class="badge rounded-pill text-bg-warning host-vuln-badge">
+                                <xsl:attribute name="title">
+                                  <xsl:value-of select="$vuln-count"/>
+                                  <xsl:text> Vulners entries across open services</xsl:text>
+                                </xsl:attribute>
+                                <xsl:value-of select="$vuln-count"/>
+                              </span>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <span class="badge rounded-pill text-bg-secondary host-vuln-badge">0</span>
+                            </xsl:otherwise>
+                          </xsl:choose>
                         </td>
                         <td>
                           <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='tcp'])"/>
