@@ -2,28 +2,49 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:template name="render-scanned-hosts">
           <h2 id="scannedhosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Host Overview</h2>
+          <xsl:variable name="recorded-hosts" select="count(/nmaprun/host)"/>
+          <xsl:variable name="runstats-total-hosts" select="number(/nmaprun/runstats/hosts/@total)"/>
           <xsl:choose>
-            <xsl:when test="count(/nmaprun/host) &gt; 0">
-              <xsl:call-template name="render-service-distribution"/>
-              <div class="table-responsive">
+	            <xsl:when test="$recorded-hosts &gt; 0">
+	              <xsl:call-template name="render-service-distribution"/>
+	              <div class="table-responsive">
                 <table id="table-overview" class="table table-striped table-hover align-middle" role="grid">
                   <thead class="table-light">
-                    <tr>
-                      <th scope="col">State</th>
-                      <th scope="col">Mac</th>
-                      <th scope="col">Vendor</th>
-                      <th scope="col">OS</th>
-                      <th scope="col">Address</th>
-                      <th scope="col">Hostname</th>
-                      <th scope="col">Pot. Issues</th>
-                      <th scope="col">Open TCP Ports</th>
-                      <th scope="col">Open UDP Ports</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <xsl:for-each select="/nmaprun/host">
-                      <xsl:variable name="vuln-count" select="count(.//script[@id='vulners']//table[elem[@key='id']])"/>
-                      <tr>
+	                    <tr>
+	                      <th scope="col">State</th>
+	                      <th scope="col">Mac</th>
+	                      <th scope="col">Vendor</th>
+	                      <th scope="col">OS</th>
+	                      <th scope="col">Address</th>
+	                      <th scope="col">Hostname</th>
+	                      <th scope="col">
+	                        <span title="Estimated by Nmap from TCP timestamps; useful as context, not an exact reboot time.">Uptime (est.)</span>
+	                      </th>
+	                      <th scope="col">
+	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Distance (hops)</span>
+	                      </th>
+	                      <th scope="col">Pot. Issues</th>
+	                      <th scope="col">Open TCP Ports</th>
+	                      <th scope="col">Open UDP Ports</th>
+	                    </tr>
+	                  </thead>
+	                  <tbody>
+	                    <xsl:for-each select="/nmaprun/host">
+	                      <xsl:variable name="vuln-count" select="count(.//script[@id='vulners']//table[elem[@key='id']])"/>
+	                      <xsl:variable name="uptime-seconds-raw" select="uptime/@seconds"/>
+	                      <xsl:variable name="uptime-seconds" select="number($uptime-seconds-raw)"/>
+	                      <xsl:variable name="uptime-days" select="floor($uptime-seconds div 86400)"/>
+	                      <xsl:variable name="uptime-hours" select="floor(($uptime-seconds mod 86400) div 3600)"/>
+	                      <xsl:variable name="uptime-minutes" select="floor(($uptime-seconds mod 3600) div 60)"/>
+	                      <xsl:variable name="is-up" select="status/@state='up'"/>
+	                      <xsl:variable name="hostname">
+                          <xsl:call-template name="resolve-effective-hostname"/>
+                        </xsl:variable>
+	                      <xsl:variable name="mac-address" select="address[@addrtype='mac']/@addr"/>
+	                      <xsl:variable name="mac-vendor" select="address[@addrtype='mac']/@vendor"/>
+	                      <xsl:variable name="os-name" select="os/osmatch[1]/@name"/>
+	                      <xsl:variable name="has-uptime-estimate" select="status/@state='up' and (string(uptime/@lastboot) != '' or $uptime-seconds &gt; 0)"/>
+	                      <tr>
                         <td>
                           <span class="badge bg-warning">
                             <xsl:if test="status/@state='up'">
@@ -33,25 +54,124 @@
                           </span>
                         </td>
                         <td>
-                          <xsl:value-of select="address[@addrtype='mac']/@addr"/>
-                        </td>
-                        <td>
-                          <xsl:value-of select="address[@addrtype='mac']/@vendor"/>
-                        </td>
-                        <td>
-                          <xsl:value-of select="os/osmatch[1]/@name"/>
-                        </td>
-                        <td>
-                          <xsl:variable name="ip" select="address[not(@addrtype='mac')][1]/@addr"/>
-                          <xsl:call-template name="render-onlinehosts-link">
-                            <xsl:with-param name="address" select="$ip"/>
-                          </xsl:call-template>
-                        </td>
-                        <td>
-                          <xsl:value-of select="hostnames/hostname/@name"/>
+                          <xsl:choose>
+                            <xsl:when test="string($mac-address) != ''">
+                              <xsl:value-of select="$mac-address"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <span class="text-muted">N/A</span>
+                            </xsl:otherwise>
+                          </xsl:choose>
                         </td>
                         <td>
                           <xsl:choose>
+                            <xsl:when test="string($mac-vendor) != ''">
+                              <xsl:value-of select="$mac-vendor"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <span class="text-muted">N/A</span>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </td>
+                        <td>
+                          <xsl:choose>
+                            <xsl:when test="string($os-name) != ''">
+                              <xsl:value-of select="$os-name"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <span class="text-muted">N/A</span>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </td>
+                        <td>
+                          <xsl:variable name="ip" select="address[not(@addrtype='mac')][1]/@addr"/>
+                          <xsl:choose>
+                            <xsl:when test="$is-up">
+                              <xsl:call-template name="render-onlinehosts-link">
+                                <xsl:with-param name="address" select="$ip"/>
+                              </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:value-of select="$ip"/>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </td>
+	                        <td>
+	                          <xsl:choose>
+	                            <xsl:when test="string(normalize-space($hostname)) != ''">
+	                              <xsl:value-of select="$hostname"/>
+	                            </xsl:when>
+	                            <xsl:otherwise>
+	                              <span class="text-muted">N/A</span>
+	                            </xsl:otherwise>
+	                          </xsl:choose>
+	                        </td>
+	                        <td>
+	                          <xsl:choose>
+	                            <xsl:when test="$has-uptime-estimate">
+	                              <span>
+	                                <xsl:attribute name="title">
+	                                  <xsl:text>Estimated by Nmap from TCP timestamps</xsl:text>
+	                                  <xsl:if test="string(uptime/@lastboot) != ''">
+	                                    <xsl:text>. Last boot guess: </xsl:text>
+	                                    <xsl:value-of select="uptime/@lastboot"/>
+	                                  </xsl:if>
+	                                  <xsl:if test="string($uptime-seconds-raw) != ''">
+	                                    <xsl:text>. Raw seconds: </xsl:text>
+	                                    <xsl:value-of select="$uptime-seconds-raw"/>
+	                                  </xsl:if>
+	                                </xsl:attribute>
+	                                <xsl:text>~</xsl:text>
+	                                <xsl:choose>
+	                                  <xsl:when test="$uptime-days &gt; 0">
+	                                    <xsl:value-of select="$uptime-days"/>
+	                                    <xsl:text>d</xsl:text>
+	                                    <xsl:if test="$uptime-hours &gt; 0">
+	                                      <xsl:text> </xsl:text>
+	                                      <xsl:value-of select="$uptime-hours"/>
+	                                      <xsl:text>h</xsl:text>
+	                                    </xsl:if>
+	                                  </xsl:when>
+	                                  <xsl:when test="$uptime-hours &gt; 0">
+	                                    <xsl:value-of select="$uptime-hours"/>
+	                                    <xsl:text>h</xsl:text>
+	                                    <xsl:if test="$uptime-minutes &gt; 0">
+	                                      <xsl:text> </xsl:text>
+	                                      <xsl:value-of select="$uptime-minutes"/>
+	                                      <xsl:text>m</xsl:text>
+	                                    </xsl:if>
+	                                  </xsl:when>
+	                                  <xsl:when test="$uptime-minutes &gt; 0">
+	                                    <xsl:value-of select="$uptime-minutes"/>
+	                                    <xsl:text>m</xsl:text>
+	                                  </xsl:when>
+	                                  <xsl:otherwise>&lt;1m</xsl:otherwise>
+	                                </xsl:choose>
+	                              </span>
+	                            </xsl:when>
+	                            <xsl:otherwise>
+	                              <span class="text-muted">N/A</span>
+	                            </xsl:otherwise>
+	                          </xsl:choose>
+	                        </td>
+	                        <td>
+	                          <xsl:choose>
+	                            <xsl:when test="status/@state='up' and string(distance/@value) != ''">
+	                              <span>
+	                                <xsl:attribute name="title">Approximate hop distance from the scanner</xsl:attribute>
+	                                <xsl:value-of select="distance/@value"/>
+	                              </span>
+	                            </xsl:when>
+	                            <xsl:otherwise>
+	                              <span class="text-muted">N/A</span>
+	                            </xsl:otherwise>
+	                          </xsl:choose>
+	                        </td>
+	                        <td>
+	                          <xsl:choose>
+                            <xsl:when test="not($is-up)">
+                              <span class="text-muted">N/A</span>
+                            </xsl:when>
                             <xsl:when test="$vuln-count &gt; 0">
                               <span class="badge rounded-pill text-bg-warning host-vuln-badge">
                                 <xsl:attribute name="title">
@@ -67,14 +187,112 @@
                           </xsl:choose>
                         </td>
                         <td>
-                          <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='tcp'])"/>
+                          <xsl:choose>
+                            <xsl:when test="$is-up">
+                              <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='tcp'])"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <span class="text-muted">N/A</span>
+                            </xsl:otherwise>
+                          </xsl:choose>
                         </td>
                         <td>
-                          <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='udp'])"/>
+                          <xsl:choose>
+                            <xsl:when test="$is-up">
+                              <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='udp'])"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <span class="text-muted">N/A</span>
+                            </xsl:otherwise>
+                          </xsl:choose>
                         </td>
                       </tr>
                     </xsl:for-each>
                   </tbody>
+                </table>
+              </div>
+            </xsl:when>
+            <xsl:when test="$runstats-total-hosts = 1">
+              <xsl:variable name="scan-target-raw">
+                <xsl:call-template name="extract-last-token">
+                  <xsl:with-param name="text" select="/nmaprun/@args"/>
+                </xsl:call-template>
+              </xsl:variable>
+              <xsl:variable name="scan-target">
+                <xsl:choose>
+                  <xsl:when test="contains($scan-target-raw, '/')">
+                    <xsl:value-of select="substring-before($scan-target-raw, '/')"/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:value-of select="$scan-target-raw"/>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>
+              <div class="table-responsive">
+                <table id="table-overview" class="table table-striped table-hover align-middle" role="grid">
+                  <thead class="table-light">
+	                    <tr>
+	                      <th scope="col">State</th>
+	                      <th scope="col">Mac</th>
+	                      <th scope="col">Vendor</th>
+	                      <th scope="col">OS</th>
+	                      <th scope="col">Address</th>
+	                      <th scope="col">Hostname</th>
+	                      <th scope="col">
+	                        <span title="Estimated by Nmap from TCP timestamps; useful as context, not an exact reboot time.">Uptime (est.)</span>
+	                      </th>
+	                      <th scope="col">
+	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Distance (hops)</span>
+	                      </th>
+	                      <th scope="col">Pot. Issues</th>
+	                      <th scope="col">Open TCP Ports</th>
+	                      <th scope="col">Open UDP Ports</th>
+	                    </tr>
+	                  </thead>
+	                  <tbody>
+                      <tr>
+                        <td>
+                          <span class="badge bg-warning">down</span>
+                        </td>
+                        <td>
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td>
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td>
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td>
+                          <xsl:choose>
+                            <xsl:when test="string($scan-target) != ''">
+                              <xsl:value-of select="$scan-target"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <span class="text-muted">N/A</span>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </td>
+                        <td>
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td>
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td>
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td>
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td>
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td>
+                          <span class="text-muted">N/A</span>
+                        </td>
+                      </tr>
+                    </tbody>
                 </table>
               </div>
             </xsl:when>
@@ -96,6 +314,12 @@
               <div class="host-list" id="onlinehosts-list">
                 <xsl:for-each select="/nmaprun/host[status/@state='up']">
                   <xsl:variable name="host-id" select="translate(address/@addr, '.:', '--')"/>
+                  <xsl:variable name="effective-hostname">
+                    <xsl:call-template name="resolve-effective-hostname"/>
+                  </xsl:variable>
+                  <xsl:variable name="effective-hostname-source">
+                    <xsl:call-template name="resolve-effective-hostname-source"/>
+                  </xsl:variable>
                   <details class="host-entry">
                     <xsl:attribute name="id">host-entry-<xsl:value-of select="$host-id"/></xsl:attribute>
                     <summary class="host-entry-summary">
@@ -107,12 +331,13 @@
                           <xsl:with-param name="address" select="address/@addr"/>
                           <xsl:with-param name="mac" select="address[@addrtype='mac']/@addr"/>
                           <xsl:with-param name="vendor" select="address[@addrtype='mac']/@vendor"/>
-                          <xsl:with-param name="hostname" select="hostnames/hostname/@name"/>
+                          <xsl:with-param name="hostname" select="$effective-hostname"/>
                         </xsl:call-template>
                       </span>
                     </summary>
                     <div class="host-entry-body">
-                    <xsl:if test="count(hostnames/hostname) &gt; 0">
+                    <xsl:choose>
+                    <xsl:when test="count(hostnames/hostname) &gt; 0">
                       <h4 class="fs-6">Hostnames</h4>
                       <ul>
                         <xsl:for-each select="hostnames/hostname">
@@ -120,7 +345,14 @@
                           </li>
                         </xsl:for-each>
                       </ul>
-                    </xsl:if>
+                    </xsl:when>
+                    <xsl:when test="string(normalize-space($effective-hostname)) != ''">
+                      <h4 class="fs-6">Hostnames</h4>
+                      <ul>
+                        <li><xsl:value-of select="$effective-hostname"/> (<xsl:value-of select="$effective-hostname-source"/>)</li>
+                      </ul>
+                    </xsl:when>
+                    </xsl:choose>
                     <h4 class="fs-6">Ports</h4>
                     <div class="table-responsive">
                       <table class="table table-striped table-bordered align-middle">

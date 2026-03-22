@@ -78,49 +78,4 @@
             </xsl:otherwise>
           </xsl:choose>
   </xsl:template>
-
-  <xsl:template name="render-visualizations">
-          <hr class="my-4"/>
-          <h2 id="visualizations" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Visualizations</h2>
-          <xsl:choose>
-            <xsl:when test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
-              <div id="matrixCount" class="d-none">
-                <xsl:for-each select="//host">
-                  <div class="host">
-                    <xsl:attribute name="data-host">
-                      <xsl:value-of select="address[1]/@addr"/>
-                      <xsl:if test="string(hostnames/hostname[1]/@name) != ''">
-                        <xsl:text> - </xsl:text>
-                        <xsl:value-of select="hostnames/hostname[1]/@name"/>
-                      </xsl:if>
-                    </xsl:attribute>
-                    <xsl:for-each select="ports/port[state/@state='open' and service/@name]">
-                      <span class="port" data-port="{@portid}" data-conf="{service/@conf}">
-                        <xsl:attribute name="data-service">
-                          <xsl:value-of select="@protocol"/>
-                          <xsl:text>:</xsl:text>
-                          <xsl:if test="service/@tunnel = 'ssl'">
-                            <xsl:text>ssl/</xsl:text>
-                          </xsl:if>
-                          <xsl:value-of select="service/@name"/>
-                        </xsl:attribute>
-                      </span>
-                    </xsl:for-each>
-                  </div>
-                </xsl:for-each>
-              </div>
-              <h4 class="fs-6 mt-4">Open Ports Per Host</h4>
-              <div id="openPortsPerHostChart" style="width: 100%;"/>
-              <h4 class="fs-6 mt-4">Host-Port Matrix</h4>
-              <div id="portHostMatrix" style="width: 100%;"/>
-              <h4 class="fs-6 mt-4">Service-Port Heatmap</h4>
-              <div id="protocolPortMatrix" style="width: 100%;"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:call-template name="render-empty-state">
-                <xsl:with-param name="message" select="'No named open services are available for visualization plots.'"/>
-              </xsl:call-template>
-            </xsl:otherwise>
-          </xsl:choose>
-  </xsl:template>
 </xsl:stylesheet>

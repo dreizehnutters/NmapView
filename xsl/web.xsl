@@ -16,14 +16,16 @@
                       <th scope="col">Product</th>
                       <th scope="col">Version</th>
                       <th scope="col" class="web-http-column">HTTP</th>
-                      <th scope="col" class="web-cert-column">SSL Certificate</th>
+                      <th scope="col" class="web-cert-column">Certificate</th>
                       <th scope="col">URL</th>
                     </tr>
                   </thead>
                   <tbody>
                     <xsl:for-each select="/nmaprun/host">
                       <xsl:for-each select="ports/port[(@protocol='tcp') and (state/@state='open') and (starts-with(service/@name, 'http') or script[@id='ssl-cert'])]">
-                        <xsl:variable name="hostname" select="../../hostnames/hostname/@name"/>
+                        <xsl:variable name="hostname">
+                          <xsl:call-template name="resolve-effective-hostname"/>
+                        </xsl:variable>
                         <xsl:variable name="ip" select="../../address[not(@addrtype='mac')][1]/@addr"/>
                         <xsl:variable name="http-headers-output" select="script[@id='http-headers']/@output"/>
                         <xsl:variable name="http-fingerprint-output" select="script[@id='fingerprint-strings']/elem[@key='GetRequest']"/>
@@ -80,19 +82,38 @@
                         </xsl:variable>
                         <xsl:variable name="http-powered-by">
                           <xsl:choose>
-                            <xsl:when test="contains($http-headers-output, 'X-Powered-By:')">
-                              <xsl:call-template name="extract-header-value">
+                            <xsl:when test="contains(translate($http-headers-output, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'powered-by:')">
+                              <xsl:call-template name="extract-powered-by-value">
                                 <xsl:with-param name="text" select="$http-headers-output"/>
-                                <xsl:with-param name="label" select="'X-Powered-By'"/>
                               </xsl:call-template>
                             </xsl:when>
                             <xsl:otherwise>
-                              <xsl:call-template name="extract-header-value">
+                              <xsl:call-template name="extract-powered-by-value">
                                 <xsl:with-param name="text" select="$http-fingerprint-output"/>
-                                <xsl:with-param name="label" select="'X-Powered-By'"/>
                               </xsl:call-template>
                             </xsl:otherwise>
                           </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-stack-source" select="concat($http-headers-output, '&#xA;', $http-fingerprint-output)"/>
+                        <xsl:variable name="http-stack-hint">
+                          <xsl:call-template name="extract-stack-hint-line">
+                            <xsl:with-param name="text" select="$http-stack-source"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:variable name="http-powered-by-evidence">
+                          <xsl:choose>
+                            <xsl:when test="string($http-powered-by) != ''">
+                              <xsl:value-of select="$http-powered-by"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:value-of select="$http-stack-hint"/>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-powered-by-stack">
+                          <xsl:call-template name="normalize-powered-by-stack">
+                            <xsl:with-param name="value" select="$http-stack-source"/>
+                          </xsl:call-template>
                         </xsl:variable>
                         <tr>
                           <td>
@@ -132,8 +153,12 @@
                                 <xsl:with-param name="value" select="$http-server"/>
                               </xsl:call-template>
                               <xsl:call-template name="render-http-row">
+                                <xsl:with-param name="label" select="'Stack'"/>
+                                <xsl:with-param name="value" select="$http-powered-by-stack"/>
+                              </xsl:call-template>
+                              <xsl:call-template name="render-http-row">
                                 <xsl:with-param name="label" select="'Powered-By'"/>
-                                <xsl:with-param name="value" select="$http-powered-by"/>
+                                <xsl:with-param name="value" select="$http-powered-by-evidence"/>
                               </xsl:call-template>
                             </div>
                           </td>
@@ -152,6 +177,8 @@
                               <xsl:call-template name="render-certificate-row">
                                 <xsl:with-param name="label" select="'Expiry'"/>
                                 <xsl:with-param name="primary" select="script/table[@key='validity']/elem[@key='notAfter']"/>
+                                <xsl:with-param name="row-class" select="'certificate-expiry-row'"/>
+                                <xsl:with-param name="value-class" select="'certificate-expiry-value'"/>
                               </xsl:call-template>
                               <xsl:call-template name="render-certificate-row">
                                 <xsl:with-param name="label" select="'SigAlgo'"/>
@@ -162,38 +189,20 @@
                           <xsl:choose>
                             <xsl:when test="count(service/@tunnel) &gt; 0 or service/@name = 'https' or service/@name = 'https-alt'">
                               <td>
-                                <xsl:if test="string($hostname) != ''">
-                                  <xsl:call-template name="render-service-url">
-                                    <xsl:with-param name="scheme" select="'https'"/>
-                                    <xsl:with-param name="host" select="$hostname"/>
-                                    <xsl:with-param name="port" select="@portid"/>
-                                  </xsl:call-template>
-                                </xsl:if>
-                                <xsl:if test="string($hostname) = ''">
-                                  <xsl:call-template name="render-service-url">
-                                    <xsl:with-param name="scheme" select="'https'"/>
-                                    <xsl:with-param name="host" select="$ip"/>
-                                    <xsl:with-param name="port" select="@portid"/>
-                                  </xsl:call-template>
-                                </xsl:if>
+                                <xsl:call-template name="render-service-url">
+                                  <xsl:with-param name="scheme" select="'https'"/>
+                                  <xsl:with-param name="host" select="$ip"/>
+                                  <xsl:with-param name="port" select="@portid"/>
+                                </xsl:call-template>
                               </td>
                             </xsl:when>
                             <xsl:otherwise>
                               <td>
-                                <xsl:if test="string($hostname) != ''">
-                                  <xsl:call-template name="render-service-url">
-                                    <xsl:with-param name="scheme" select="'http'"/>
-                                    <xsl:with-param name="host" select="$hostname"/>
-                                    <xsl:with-param name="port" select="@portid"/>
-                                  </xsl:call-template>
-                                </xsl:if>
-                                <xsl:if test="string($hostname) = ''">
-                                  <xsl:call-template name="render-service-url">
-                                    <xsl:with-param name="scheme" select="'http'"/>
-                                    <xsl:with-param name="host" select="$ip"/>
-                                    <xsl:with-param name="port" select="@portid"/>
-                                  </xsl:call-template>
-                                </xsl:if>
+                                <xsl:call-template name="render-service-url">
+                                  <xsl:with-param name="scheme" select="'http'"/>
+                                  <xsl:with-param name="host" select="$ip"/>
+                                  <xsl:with-param name="port" select="@portid"/>
+                                </xsl:call-template>
                               </td>
                             </xsl:otherwise>
                           </xsl:choose>
@@ -206,7 +215,7 @@
             </xsl:when>
             <xsl:otherwise>
               <xsl:call-template name="render-empty-state">
-                <xsl:with-param name="message" select="'No web or SSL services were detected in this scan.'"/>
+                <xsl:with-param name="message" select="'No web or TLS services were detected in this scan.'"/>
               </xsl:call-template>
             </xsl:otherwise>
           </xsl:choose>

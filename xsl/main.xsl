@@ -10,6 +10,7 @@ Andreas Hontzia (@honze_net) & LRVT (@l4rm4nd) & Fabian Kopp (@dreizehnutters)
   <xsl:include href="hosts.xsl"/>
   <xsl:include href="services.xsl"/>
   <xsl:include href="inventory.xsl"/>
+  <xsl:include href="visualizations.xsl"/>
   <xsl:include href="web.xsl"/>
 
   <xsl:template match="/">
@@ -28,6 +29,7 @@ Andreas Hontzia (@honze_net) & LRVT (@l4rm4nd) & Fabian Kopp (@dreizehnutters)
         </div>
         <xsl:call-template name="render-footer"/>
         <xsl:call-template name="render-scripts"/>
+        <xsl:call-template name="render-visualization-scripts"/>
       </body>
     </html>
   </xsl:template>

@@ -24,7 +24,9 @@
                   <tbody>
                     <xsl:for-each select="/nmaprun/host">
                       <xsl:for-each select="ports/port[state/@state='open']">
-                        <xsl:variable name="hostname" select="../../hostnames/hostname/@name"/>
+                        <xsl:variable name="hostname">
+                          <xsl:call-template name="resolve-effective-hostname"/>
+                        </xsl:variable>
                         <xsl:variable name="ip" select="../../address[not(@addrtype='mac')][1]/@addr"/>
                         <tr>
                           <td>
@@ -121,12 +123,12 @@
             <xsl:when test="count(/nmaprun/host/ports/port[state/@state='open']) &gt; 0">
               <xsl:call-template name="render-service-counts-data"/>
               <div class="my-4 row" style="margin: 20px 0;">
-                <div id="flex-container" class="d-flex flex-wrap gap-4 align-items-start">
-                  <div class="chart-container" style="flex: 1; max-width: 75%;">
-                    <h4 class="fs-6 mt-4">Service Distribution Across Hosts</h4>
-                    <div id="serviceChart" style="width: 100%; height: 250px"/>
-                  </div>
-                  <div class="list-container">
+	                <div id="flex-container" class="d-flex flex-wrap gap-4 align-items-start">
+	                  <div class="chart-container" style="flex: 1; max-width: 75%;">
+	                    <h4 class="fs-6 mt-4">Service Distribution Across Hosts</h4>
+	                    <div id="serviceChart" style="width: 100%; height: 250px"/>
+	                  </div>
+	                  <div class="list-container">
                     <h3 class="fs-5 mb-3">Most Common Services</h3>
                     <ul id="topServicesLedger" class="list-group" style="font-size: 16px; color: #333; font-weight: bold;">
                     </ul>

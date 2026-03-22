@@ -6,39 +6,10 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"/>
         <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.7/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/fh-4.0.5/datatables.min.css" rel="stylesheet" crossorigin="anonymous"/>
         <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.7/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/fh-4.0.5/datatables.min.js" crossorigin="anonymous"/>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.20/pdfmake.min.js" crossorigin="anonymous"/>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.20/vfs_fonts.js" crossorigin="anonymous"/>
-        <script src="https://cdn.plot.ly/plotly-3.3.0.min.js" crossorigin="anonymous"></script>
+        <xsl:call-template name="render-visualization-head-assets"/>
         <style>
           a {
             text-decoration: none !important;
-          }
-          ul#topServicesLedger {
-            list-style: none;
-            padding: 0;
-            max-width: 400px;
-            margin-top: 2rem;
-            font-family: Arial, sans-serif;
-          }
-
-          ul#topServicesLedger li {
-            background: #f8f9fa;
-            border-radius: 6px;
-            padding: 10px 15px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 16px;
-            gap: 3rem;
-          }
-
-          ul#topServicesLedger .badge {
-            background-color: #007bff;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 14px;
           }
 
           .host-list {
@@ -125,6 +96,45 @@
             display: inline;
           }
 
+          .certificate-expiry-value {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+          }
+
+          .certificate-expiry-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            font-size: 0.72rem;
+            font-style: normal;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            line-height: 1.2;
+            white-space: nowrap;
+            border: 1px solid transparent;
+          }
+
+          .certificate-expiry-badge.is-valid {
+            background: #e8f5e9;
+            border-color: #b7dfbd;
+            color: #1f6f43;
+          }
+
+          .certificate-expiry-badge.is-expiring {
+            background: #fff3cd;
+            border-color: #f3d58a;
+            color: #8a5a00;
+          }
+
+          .certificate-expiry-badge.is-expired {
+            background: #f8d7da;
+            border-color: #ecb5bc;
+            color: #a61e2f;
+          }
+
           .http-title-block {
             max-width: 20rem;
           }
@@ -189,6 +199,118 @@
             color: #212529;
           }
 
+          .summary-card-link {
+            display: block;
+            color: inherit;
+          }
+
+          .summary-card-link:hover,
+          .summary-card-link:focus-visible {
+            color: inherit;
+          }
+
+          .summary-card {
+            border: 1px solid #dee2e6;
+            border-radius: 0.85rem;
+            background: #ffffff;
+            height: 100%;
+            padding: 1rem;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+          }
+
+          .summary-card.is-clickable {
+            cursor: pointer;
+          }
+
+          .summary-card-link:hover .summary-card,
+          .summary-card-link:focus-visible .summary-card {
+            transform: translateY(-1px);
+            box-shadow: 0 0.45rem 1rem rgba(33, 37, 41, 0.08);
+            border-color: rgba(13, 110, 253, 0.25);
+          }
+
+          .summary-card-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-top: 0.35rem;
+            font-size: 0.78rem;
+            color: #6c757d;
+          }
+
+          .summary-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1rem;
+            align-items: center;
+          }
+
+          .density-controls {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+
+          .density-controls-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #6c757d;
+            white-space: nowrap;
+          }
+
+          .density-toggle-group .btn {
+            min-width: 7rem;
+          }
+
+          body.report-density-comfortable .table {
+            font-size: 0.95rem;
+            line-height: 1.4;
+          }
+
+          body.report-density-comfortable .table > :not(caption) > * > * {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+          }
+
+          body.report-density-dense .table {
+            font-size: 0.86rem;
+            line-height: 1.2;
+          }
+
+          body.report-density-dense .table > :not(caption) > * > * {
+            padding-top: 0.3rem;
+            padding-bottom: 0.3rem;
+            padding-left: 0.45rem;
+            padding-right: 0.45rem;
+          }
+
+          body.report-density-dense .table .badge {
+            font-size: 0.72rem;
+          }
+
+          body.report-density-dense .host-entry-summary {
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+          }
+
+          body.report-density-dense .host-entry-body {
+            padding: 0.8rem;
+          }
+
+          body.report-density-dense .summary-command summary {
+            padding: 0.55rem 0.85rem;
+            font-size: 0.85rem;
+          }
+
+          body.report-density-dense .summary-command pre {
+            padding: 0 0.85rem 0.85rem;
+            font-size: 0.82rem;
+          }
+
           .vulners-summary {
             cursor: pointer;
             color: #495057;
@@ -251,6 +373,15 @@
             border-radius: 0.2rem;
           }
 
+          .dtfh-floatingparenthead {
+            z-index: 1020 !important;
+          }
+
+          .dtfh-floatingparenthead table {
+            margin-top: 0 !important;
+            background: #ffffff;
+          }
+
           #mainNavbar {
             border-bottom: 1px solid #dee2e6;
           }
@@ -269,6 +400,26 @@
             display: flex;
             align-items: center;
             height: 100%;
+          }
+
+          #navbarNav .navbar-nav.me-auto .nav-link {
+            display: inline-flex;
+            align-items: center;
+            min-height: 3.45rem;
+            padding: 0.75rem 1.2rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+          }
+
+          #navbarNav .navbar-nav.me-auto .nav-link:hover,
+          #navbarNav .navbar-nav.me-auto .nav-link:focus-visible {
+            background: rgba(13, 110, 253, 0.08);
+          }
+
+          #navbarNav .navbar-nav.me-auto .nav-link.is-active {
+            background: rgba(13, 110, 253, 0.14);
+            color: #0a58ca;
+            box-shadow: inset 0 0 0 1px rgba(13, 110, 253, 0.12);
           }
 
           #navbarNav {
@@ -297,6 +448,7 @@
             }
           }
 
+          <xsl:call-template name="render-visualization-styles"/>
         </style>
         <title>NmapView Report - Interactive Nmap Scan Summary</title>
       </head>
@@ -354,9 +506,36 @@
         </nav>
   </xsl:template>
   <xsl:template name="render-summary">
-          <xsl:variable name="total-hosts" select="count(/nmaprun/host)"/>
-          <xsl:variable name="up-hosts" select="count(/nmaprun/host[status/@state='up'])"/>
-          <xsl:variable name="down-hosts" select="count(/nmaprun/host[status/@state='down'])"/>
+          <xsl:variable name="recorded-hosts" select="count(/nmaprun/host)"/>
+          <xsl:variable name="runstats-total-hosts" select="number(/nmaprun/runstats/hosts/@total)"/>
+          <xsl:variable name="total-hosts">
+            <xsl:choose>
+              <xsl:when test="$recorded-hosts &gt; 0">
+                <xsl:value-of select="$recorded-hosts"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="$runstats-total-hosts"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:variable name="up-hosts">
+            <xsl:choose>
+              <xsl:when test="$recorded-hosts &gt; 0">
+                <xsl:value-of select="count(/nmaprun/host[status/@state='up'])"/>
+              </xsl:when>
+              <xsl:otherwise>0</xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:variable name="down-hosts">
+            <xsl:choose>
+              <xsl:when test="$recorded-hosts &gt; 0">
+                <xsl:value-of select="count(/nmaprun/host[status/@state='down'])"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="$runstats-total-hosts"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
           <xsl:variable name="open-ports" select="count(/nmaprun/host/ports/port[state/@state='open'])"/>
           <xsl:variable name="unique-services" select="count(//host/ports/port[state/@state='open' and service/@name]
             [generate-id() = generate-id(
@@ -395,36 +574,48 @@
             </h5>
             <div class="row g-3 mb-4">
               <div class="col-6 col-lg-3">
-                <div class="border rounded bg-white h-100 p-3">
-                  <div class="text-muted small text-uppercase">Hosts Scanned</div>
-                  <div class="fs-4 fw-semibold">
-                    <xsl:value-of select="$total-hosts"/>
+                <a class="summary-card-link" href="#scannedhosts">
+                  <div class="summary-card is-clickable">
+                    <div class="text-muted small text-uppercase">Hosts Scanned</div>
+                    <div class="fs-4 fw-semibold">
+                      <xsl:value-of select="$total-hosts"/>
+                    </div>
+                    <div class="summary-card-hint">Jump to Host Overview</div>
                   </div>
-                </div>
+                </a>
               </div>
               <div class="col-6 col-lg-3">
-                <div class="border rounded bg-white h-100 p-3">
-                  <div class="text-muted small text-uppercase">Open Ports</div>
-                  <div class="fs-4 fw-semibold">
-                    <xsl:value-of select="$open-ports"/>
+                <a class="summary-card-link" href="#openservices">
+                  <div class="summary-card is-clickable">
+                    <div class="text-muted small text-uppercase">Open Ports</div>
+                    <div class="fs-4 fw-semibold">
+                      <xsl:value-of select="$open-ports"/>
+                    </div>
+                    <div class="summary-card-hint">Jump to Open Services</div>
                   </div>
-                </div>
+                </a>
               </div>
               <div class="col-6 col-lg-3">
-                <div class="border rounded bg-white h-100 p-3">
-                  <div class="text-muted small text-uppercase">Unique Services</div>
-                  <div class="fs-4 fw-semibold">
-                    <xsl:value-of select="$unique-services"/>
+                <a class="summary-card-link" href="#serviceinventory">
+                  <div class="summary-card is-clickable">
+                    <div class="text-muted small text-uppercase">Unique Services</div>
+                    <div class="fs-4 fw-semibold">
+                      <xsl:value-of select="$unique-services"/>
+                    </div>
+                    <div class="summary-card-hint">Jump to Service Summary</div>
                   </div>
-                </div>
+                </a>
               </div>
               <div class="col-6 col-lg-3">
-                <div class="border rounded bg-white h-100 p-3">
-                  <div class="text-muted small text-uppercase">Web/TLS Endpoints</div>
-                  <div class="fs-4 fw-semibold">
-                    <xsl:value-of select="$web-tls-endpoints"/>
+                <a class="summary-card-link" href="#webservices">
+                  <div class="summary-card is-clickable">
+                    <div class="text-muted small text-uppercase">Web/TLS Endpoints</div>
+                    <div class="fs-4 fw-semibold">
+                      <xsl:value-of select="$web-tls-endpoints"/>
+                    </div>
+                    <div class="summary-card-hint">Jump to Web &amp; TLS Services</div>
                   </div>
-                </div>
+                </a>
               </div>
             </div>
             <div class="progress summary-progress">
@@ -464,13 +655,22 @@
                 <xsl:value-of select="/nmaprun/@args"/>
               </pre>
             </details>
+            <div class="summary-toolbar">
+              <div class="density-controls" aria-label="Table density controls">
+                <span class="density-controls-label">Table Density</span>
+                <div class="btn-group btn-group-sm density-toggle-group" role="group" aria-label="Select table density">
+                  <button type="button" class="btn btn-outline-secondary" id="densityComfortable" data-density="comfortable" aria-pressed="true">Comfortable</button>
+                  <button type="button" class="btn btn-outline-secondary" id="densityDense" data-density="dense" aria-pressed="false">Dense</button>
+                </div>
+              </div>
+            </div>
             <div class="keyword-highlight-controls" aria-label="Keyword highlighter">
               <input
                 type="text"
                 id="keywordHighlightInput"
                 class="form-control"
-                placeholder="sha1, login, password, md5"
-                aria-label="Comma-separated keywords to highlight"
+                placeholder="sha1, ^ftp, ssh$, http*"
+                aria-label="Comma-separated keywords or regex patterns to highlight"
               />
               <button type="button" class="btn btn-warning" id="highlightKeywordsButton">Highlight Keywords</button>
               <button type="button" class="btn btn-outline-secondary" id="resetHighlightsButton">Reset</button>
@@ -490,32 +690,6 @@
         <script><![CDATA[
           function appendText(parent, text) {
             parent.appendChild(document.createTextNode(text));
-          }
-
-          function clamp(value, min, max) {
-            return Math.max(min, Math.min(max, value));
-          }
-
-          function getDynamicTileSize(columns, rows, options = {}) {
-            const maxWidth = options.maxWidth || Math.max(window.innerWidth - 220, 720);
-            const maxHeight = options.maxHeight || Math.max(window.innerHeight * 0.7, 520);
-            const minSize = options.minSize || 12;
-            const maxSize = options.maxSize || 36;
-
-            if (!columns || !rows) {
-              return maxSize;
-            }
-
-            const widthLimited = Math.floor(maxWidth / columns);
-            const heightLimited = Math.floor(maxHeight / rows);
-            return clamp(Math.min(widthLimited, heightLimited), minSize, maxSize);
-          }
-
-          function truncateLabel(text, maxLength = 42) {
-            if (!text || text.length <= maxLength) {
-              return text;
-            }
-            return `${text.slice(0, maxLength - 1)}…`;
           }
 
           async function copyTextToClipboard(text) {
@@ -560,23 +734,67 @@
             });
           }
 
-          function renderTopServices(sortedServices) {
-            const ledger = document.getElementById("topServicesLedger");
-            if (!ledger) return;
+          function parseCertificateExpiry(rawValue) {
+            const trimmed = (rawValue || "").trim();
+            const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+            if (!match) {
+              return null;
+            }
 
-            ledger.textContent = "";
-            sortedServices.slice(0, 5).forEach(([service, count]) => {
-              const listItem = document.createElement("li");
-              const title = document.createElement("strong");
+            const [, year, month, day, hour, minute, second = "00"] = match;
+            const timestamp = Date.UTC(
+              Number(year),
+              Number(month) - 1,
+              Number(day),
+              Number(hour),
+              Number(minute),
+              Number(second)
+            );
+            return Number.isNaN(timestamp) ? null : timestamp;
+          }
+
+          function formatCertificateDayCount(days) {
+            if (days === 0) {
+              return "today";
+            }
+
+            const absoluteDays = Math.abs(days);
+            const dayLabel = absoluteDays === 1 ? "day" : "days";
+            return days > 0 ? `in ${absoluteDays} ${dayLabel}` : `${absoluteDays} ${dayLabel} ago`;
+          }
+
+          function initializeCertificateExpiryAlerts() {
+            const dayMs = 24 * 60 * 60 * 1000;
+
+            document.querySelectorAll(".certificate-expiry-value").forEach(element => {
+              if (element.querySelector(".certificate-expiry-badge")) {
+                return;
+              }
+
+              const rawExpiry = (element.textContent || "").trim();
+              const expiryTimestamp = parseCertificateExpiry(rawExpiry);
+              if (expiryTimestamp === null) {
+                return;
+              }
+
+              const now = Date.now();
+              const daysRemaining = Math.ceil((expiryTimestamp - now) / dayMs);
+              let statusText = "Valid";
+              let statusClass = "is-valid";
+
+              if (expiryTimestamp < now) {
+                statusText = "Expired";
+                statusClass = "is-expired";
+              } else if (daysRemaining <= 30) {
+                statusText = "Expiring soon";
+                statusClass = "is-expiring";
+              }
+
               const badge = document.createElement("span");
-
-              title.textContent = service;
-              badge.className = "badge";
-              badge.textContent = String(count);
-
-              listItem.appendChild(title);
-              listItem.appendChild(badge);
-              ledger.appendChild(listItem);
+              badge.className = `certificate-expiry-badge ${statusClass}`;
+              badge.textContent = statusText;
+              badge.title = `${rawExpiry} (${formatCertificateDayCount(daysRemaining)})`;
+              element.appendChild(badge);
             });
           }
 
@@ -724,21 +942,107 @@
               if (window.innerWidth >= 992) {
                 menu.hidden = false;
                 toggle.setAttribute("aria-expanded", "true");
+                window.requestAnimationFrame(syncDataTableFixedHeaders);
                 return;
               }
 
               const expanded = toggle.getAttribute("aria-expanded") === "true";
               menu.hidden = !expanded;
+              window.requestAnimationFrame(syncDataTableFixedHeaders);
             }
 
             toggle.addEventListener("click", () => {
               const expanded = toggle.getAttribute("aria-expanded") === "true";
               toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
               menu.hidden = expanded;
+              window.requestAnimationFrame(syncDataTableFixedHeaders);
+            });
+
+            menu.querySelectorAll(".navbar-nav.me-auto .nav-link[href^='#']").forEach(link => {
+              link.addEventListener("click", () => {
+                if (window.innerWidth >= 992) {
+                  return;
+                }
+
+                toggle.setAttribute("aria-expanded", "false");
+                menu.hidden = true;
+                window.requestAnimationFrame(syncDataTableFixedHeaders);
+              });
             });
 
             window.addEventListener("resize", syncNavbar);
             syncNavbar();
+          }
+
+          function initializeSectionNav() {
+            const navLinks = Array.from(document.querySelectorAll("#navbarNav .navbar-nav.me-auto .nav-link[href^='#']"));
+            if (navLinks.length === 0) {
+              return;
+            }
+
+            const sections = navLinks
+              .map(link => {
+                const hash = link.getAttribute("href");
+                if (!hash) {
+                  return null;
+                }
+
+                const section = document.querySelector(hash);
+                if (!section) {
+                  return null;
+                }
+
+                return { link, hash, section };
+              })
+              .filter(Boolean);
+
+            if (sections.length === 0) {
+              return;
+            }
+
+            function setActiveLink(hash) {
+              const normalizedHash = hash && hash.startsWith("#onlinehosts-") ? "#onlinehosts" : hash;
+              sections.forEach(({ link, hash: sectionHash }) => {
+                const isActive = sectionHash === normalizedHash;
+                link.classList.toggle("is-active", isActive);
+                if (isActive) {
+                  link.setAttribute("aria-current", "page");
+                } else {
+                  link.removeAttribute("aria-current");
+                }
+              });
+            }
+
+            const observer = new IntersectionObserver(entries => {
+              const visibleEntries = entries
+                .filter(entry => entry.isIntersecting)
+                .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+              if (visibleEntries.length === 0) {
+                return;
+              }
+
+              const activeSection = sections.find(({ section }) => section === visibleEntries[0].target);
+              if (activeSection) {
+                setActiveLink(activeSection.hash);
+              }
+            }, {
+              rootMargin: "-25% 0px -55% 0px",
+              threshold: [0.2, 0.35, 0.5]
+            });
+
+            sections.forEach(({ section }) => observer.observe(section));
+
+            navLinks.forEach(link => {
+              link.addEventListener("click", () => {
+                const hash = link.getAttribute("href");
+                if (hash) {
+                  setActiveLink(hash);
+                }
+              });
+            });
+
+            setActiveLink(window.location.hash || sections[0].hash);
           }
 
           function openLinkedHost(hash) {
@@ -791,6 +1095,34 @@
             syncLabel();
           }
 
+          function getDataTableHeaderOffset() {
+            const navbar = document.getElementById("mainNavbar");
+            return navbar ? Math.ceil(navbar.getBoundingClientRect().height) : 0;
+          }
+
+          function syncDataTableFixedHeaders() {
+            if (!(window.jQuery && $.fn.dataTable)) {
+              return;
+            }
+
+            const tables = $.fn.dataTable.tables({ visible: true, api: true });
+            const headerOffset = getDataTableHeaderOffset();
+
+            tables.every(function () {
+              if (!this.fixedHeader) {
+                return;
+              }
+
+              if (typeof this.fixedHeader.headerOffset === "function") {
+                this.fixedHeader.headerOffset(headerOffset);
+              }
+
+              if (typeof this.fixedHeader.adjust === "function") {
+                this.fixedHeader.adjust();
+              }
+            });
+          }
+
           function initializeDataTable(selector) {
             const exportNames = {
               "#table-services": "nmapview-open-services",
@@ -801,10 +1133,15 @@
             const exportName = exportNames[selector] || "nmapview-table-export";
             const buttons = [
               {
+                extend: 'colvis',
+                text: 'Columns',
+                className: 'btn btn-light'
+              },
+              {
                 extend: 'copyHtml5',
                 text: 'Copy',
                 title: exportName,
-                exportOptions: { orthogonal: 'export' },
+                exportOptions: { columns: ':visible', orthogonal: 'export' },
                 className: 'btn btn-light'
               },
               {
@@ -812,7 +1149,7 @@
                 text: 'CSV',
                 filename: exportName,
                 fieldSeparator: ';',
-                exportOptions: { orthogonal: 'export' },
+                exportOptions: { columns: ':visible', orthogonal: 'export' },
                 className: 'btn btn-light'
               },
               {
@@ -820,30 +1157,22 @@
                 text: 'Excel',
                 filename: exportName,
                 autoFilter: true,
-                exportOptions: { orthogonal: 'export' },
-                className: 'btn btn-light'
-              },
-              {
-                extend: 'pdfHtml5',
-                text: 'PDF',
-                filename: exportName,
-                title: exportName,
-                orientation: 'landscape',
-                pageSize: 'LEGAL',
-                download: 'open',
-                exportOptions: {},
+                exportOptions: { columns: ':visible', orthogonal: 'export' },
                 className: 'btn btn-light'
               },
               {
                 text: 'JSON',
                 className: 'btn btn-light',
                 action: function (e, dt, node, config) {
-                  const headers = dt.columns().header().toArray().map(h => $(h).text().trim());
+                  const visibleColumns = dt.columns(':visible');
+                  const headerIndexes = visibleColumns.indexes().toArray();
+                  const headers = visibleColumns.header().toArray().map(h => $(h).text().trim());
 
                   const data = dt.rows({ search: 'applied' }).nodes().toArray().map(row => {
                     const obj = {};
-                    $(row).find('td').each(function (i) {
-                      obj[headers[i]] = $(this).text().trim();
+                    headerIndexes.forEach((columnIndex, i) => {
+                      const cell = $(row).find('td').get(columnIndex);
+                      obj[headers[i]] = cell ? $(cell).text().trim() : '';
                     });
                     return obj;
                   });
@@ -871,7 +1200,7 @@
               });
             }
 
-            $(selector).DataTable({
+            const table = $(selector).DataTable({
               lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
               order: [[0, 'desc']],
               columnDefs: [
@@ -880,7 +1209,65 @@
               ],
               dom: '<"d-flex justify-content-between align-items-center mb-2"lfB>rtip',
               stateSave: true,
-              buttons: buttons
+              buttons: buttons,
+              fixedHeader: {
+                header: true,
+                headerOffset: getDataTableHeaderOffset()
+              }
+            });
+
+            window.requestAnimationFrame(syncDataTableFixedHeaders);
+            return table;
+          }
+
+          function initializeDensityToggle() {
+            const body = document.body;
+            const buttons = Array.from(document.querySelectorAll("[data-density]"));
+            if (!body || buttons.length === 0) {
+              return;
+            }
+
+            const storageKey = "nmapview-table-density";
+
+            function syncButtons(density) {
+              buttons.forEach(button => {
+                const isActive = button.getAttribute("data-density") === density;
+                button.classList.toggle("btn-secondary", isActive);
+                button.classList.toggle("btn-outline-secondary", !isActive);
+                button.setAttribute("aria-pressed", isActive ? "true" : "false");
+              });
+            }
+
+            function applyDensity(density) {
+              const normalized = density === "dense" ? "dense" : "comfortable";
+              body.classList.remove("report-density-comfortable", "report-density-dense");
+              body.classList.add(`report-density-${normalized}`);
+              syncButtons(normalized);
+              try {
+                window.localStorage.setItem(storageKey, normalized);
+              } catch (error) {
+              }
+
+              if (window.jQuery && $.fn.dataTable) {
+                $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+                syncDataTableFixedHeaders();
+              }
+            }
+
+            const savedDensity = (() => {
+              try {
+                return window.localStorage.getItem(storageKey);
+              } catch (error) {
+                return null;
+              }
+            })();
+
+            applyDensity(savedDensity || "comfortable");
+
+            buttons.forEach(button => {
+              button.addEventListener("click", () => {
+                applyDensity(button.getAttribute("data-density"));
+              });
             });
           }
 
@@ -909,6 +1296,62 @@
                 .map(term => term.trim())
                 .filter(Boolean)
             )];
+          }
+
+          function normalizeHighlightWildcard(pattern) {
+            let normalized = "";
+
+            for (let index = 0; index < pattern.length; index++) {
+              const character = pattern[index];
+              const previousCharacter = index > 0 ? pattern[index - 1] : "";
+
+              if (character === "*" && previousCharacter !== "\\") {
+                normalized += ".*";
+                continue;
+              }
+
+              normalized += character;
+            }
+
+            return normalized;
+          }
+
+          function isRegexHighlightTerm(term) {
+            return (
+              /^\/.+\/$/.test(term) ||
+              /^\^/.test(term) ||
+              /\$$/.test(term) ||
+              /(^|[^\\])\*/.test(term) ||
+              /\\[dDsSwWbB]/.test(term) ||
+              /(^|[^\\])[\[\]\(\)\|\+\?\{\}]/.test(term)
+            );
+          }
+
+          function getHighlightPatternSource(term) {
+            if (!isRegexHighlightTerm(term)) {
+              return escapeRegex(term);
+            }
+
+            const source = /^\/.+\/$/.test(term)
+              ? term.slice(1, -1)
+              : normalizeHighlightWildcard(term);
+
+            try {
+              new RegExp(source, "i");
+              return source;
+            } catch (error) {
+              return escapeRegex(term);
+            }
+          }
+
+          function buildHighlightRegex(rawTerms) {
+            const terms = parseHighlightTerms(rawTerms);
+            if (terms.length === 0) {
+              return null;
+            }
+
+            const sources = terms.map(getHighlightPatternSource);
+            return new RegExp(`(${sources.join("|")})`, "gi");
           }
 
           function highlightTextNode(textNode, regex) {
@@ -952,8 +1395,8 @@
           function highlightKeywords(rawTerms) {
             clearKeywordHighlights();
 
-            const terms = parseHighlightTerms(rawTerms);
-            if (terms.length === 0) {
+            const regex = buildHighlightRegex(rawTerms);
+            if (!regex) {
               return 0;
             }
 
@@ -962,7 +1405,6 @@
               return 0;
             }
 
-            const regex = new RegExp(`(${terms.map(escapeRegex).join("|")})`, "gi");
             const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
               acceptNode(node) {
                 const parent = node.parentElement;
@@ -1039,14 +1481,19 @@
         ]]></script>
         <script>
           $(document).ready(function() {
-              initializeNavbarToggle();
-              initializeHostToggle();
-              initializeKeywordHighlighter();
-              initializeCpeCopy();
-              initializeDataTable('#table-services');
-              initializeDataTable('#table-overview');
-              initializeDataTable('#web-services');
-              initializeDataTable('#service-inventory');
+	              initializeNavbarToggle();
+	              initializeSectionNav();
+	              initializeHostToggle();
+	              initializeKeywordHighlighter();
+	              initializeCpeCopy();
+	              initializeCertificateExpiryAlerts();
+                formatVulnersChunks();
+                formatInventoryLists();
+	              initializeDataTable('#table-services');
+	              initializeDataTable('#table-overview');
+	              initializeDataTable('#web-services');
+	              initializeDataTable('#service-inventory');
+                initializeDensityToggle();
 
 
               $("a[href^='#onlinehosts-']").click(function(event) {
@@ -1066,384 +1513,5 @@
               }
           });
         </script>
-        <script>
-           document.addEventListener("DOMContentLoaded", function() {
-            const serviceCounts = {};
-
-            document.querySelectorAll("#serviceCounts .service").forEach(el => {
-                const service = el.getAttribute("data-service");
-                const port = el.getAttribute("data-portid");
-                const proto = el.getAttribute("data-porto");
-                if (service &amp;&amp; port) {
-                    const key = `${service} (${proto}/${port})`;
-                    serviceCounts[key] = (serviceCounts[key] || 0) + 1;
-                }
-            });
-            const sortedServices = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1]);
-
-            const colorPalette = [
-                "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
-                "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
-                "#393b79", "#637939", "#8c6d31", "#843c39", "#7b4173",
-                "#3182bd", "#f33", "#11b", "#fb0", "#0f0", "#999", "#05a"
-            ];
-
-            const traces = sortedServices.map(([service, count], index) =>
-                ({
-                    y: [''],
-                    x: [count],
-                    name: service,
-                    type: 'bar',
-                    orientation: 'h',
-	                    marker: {
-	                        color: colorPalette[index % colorPalette.length]
-	                    },
-	                    text: service,
-	                    hovertext: `Service: ${service}; Hosts: ${count}`,
-	                    textposition: 'inside',
-	                    insidetextanchor: 'start',
-	                    hoverinfo: 'text',
-	                    textfont: {
-	                        color: 'white',
-	                        size: 12
-                    }
-                }));
-
-            const layout = {
-                title: '',
-                barmode: 'stack',
-                height: 250,
-                xaxis: {
-                    title: 'Frequency',
-                    automargin: true,
-                    fixedrange: true,
-                    showticklabels: false,
-                    showgrid: false
-                },
-                yaxis: {
-                    automargin: true,
-                    fixedrange: true,
-                    showgrid: false
-                },
-                showlegend: false,
-                margin: {
-                    t: 40,
-                    b: 80,
-                    l: 50,
-                    r: 30
-                }
-            };
-
-            Plotly.newPlot('serviceChart', traces, layout, {
-                displayModeBar: false,
-                responsive: true
-            });
-
-            renderTopServices(sortedServices);
-        });
-        </script>
-        <script>
-          document.addEventListener("DOMContentLoaded", function() {
-            formatVulnersChunks();
-            formatInventoryLists();
-          });
-        </script>
-
-        <script><![CDATA[
-          document.addEventListener("DOMContentLoaded", function() {
-            const hostDivs = document.querySelectorAll("#matrixCount .host");
-            const hosts = [];
-            const portsSet = new Set();
-            const servicesSet = new Set();
-            const openServices = {};
-
-            hostDivs.forEach(hostDiv => {
-              const host = hostDiv.getAttribute("data-host");
-              hosts.push(host);
-              openServices[host] = {};
-
-              hostDiv.querySelectorAll("span.port").forEach(span => {
-                const port = parseInt(span.getAttribute("data-port"), 10);
-                const serviceName = span.getAttribute("data-service") || "";
-                openServices[host][port] = serviceName;
-                portsSet.add(port);
-                servicesSet.add(serviceName);
-              });
-            });
-
-            const ports = Array.from(portsSet).sort((a, b) => a - b);
-            const matrixConfig = {
-              displayModeBar: false,
-              scrollZoom: false
-            };
-
-            const portHostMatrix = document.getElementById("portHostMatrix");
-            if (portHostMatrix) {
-              const sortedHosts = [...hosts].sort((a, b) => a.localeCompare(b, undefined, {
-                numeric: true,
-                sensitivity: "base"
-              }));
-              const tileSize = getDynamicTileSize(ports.length, sortedHosts.length, {
-                minSize: 14,
-                maxSize: 36
-              });
-              const z = sortedHosts.map(host =>
-                ports.map(port => openServices[host][port] ? 1 : 0)
-              );
-
-	              const zText = sortedHosts.map(host =>
-	                ports.map(port => openServices[host][port] || "")
-	              );
-	              const hoverData = sortedHosts.map(host =>
-	                ports.map(port => [
-	                  host,
-	                  String(port),
-	                  openServices[host][port] || "No open service"
-	                ])
-	              );
-
-	              const data = [{
-	                z: z,
-	                x: ports.map(String),
-	                y: sortedHosts,
-	                text: zText,
-	                customdata: hoverData,
-	                type: "heatmap",
-	                colorscale: [[0, "#f3f4f6"], [1, "#2ca02c"]],
-	                showscale: false,
-	                xgap: 2,
-	                ygap: 2,
-	                hoverongaps: false,
-	                hovertemplate: "Host: %{customdata[0]}<br>Port: %{customdata[1]}<br>Service: %{customdata[2]}<extra></extra>",
-	                text: zText
-	              }];
-
-              const dynamicHeight = Math.max(600, sortedHosts.length * tileSize + 160);
-              const dynamicWidth = Math.max(900, ports.length * tileSize + 180);
-              portHostMatrix.style.height = dynamicHeight + "px";
-              portHostMatrix.style.width = dynamicWidth + "px";
-              portHostMatrix.style.margin = "0 auto";
-
-	            const layout = {
-	              title: "",
-                xaxis: {
-                  title: { text: "Port" },
-                  side: "top",
-                  type: "category",
-                  tickangle: -45,
-                  automargin: true,
-                  ticks: "outside",
-                  ticklen: 10,
-                  tickcolor: "rgba(0,0,0,0.05)",
-                  tickwidth: 1
-                },
-                yaxis: {
-                  title: { text: "Host" },
-                  type: "category",
-                  autorange: "reversed",
-                  automargin: true,
-                  ticks: "outside",
-                  ticklen: 10,
-                  tickcolor: "rgba(0,0,0,0.05)",
-                  tickwidth: 1
-                },
-                margin: { t: 80, l: 120, r: 50, b: 100 },
-                dragmode: false,
-                width: dynamicWidth,
-                height: dynamicHeight
-              };
-
-              Plotly.newPlot("portHostMatrix", data, layout, matrixConfig);
-            }
-
-            const protocolPortMatrix = document.getElementById("protocolPortMatrix");
-            if (!protocolPortMatrix) {
-              return;
-            }
-
-            const services = Array.from(servicesSet).sort();
-            const z = services.map(service =>
-              ports.map(port => {
-                let count = 0;
-                for (const host of hosts) {
-                  if (openServices[host][port] === service) count++;
-                }
-                return count;
-              })
-            );
-
-            const serviceTotals = z.map(row => row.reduce((a, b) => a + b, 0));
-            const sortedIndices = serviceTotals
-              .map((total, index) => ({ total, index }))
-              .sort((a, b) => b.total - a.total)
-              .map(item => item.index);
-
-	            const sortedServices = sortedIndices.map(index => services[index]);
-	            const sortedTotals = sortedIndices.map(index => serviceTotals[index]);
-	            const sortedZ = sortedIndices.map(index => z[index]);
-	            const heatmapTileSize = getDynamicTileSize(ports.length, sortedServices.length, {
-	              minSize: 14,
-	              maxSize: 36
-	            });
-	            const zText = sortedZ.map(row => row.map(value => value > 0 ? value.toString() : ""));
-	            const hoverData = sortedServices.map((service, index) =>
-	              ports.map(port => [String(port), service, String(sortedTotals[index])])
-	            );
-	            const yLabels = sortedServices.map((service, index) => `${service} (${sortedTotals[index]})`);
-
-	            const data = [{
-	              z: sortedZ,
-	              x: ports.map(String),
-	              y: yLabels,
-	              text: zText,
-	              customdata: hoverData,
-	              type: "heatmap",
-	              colorscale: "Portland",
-	              showscale: true,
-	              hoverongaps: false,
-	              hovertemplate: "Port: %{customdata[0]}<br>Service: %{customdata[1]}<br>Total: %{customdata[2]}<br>Occurrences: %{z}<extra></extra>",
-	              texttemplate: "%{text}",
-	              textfont: { color: "black", size: 12 }
-	            }];
-
-            const dynamicHeight = Math.max(600, sortedServices.length * heatmapTileSize + 160);
-            const dynamicWidth = Math.max(900, ports.length * heatmapTileSize + 260);
-            protocolPortMatrix.style.height = dynamicHeight + "px";
-            protocolPortMatrix.style.width = dynamicWidth + "px";
-            protocolPortMatrix.style.margin = "0 auto";
-
-            const layout = {
-              title: "",
-              xaxis: {
-                title: { text: "Port" },
-                side: "top",
-                type: "category",
-                tickangle: -45,
-                automargin: true
-              },
-              yaxis: {
-                title: { text: "Service" },
-                automargin: true
-              },
-              margin: { t: 80, l: 200, r: 50, b: 100 },
-              width: dynamicWidth,
-              height: dynamicHeight,
-              dragmode: false
-	            };
-
-	            Plotly.newPlot("protocolPortMatrix", data, layout, matrixConfig);
-
-	            const openPortsPerHostChart = document.getElementById("openPortsPerHostChart");
-	            if (openPortsPerHostChart) {
-	              const hostOpenPortCounts = hosts
-	                .map(host => ({
-	                  host,
-	                  tcp: Object.entries(openServices[host]).filter(([, service]) => service.startsWith("tcp:")).length,
-	                  udp: Object.entries(openServices[host]).filter(([, service]) => service.startsWith("udp:")).length
-	                }))
-	                .map(entry => ({
-                    ...entry,
-                    total: entry.tcp + entry.udp
-                  }))
-	                .sort((a, b) => b.total - a.total || a.host.localeCompare(b.host));
-                const truncatedHosts = hostOpenPortCounts.map(entry => truncateLabel(entry.host));
-
-	              const data = [{
-	                type: "bar",
-	                orientation: "h",
-	                y: truncatedHosts,
-	                x: hostOpenPortCounts.map(entry => entry.udp),
-	                text: hostOpenPortCounts.map(entry => entry.udp > 0 ? `UDP: ${entry.udp}` : ""),
-	                textposition: "inside",
-                  cliponaxis: false,
-                  customdata: hostOpenPortCounts.map(entry => [entry.host, String(entry.tcp), String(entry.udp), String(entry.total)]),
-	                marker: {
-	                  color: "#f59f00",
-                    line: {
-	                      color: "#d17d00",
-                      width: 1
-                    }
-	                },
-                  textfont: {
-                    color: "#ffffff"
-                  },
-	                hovertemplate: "%{customdata[0]}<br>TCP: %{customdata[1]}<br>UDP: %{customdata[2]}<br>Total: %{customdata[3]}<extra></extra>",
-                  hoverlabel: {
-                    bgcolor: "#6c757d",
-                    bordercolor: "#495057",
-                    font: {
-                      color: "#ffffff"
-                    }
-                  }
-	              }, {
-	                type: "bar",
-	                orientation: "h",
-	                y: truncatedHosts,
-	                x: hostOpenPortCounts.map(entry => entry.tcp),
-	                text: hostOpenPortCounts.map(entry => entry.tcp > 0 ? `TCP: ${entry.tcp}` : ""),
-	                textposition: "inside",
-                  insidetextanchor: "end",
-                  cliponaxis: false,
-                  customdata: hostOpenPortCounts.map(entry => [entry.host, String(entry.tcp), String(entry.udp), String(entry.total)]),
-	                marker: {
-	                  color: "#0d6efd",
-                    line: {
-	                      color: "#0a58ca",
-                      width: 1
-                    }
-	                },
-                  textfont: {
-                    color: "#ffffff"
-                  },
-	                hovertemplate: "%{customdata[0]}<br>TCP: %{customdata[1]}<br>UDP: %{customdata[2]}<br>Total: %{customdata[3]}<extra></extra>",
-                  hoverlabel: {
-                    bgcolor: "#6c757d",
-                    bordercolor: "#495057",
-                    font: {
-                      color: "#ffffff"
-                    }
-                  }
-	              }];
-
-	              const dynamicHeight = Math.max(320, hostOpenPortCounts.length * 28);
-                const dynamicWidth = Math.max(900, Math.min(window.innerWidth - 40, 1400));
-	              openPortsPerHostChart.style.height = dynamicHeight + "px";
-                openPortsPerHostChart.style.width = dynamicWidth + "px";
-                openPortsPerHostChart.style.margin = "0 auto";
-
-	              const layout = {
-	                title: "",
-	                margin: { t: 20, l: 220, r: 60, b: 50 },
-	                width: dynamicWidth,
-	                height: dynamicHeight,
-	                xaxis: {
-	                  title: { text: "Open ports" },
-	                  automargin: true,
-	                  fixedrange: true,
-                    showgrid: true,
-                    gridcolor: "rgba(0,0,0,0.08)",
-                    gridwidth: 1,
-                    zeroline: false,
-                    rangemode: "tozero",
-                    dtick: 1
-	                },
-	                yaxis: {
-	                  title: { text: "Host" },
-	                  automargin: true,
-	                  fixedrange: true,
-	                  autorange: "reversed"
-	                },
-	                barmode: "stack",
-	                showlegend: false,
-	                dragmode: false,
-                  bargap: 0.2
-	              };
-
-	              Plotly.newPlot("openPortsPerHostChart", data, layout, matrixConfig);
-	            }
-	          });
-	        ]]></script>
-
-        <script>console.log("Made by dreizehnutters")</script>
   </xsl:template>
 </xsl:stylesheet>
