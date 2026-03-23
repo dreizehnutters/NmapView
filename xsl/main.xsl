@@ -24,7 +24,6 @@ Andreas Hontzia (@honze_net) & LRVT (@l4rm4nd) & Fabian Kopp (@dreizehnutters)
           <xsl:call-template name="render-open-services"/>
           <xsl:call-template name="render-service-inventory"/>
           <xsl:call-template name="render-web-services"/>
-          <xsl:call-template name="render-visualizations"/>
           <xsl:call-template name="render-online-hosts"/>
         </div>
         <xsl:call-template name="render-footer"/>

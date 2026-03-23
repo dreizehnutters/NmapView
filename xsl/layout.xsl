@@ -8,6 +8,29 @@
         <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.3.7/b-3.2.6/b-colvis-3.2.6/b-html5-3.2.6/b-print-3.2.6/fh-4.0.5/datatables.min.js" crossorigin="anonymous"/>
         <xsl:call-template name="render-visualization-head-assets"/>
         <style>
+          :root {
+            --report-page-bg: #eef2f5;
+            --report-surface: #f7f9fb;
+            --report-surface-muted: #e6ebf0;
+            --report-surface-hover: #edf3f8;
+            --report-border: #cfd8e3;
+            --report-border-strong: #bcc8d6;
+            --report-shadow: 0 0.35rem 1rem rgba(72, 94, 116, 0.08);
+          }
+
+          html,
+          body {
+            background: var(--report-page-bg);
+          }
+
+          body {
+            color: #24313d;
+          }
+
+          #reportContent {
+            padding-top: 5.5rem;
+          }
+
           a {
             text-decoration: none !important;
           }
@@ -18,10 +41,10 @@
           }
 
           .host-entry {
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--report-border);
             border-radius: 0.5rem;
-            background: #fff;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            background: var(--report-surface);
+            box-shadow: 0 0.125rem 0.4rem rgba(72, 94, 116, 0.08);
             overflow: hidden;
           }
 
@@ -29,7 +52,7 @@
             cursor: pointer;
             list-style: none;
             padding: 1rem 1.25rem;
-            background: #f8f9fa;
+            background: var(--report-surface-muted);
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -101,6 +124,25 @@
             align-items: center;
             gap: 0.45rem;
             flex-wrap: wrap;
+            max-width: 100%;
+          }
+
+          .certificate-expiry-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.35rem;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+          }
+
+          .certificate-expiry-row .certificate-label {
+            flex: 0 0 auto;
+          }
+
+          .certificate-expiry-row .certificate-expiry-value {
+            flex: 1 1 auto;
+            min-width: 0;
           }
 
           .certificate-expiry-badge {
@@ -135,6 +177,12 @@
             color: #a61e2f;
           }
 
+          .certificate-expiry-badge.is-long-lived {
+            background: #fff0db;
+            border-color: #e9c896;
+            color: #8a5a00;
+          }
+
           .http-title-block {
             max-width: 20rem;
           }
@@ -160,11 +208,15 @@
             max-width: 26rem;
           }
 
+          .service-extra-http {
+            margin-top: 0.35rem;
+          }
+
           .summary-command {
             margin: 1rem 0 0;
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--report-border);
             border-radius: 0.5rem;
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(247, 249, 251, 0.84);
           }
 
           .summary-command summary {
@@ -189,10 +241,16 @@
           .summary-progress {
             height: 1.75rem;
             font-size: 0.95rem;
+            overflow: visible;
           }
 
           .summary-progress .progress-bar {
             font-weight: 600;
+            white-space: nowrap;
+            overflow: visible;
+            padding: 0 0.45rem;
+            min-width: max-content;
+            justify-content: center;
           }
 
           .summary-progress .progress-bar.bg-warning {
@@ -210,12 +268,28 @@
           }
 
           .summary-card {
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--report-border);
             border-radius: 0.85rem;
-            background: #ffffff;
+            background: var(--report-surface);
             height: 100%;
             padding: 1rem;
             transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+          }
+
+          .summary-card-label {
+            color: #5f6e7d;
+            font-size: 0.84rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            line-height: 1.3;
+          }
+
+          .summary-card-value {
+            margin-top: 0.2rem;
+            font-size: 1.85rem;
+            font-weight: 600;
+            line-height: 1.15;
+            color: #24313d;
           }
 
           .summary-card.is-clickable {
@@ -225,17 +299,8 @@
           .summary-card-link:hover .summary-card,
           .summary-card-link:focus-visible .summary-card {
             transform: translateY(-1px);
-            box-shadow: 0 0.45rem 1rem rgba(33, 37, 41, 0.08);
-            border-color: rgba(13, 110, 253, 0.25);
-          }
-
-          .summary-card-hint {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            margin-top: 0.35rem;
-            font-size: 0.78rem;
-            color: #6c757d;
+            box-shadow: 0 0.45rem 1rem rgba(72, 94, 116, 0.12);
+            border-color: var(--report-border-strong);
           }
 
           .summary-toolbar {
@@ -245,6 +310,26 @@
             gap: 1rem;
             margin-top: 1rem;
             align-items: center;
+          }
+
+          .summary-note {
+            display: inline-flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-top: 0.85rem;
+            color: #5f6e7d;
+            font-size: 0.9rem;
+            line-height: 1.45;
+          }
+
+          .summary-note-icon {
+            display: inline-block;
+            color: #3f5f74;
+            font-size: 0.95rem;
+            font-weight: 600;
+            flex: 0 0 auto;
+            line-height: 1;
+            margin-top: 0.1rem;
           }
 
           .density-controls {
@@ -325,12 +410,6 @@
             margin-top: 0.5rem;
           }
 
-          .host-vuln-badge {
-            min-width: 2.5rem;
-            display: inline-flex;
-            justify-content: center;
-          }
-
           .cpe-copy {
             cursor: copy;
           }
@@ -379,27 +458,135 @@
 
           .dtfh-floatingparenthead table {
             margin-top: 0 !important;
-            background: #ffffff;
+            background: var(--report-surface);
           }
 
           #mainNavbar {
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid var(--report-border);
+            background: rgba(247, 249, 251, 0.94) !important;
+            backdrop-filter: saturate(140%) blur(10px);
           }
 
           #summary,
           #scannedhosts,
           #openservices,
           #serviceinventory,
-          #webservices,
-          #visualizations,
+          #webtlsservices,
           #onlinehosts {
             scroll-margin-top: 5.5rem;
+          }
+
+          #reportContent > hr.my-4 {
+            margin-top: 3.35rem !important;
+            margin-bottom: 1.35rem !important;
+            border: 0;
+            height: 2px;
+            border-radius: 999px;
+            opacity: 1;
+            background: linear-gradient(90deg, rgba(120, 144, 168, 0), rgba(120, 144, 168, 0.52), rgba(173, 186, 200, 0.48), rgba(120, 144, 168, 0.52), rgba(120, 144, 168, 0));
+            box-shadow: 0 0 0 1px rgba(110, 132, 154, 0.06), 0 0.35rem 0.9rem rgba(110, 132, 154, 0.10);
+          }
+
+          #reportContent > h2.bg-light.rounded,
+          #summary.bg-light,
+          footer.footer.bg-light {
+            background: var(--report-surface) !important;
+          }
+
+          #summary {
+            border: 1px solid var(--report-border);
+            box-shadow: var(--report-shadow);
+            margin-top: 0 !important;
+            margin-bottom: 3rem !important;
+          }
+
+          #reportContent > h2.bg-light.rounded {
+            border: 1px solid var(--report-border);
+            box-shadow: 0 0.15rem 0.56rem rgba(72, 94, 116, 0.075);
+          }
+
+          .section-heading-title {
+            display: block;
+            color: #24313d;
+            font-weight: 600;
+            line-height: 1.2;
+          }
+
+          .section-heading-subtitle {
+            display: block;
+            margin-top: 0.35rem;
+            color: #637282;
+            font-size: 0.92rem;
+            font-weight: 400;
+            line-height: 1.4;
+          }
+
+          .table {
+            --bs-table-bg: var(--report-surface);
+            --bs-table-striped-bg: #eef3f7;
+            --bs-table-hover-bg: var(--report-surface-hover);
+            --bs-table-border-color: var(--report-border);
+            color: #24313d;
+          }
+
+          .table-light,
+          .table > thead.table-light,
+          .table > thead.table-light > tr > th,
+          .table > thead.table-light > tr > td {
+            --bs-table-bg: var(--report-surface-muted);
+            --bs-table-border-color: var(--report-border);
+            background: var(--report-surface-muted) !important;
+            color: #24313d;
+          }
+
+          .table-responsive {
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+          }
+
+          .table-responsive > .dt-container,
+          .table-responsive > table {
+            background: var(--report-surface);
+            border: 1px solid var(--report-border);
+            border-radius: 0.75rem;
+            box-shadow: var(--report-shadow);
+          }
+
+          .table-responsive > .dt-container {
+            padding: 0.85rem 0.9rem 0.7rem;
+          }
+
+          .table-responsive > .dt-container .table {
+            margin-bottom: 0.75rem;
+          }
+
+          .table-responsive > .dt-container .d-flex.justify-content-between.align-items-center.mb-2 {
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.85rem !important;
+          }
+
+          .keyword-highlight-controls .form-control {
+            background: var(--report-surface);
+            border-color: var(--report-border);
           }
 
           .navbar-version-link {
             display: flex;
             align-items: center;
             height: 100%;
+            margin-right: 0.35rem;
+          }
+
+          #mainNavbar .container-fluid {
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            gap: 0.75rem;
+            flex-wrap: nowrap;
           }
 
           #navbarNav .navbar-nav.me-auto .nav-link {
@@ -424,28 +611,41 @@
 
           #navbarNav {
             width: 100%;
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: nowrap;
+            min-width: max-content;
           }
 
-          #navbarToggle {
-            margin-left: auto;
+          #navbarNav .navbar-nav {
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 0.25rem;
+            min-width: max-content;
           }
 
           @media (max-width: 991.98px) {
-            #navbarNav {
-              padding-top: 0.75rem;
+            #mainNavbar .container-fluid {
+              gap: 0.5rem;
             }
 
-            #navbarNav .navbar-nav {
-              gap: 0.25rem;
-            }
-          }
-
-          @media (min-width: 992px) {
             #navbarNav {
-              display: flex !important;
-              align-items: center;
-              justify-content: space-between;
+              gap: 0.5rem;
             }
+
+            #navbarNav .navbar-nav.me-auto .nav-link {
+              min-height: 2.75rem;
+              padding: 0.45rem 0.8rem;
+              font-size: 0.92rem;
+              border-radius: 0.6rem;
+            }
+
+            #navbarNav .navbar-nav.ms-auto .nav-link {
+              padding: 0.35rem 0.55rem;
+            }
+
           }
 
           <xsl:call-template name="render-visualization-styles"/>
@@ -454,12 +654,9 @@
       </head>
   </xsl:template>
   <xsl:template name="render-navbar">
-        <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <nav id="mainNavbar" class="navbar navbar-light bg-light fixed-top">
           <div class="container-fluid">
-            <button class="navbar-toggler" type="button" id="navbarToggle" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"/>
-            </button>
-            <div id="navbarNav" hidden="hidden">
+            <div id="navbarNav">
               <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                   <a class="nav-link" href="#summary">Summary</a>
@@ -474,10 +671,7 @@
                   <a class="nav-link" href="#serviceinventory">Service Summary</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#webservices">Web &amp; TLS Services</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#visualizations">Visualizations</a>
+                  <a class="nav-link" href="#webtlsservices">Web/TLS Services</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#onlinehosts">Host Details</a>
@@ -553,67 +747,45 @@
           <xsl:variable name="duration-hours" select="floor($duration-seconds div 3600)"/>
           <xsl:variable name="duration-minutes" select="floor(($duration-seconds mod 3600) div 60)"/>
           <xsl:variable name="duration-remainder-seconds" select="floor($duration-seconds mod 60)"/>
-          <div id="summary" class="bg-light p-4 rounded my-5 shadow-sm">
-            <h2 class="display-6 text-primary">Scan Summary</h2>
-            <h5 class="mb-3">
-              <small class="text-muted">
-                Nmap Version: <xsl:value-of select="/nmaprun/@version"/> <br/>
-                Scan Duration: <xsl:value-of select="/nmaprun/@startstr"/> - <xsl:value-of select="/nmaprun/runstats/finished/@timestr"/>
-                <xsl:text> (</xsl:text>
-                <xsl:if test="$duration-hours &gt; 0">
-                  <xsl:value-of select="$duration-hours"/>
-                  <xsl:text>h </xsl:text>
-                </xsl:if>
-                <xsl:if test="$duration-minutes &gt; 0 or $duration-hours &gt; 0">
-                  <xsl:value-of select="$duration-minutes"/>
-                  <xsl:text>m </xsl:text>
-                </xsl:if>
-                <xsl:value-of select="$duration-remainder-seconds"/>
-                <xsl:text>s)</xsl:text>
-              </small>
-            </h5>
+          <div id="summary" class="bg-light p-4 rounded shadow-sm">
             <div class="row g-3 mb-4">
               <div class="col-6 col-lg-3">
                 <a class="summary-card-link" href="#scannedhosts">
                   <div class="summary-card is-clickable">
-                    <div class="text-muted small text-uppercase">Hosts Scanned</div>
-                    <div class="fs-4 fw-semibold">
+                    <div class="summary-card-label">Hosts scanned</div>
+                    <div class="summary-card-value">
                       <xsl:value-of select="$total-hosts"/>
                     </div>
-                    <div class="summary-card-hint">Jump to Host Overview</div>
                   </div>
                 </a>
               </div>
               <div class="col-6 col-lg-3">
                 <a class="summary-card-link" href="#openservices">
                   <div class="summary-card is-clickable">
-                    <div class="text-muted small text-uppercase">Open Ports</div>
-                    <div class="fs-4 fw-semibold">
+                    <div class="summary-card-label">Open ports</div>
+                    <div class="summary-card-value">
                       <xsl:value-of select="$open-ports"/>
                     </div>
-                    <div class="summary-card-hint">Jump to Open Services</div>
                   </div>
                 </a>
               </div>
               <div class="col-6 col-lg-3">
                 <a class="summary-card-link" href="#serviceinventory">
                   <div class="summary-card is-clickable">
-                    <div class="text-muted small text-uppercase">Unique Services</div>
-                    <div class="fs-4 fw-semibold">
+                    <div class="summary-card-label">Unique services</div>
+                    <div class="summary-card-value">
                       <xsl:value-of select="$unique-services"/>
                     </div>
-                    <div class="summary-card-hint">Jump to Service Summary</div>
                   </div>
                 </a>
               </div>
               <div class="col-6 col-lg-3">
-                <a class="summary-card-link" href="#webservices">
+                <a class="summary-card-link" href="#webtlsservices">
                   <div class="summary-card is-clickable">
-                    <div class="text-muted small text-uppercase">Web/TLS Endpoints</div>
-                    <div class="fs-4 fw-semibold">
+                    <div class="summary-card-label">Web/TLS endpoints</div>
+                    <div class="summary-card-value">
                       <xsl:value-of select="$web-tls-endpoints"/>
                     </div>
-                    <div class="summary-card-hint">Jump to Web &amp; TLS Services</div>
                   </div>
                 </a>
               </div>
@@ -647,7 +819,7 @@
               </div>
             </div>
             <details class="summary-command">
-              <summary>Show Nmap command</summary>
+              <summary>Nmap Version: <xsl:value-of select="/nmaprun/@version"/><xsl:text> | </xsl:text>Scan Duration: <xsl:value-of select="/nmaprun/@startstr"/> - <xsl:value-of select="/nmaprun/runstats/finished/@timestr"/><xsl:text> (</xsl:text><xsl:if test="$duration-hours &gt; 0"><xsl:value-of select="$duration-hours"/><xsl:text>h </xsl:text></xsl:if><xsl:if test="$duration-minutes &gt; 0 or $duration-hours &gt; 0"><xsl:value-of select="$duration-minutes"/><xsl:text>m </xsl:text></xsl:if><xsl:value-of select="$duration-remainder-seconds"/><xsl:text>s)</xsl:text></summary>
               <pre>
                 <xsl:attribute name="text">
                   <xsl:value-of select="/nmaprun/@args"/>
@@ -655,6 +827,10 @@
                 <xsl:value-of select="/nmaprun/@args"/>
               </pre>
             </details>
+            <div class="summary-note">
+              <span class="summary-note-icon">ⓘ</span>
+              <span>Nmap's service detection is heuristic and may include false positives.</span>
+            </div>
             <div class="summary-toolbar">
               <div class="density-controls" aria-label="Table density controls">
                 <span class="density-controls-label">Table Density</span>
@@ -763,8 +939,14 @@
             return days > 0 ? `in ${absoluteDays} ${dayLabel}` : `${absoluteDays} ${dayLabel} ago`;
           }
 
+          function formatCertificateLifetimeYears(years) {
+            const roundedYears = years >= 10 ? Math.round(years * 10) / 10 : Math.round(years * 100) / 100;
+            return `${roundedYears} year${roundedYears === 1 ? "" : "s"}`;
+          }
+
           function initializeCertificateExpiryAlerts() {
             const dayMs = 24 * 60 * 60 * 1000;
+            const msPerYear = 365.2425 * dayMs;
 
             document.querySelectorAll(".certificate-expiry-value").forEach(element => {
               if (element.querySelector(".certificate-expiry-badge")) {
@@ -777,8 +959,15 @@
                 return;
               }
 
+              const rawValidFrom = (element.getAttribute("data-valid-from") || "").trim();
+              const validFromTimestamp = parseCertificateExpiry(rawValidFrom);
+
               const now = Date.now();
               const daysRemaining = Math.ceil((expiryTimestamp - now) / dayMs);
+              const validityYears = validFromTimestamp !== null
+                ? (expiryTimestamp - validFromTimestamp) / msPerYear
+                : null;
+              const isLongLived = validityYears !== null && validityYears >= 10;
               let statusText = "Valid";
               let statusClass = "is-valid";
 
@@ -788,12 +977,17 @@
               } else if (daysRemaining <= 30) {
                 statusText = "Expiring soon";
                 statusClass = "is-expiring";
+              } else if (isLongLived) {
+                statusText = "10y+ lifetime";
+                statusClass = "is-long-lived";
               }
 
               const badge = document.createElement("span");
               badge.className = `certificate-expiry-badge ${statusClass}`;
               badge.textContent = statusText;
-              badge.title = `${rawExpiry} (${formatCertificateDayCount(daysRemaining)})`;
+              badge.title = isLongLived
+                ? `${rawValidFrom} to ${rawExpiry} (${formatCertificateLifetimeYears(validityYears)})`
+                : `${rawExpiry} (${formatCertificateDayCount(daysRemaining)})`;
               element.appendChild(badge);
             });
           }
@@ -934,44 +1128,10 @@
           }
 
           function initializeNavbarToggle() {
-            const toggle = document.getElementById("navbarToggle");
             const menu = document.getElementById("navbarNav");
-            if (!toggle || !menu) return;
-
-            function syncNavbar() {
-              if (window.innerWidth >= 992) {
-                menu.hidden = false;
-                toggle.setAttribute("aria-expanded", "true");
-                window.requestAnimationFrame(syncDataTableFixedHeaders);
-                return;
-              }
-
-              const expanded = toggle.getAttribute("aria-expanded") === "true";
-              menu.hidden = !expanded;
-              window.requestAnimationFrame(syncDataTableFixedHeaders);
-            }
-
-            toggle.addEventListener("click", () => {
-              const expanded = toggle.getAttribute("aria-expanded") === "true";
-              toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
-              menu.hidden = expanded;
-              window.requestAnimationFrame(syncDataTableFixedHeaders);
-            });
-
-            menu.querySelectorAll(".navbar-nav.me-auto .nav-link[href^='#']").forEach(link => {
-              link.addEventListener("click", () => {
-                if (window.innerWidth >= 992) {
-                  return;
-                }
-
-                toggle.setAttribute("aria-expanded", "false");
-                menu.hidden = true;
-                window.requestAnimationFrame(syncDataTableFixedHeaders);
-              });
-            });
-
-            window.addEventListener("resize", syncNavbar);
-            syncNavbar();
+            if (!menu) return;
+            menu.hidden = false;
+            window.requestAnimationFrame(syncDataTableFixedHeaders);
           }
 
           function initializeSectionNav() {
@@ -1105,20 +1265,120 @@
               return;
             }
 
-            const tables = $.fn.dataTable.tables({ visible: true, api: true });
+            const tables = $.fn.dataTable.tables({ visible: true });
+            if (!tables || tables.length === 0) {
+              return;
+            }
+
             const headerOffset = getDataTableHeaderOffset();
 
-            tables.every(function () {
-              if (!this.fixedHeader) {
+            Array.from(tables).forEach(table => {
+              const api = $(table).DataTable();
+              if (!api || !api.fixedHeader) {
                 return;
               }
 
-              if (typeof this.fixedHeader.headerOffset === "function") {
-                this.fixedHeader.headerOffset(headerOffset);
+              if (typeof api.fixedHeader.headerOffset === "function") {
+                api.fixedHeader.headerOffset(headerOffset);
               }
 
-              if (typeof this.fixedHeader.adjust === "function") {
-                this.fixedHeader.adjust();
+              if (typeof api.fixedHeader.adjust === "function") {
+                api.fixedHeader.adjust();
+              }
+            });
+          }
+
+          function normalizeIpv6SortValue(address) {
+            let value = (address || "").trim().toLowerCase();
+            if (!value) {
+              return "";
+            }
+
+            const zoneIndex = value.indexOf("%");
+            if (zoneIndex !== -1) {
+              value = value.slice(0, zoneIndex);
+            }
+
+            if (value.includes(".")) {
+              const lastColonIndex = value.lastIndexOf(":");
+              const ipv4Part = lastColonIndex === -1 ? value : value.slice(lastColonIndex + 1);
+
+              if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ipv4Part)) {
+                const octets = ipv4Part.split(".").map(part => Number.parseInt(part, 10));
+                if (octets.every(octet => Number.isInteger(octet) && octet >= 0 && octet <= 255)) {
+                  const high = ((octets[0] << 8) | octets[1]).toString(16);
+                  const low = ((octets[2] << 8) | octets[3]).toString(16);
+                  value = `${lastColonIndex === -1 ? "" : value.slice(0, lastColonIndex)}:${high}:${low}`;
+                }
+              }
+            }
+
+            const parts = value.split("::");
+            if (parts.length > 2) {
+              return `z-${value}`;
+            }
+
+            const left = parts[0] ? parts[0].split(":").filter(Boolean) : [];
+            const right = parts.length === 2 && parts[1] ? parts[1].split(":").filter(Boolean) : [];
+            const missingGroups = 8 - (left.length + right.length);
+
+            if ((parts.length === 1 && left.length !== 8) || missingGroups < 0) {
+              return `z-${value}`;
+            }
+
+            const expanded = parts.length === 2
+              ? [...left, ...Array.from({ length: missingGroups }, () => "0"), ...right]
+              : left;
+
+            if (expanded.length !== 8) {
+              return `z-${value}`;
+            }
+
+            return `6-${expanded.map(part => part.padStart(4, "0")).join(":")}`;
+          }
+
+          function normalizeIpSortValue(rawValue) {
+            const value = (rawValue || "").trim().replace(/^\[/, "").replace(/\]$/, "");
+            if (!value || value.toLowerCase() === "n/a") {
+              return "";
+            }
+
+            if (/^\d{1,3}(\.\d{1,3}){3}$/.test(value)) {
+              const octets = value.split(".").map(part => Number.parseInt(part, 10));
+              if (octets.every(octet => Number.isInteger(octet) && octet >= 0 && octet <= 255)) {
+                return `4-${octets.map(octet => String(octet).padStart(3, "0")).join(".")}`;
+              }
+            }
+
+            if (value.includes(":")) {
+              return normalizeIpv6SortValue(value);
+            }
+
+            return `z-${value.toLowerCase()}`;
+          }
+
+          function applyAddressSortKeys(tableElement) {
+            if (!tableElement) {
+              return;
+            }
+
+            const headers = Array.from(tableElement.querySelectorAll("thead th")).map(header => ($(header).text() || '').trim());
+            const addressColumnIndex = headers.indexOf("Address");
+            if (addressColumnIndex === -1) {
+              return;
+            }
+
+            tableElement.querySelectorAll("tbody tr").forEach(row => {
+              const cells = row.querySelectorAll("td");
+              if (cells.length <= addressColumnIndex) {
+                return;
+              }
+
+              const addressCell = cells[addressColumnIndex];
+              const addressText = (addressCell.textContent || "").trim();
+              const sortValue = normalizeIpSortValue(addressText);
+              if (sortValue) {
+                addressCell.dataset.order = sortValue;
               }
             });
           }
@@ -1127,7 +1387,7 @@
             const exportNames = {
               "#table-services": "nmapview-open-services",
               "#table-overview": "nmapview-scanned-hosts",
-              "#web-services": "nmapview-web-services",
+              "#web-services": "nmapview-web-tls-services",
               "#service-inventory": "nmapview-service-inventory"
             };
             const exportName = exportNames[selector] || "nmapview-table-export";
@@ -1200,13 +1460,57 @@
               });
             }
 
+            if (selector === '#table-services') {
+              buttons.push({
+                text: 'Copy IP:Port',
+                className: 'btn btn-light',
+                action: async function (e, dt) {
+                  const endpoints = [];
+
+                  dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+                    const cells = $(row).find('td');
+                    const address = ($(cells.get(1)).text() || '').trim();
+                    const port = ($(cells.get(2)).text() || '').trim();
+
+                    if (address && port) {
+                      endpoints.push(`${address}:${port}`);
+                    }
+                  });
+
+                  const uniqueEndpoints = [...new Set(endpoints)];
+                  await copyTextToClipboard(uniqueEndpoints.join('\n'));
+                }
+              });
+            }
+
+            const columnDefs = [
+              { targets: [0], orderable: true }
+            ];
+
+            const tableElement = document.querySelector(selector);
+            if (tableElement) {
+              applyAddressSortKeys(tableElement);
+
+              const headers = Array.from(tableElement.querySelectorAll("thead th")).map(header => ($(header).text() || '').trim());
+              [
+                "Uptime (est.)",
+                "Hops",
+                "Pot. Issues",
+                "Uniqueness",
+                "Open TCP Ports",
+                "Open UDP Ports"
+              ].forEach(headerName => {
+                const columnIndex = headers.indexOf(headerName);
+                if (columnIndex !== -1) {
+                  columnDefs.push({ targets: [columnIndex], type: 'num' });
+                }
+              });
+            }
+
             const table = $(selector).DataTable({
               lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
               order: [[0, 'desc']],
-              columnDefs: [
-                { targets: [0], orderable: true },
-                { targets: [1], type: 'ip-address' },
-              ],
+              columnDefs: columnDefs,
               dom: '<"d-flex justify-content-between align-items-center mb-2"lfB>rtip',
               stateSave: true,
               buttons: buttons,
@@ -1249,7 +1553,10 @@
               }
 
               if (window.jQuery && $.fn.dataTable) {
-                $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+                const tables = $.fn.dataTable.tables({ visible: true });
+                if (tables && tables.length > 0) {
+                  new $.fn.dataTable.Api(tables).columns.adjust();
+                }
                 syncDataTableFixedHeaders();
               }
             }
@@ -1489,6 +1796,7 @@
 	              initializeCertificateExpiryAlerts();
                 formatVulnersChunks();
                 formatInventoryLists();
+                initializeHostUniquenessScores();
 	              initializeDataTable('#table-services');
 	              initializeDataTable('#table-overview');
 	              initializeDataTable('#web-services');

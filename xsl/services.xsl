@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:template name="render-open-services">
           <hr class="my-4"/>
-          <h2 id="openservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Open Services</h2>
+          <h2 id="openservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded"><span class="section-heading-title">Open Services</span><small class="section-heading-subtitle">Pivot by exposed endpoint to see which services are reachable, where they run, and what software they appear to be.</small></h2>
           <xsl:choose>
             <xsl:when test="count(/nmaprun/host/ports/port[state/@state='open']) &gt; 0">
               <div class="table-responsive">
@@ -28,6 +28,96 @@
                           <xsl:call-template name="resolve-effective-hostname"/>
                         </xsl:variable>
                         <xsl:variable name="ip" select="../../address[not(@addrtype='mac')][1]/@addr"/>
+                        <xsl:variable name="http-headers-output" select="script[@id='http-headers']/@output"/>
+                        <xsl:variable name="http-fingerprint-output" select="script[@id='fingerprint-strings']/elem[@key='GetRequest']"/>
+                        <xsl:variable name="http-title">
+                          <xsl:choose>
+                            <xsl:when test="count(script[@id='http-title']/elem[@key='title']) &gt; 0">
+                              <xsl:value-of select="script[@id='http-title']/elem[@key='title']"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:value-of select="script[@id='http-title']/@output"/>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-location">
+                          <xsl:choose>
+                            <xsl:when test="count(script[@id='http-title']/elem[@key='redirect_url']) &gt; 0">
+                              <xsl:value-of select="script[@id='http-title']/elem[@key='redirect_url']"/>
+                            </xsl:when>
+                            <xsl:when test="contains($http-headers-output, 'Location:')">
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-headers-output"/>
+                                <xsl:with-param name="label" select="'Location'"/>
+                              </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-fingerprint-output"/>
+                                <xsl:with-param name="label" select="'Location'"/>
+                              </xsl:call-template>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-server">
+                          <xsl:choose>
+                            <xsl:when test="count(script[@id='http-server-header']/elem) &gt; 0">
+                              <xsl:value-of select="script[@id='http-server-header']/elem[1]"/>
+                            </xsl:when>
+                            <xsl:when test="string(script[@id='http-server-header']/@output) != ''">
+                              <xsl:value-of select="script[@id='http-server-header']/@output"/>
+                            </xsl:when>
+                            <xsl:when test="contains($http-headers-output, 'Server:')">
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-headers-output"/>
+                                <xsl:with-param name="label" select="'Server'"/>
+                              </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:call-template name="extract-header-value">
+                                <xsl:with-param name="text" select="$http-fingerprint-output"/>
+                                <xsl:with-param name="label" select="'Server'"/>
+                              </xsl:call-template>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-powered-by">
+                          <xsl:choose>
+                            <xsl:when test="contains(translate($http-headers-output, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'powered-by:')">
+                              <xsl:call-template name="extract-powered-by-value">
+                                <xsl:with-param name="text" select="$http-headers-output"/>
+                              </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:call-template name="extract-powered-by-value">
+                                <xsl:with-param name="text" select="$http-fingerprint-output"/>
+                              </xsl:call-template>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-stack-source" select="concat($http-headers-output, '&#xA;', $http-fingerprint-output)"/>
+                        <xsl:variable name="http-stack-hint">
+                          <xsl:call-template name="extract-stack-hint-line">
+                            <xsl:with-param name="text" select="$http-stack-source"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:variable name="http-powered-by-evidence">
+                          <xsl:choose>
+                            <xsl:when test="string($http-powered-by) != ''">
+                              <xsl:value-of select="$http-powered-by"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <xsl:value-of select="$http-stack-hint"/>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="http-powered-by-stack">
+                          <xsl:call-template name="normalize-powered-by-stack">
+                            <xsl:with-param name="value" select="$http-stack-source"/>
+                          </xsl:call-template>
+                        </xsl:variable>
+                        <xsl:variable name="has-http-summary"
+                          select="starts-with(service/@name, 'http') or script[@id='ssl-cert'] or string($http-title) != '' or string($http-location) != '' or string($http-server) != '' or string($http-powered-by-stack) != '' or string($http-powered-by-evidence) != ''"/>
                         <tr>
                           <td>
                             <xsl:call-template name="render-hostname-or-na">
@@ -55,7 +145,35 @@
                             <xsl:value-of select="service/@version"/>
                           </td>
                           <td>
-                            <xsl:value-of select="service/@extrainfo"/>
+                            <xsl:if test="string(service/@extrainfo) != ''">
+                              <div>
+                                <xsl:value-of select="service/@extrainfo"/>
+                              </div>
+                            </xsl:if>
+                            <xsl:if test="$has-http-summary">
+                              <div class="http-details-block service-extra-http">
+                                <xsl:call-template name="render-http-row">
+                                  <xsl:with-param name="label" select="'Title'"/>
+                                  <xsl:with-param name="value" select="$http-title"/>
+                                </xsl:call-template>
+                                <xsl:call-template name="render-http-row">
+                                  <xsl:with-param name="label" select="'Location'"/>
+                                  <xsl:with-param name="value" select="$http-location"/>
+                                </xsl:call-template>
+                                <xsl:call-template name="render-http-row">
+                                  <xsl:with-param name="label" select="'Server'"/>
+                                  <xsl:with-param name="value" select="$http-server"/>
+                                </xsl:call-template>
+                                <xsl:call-template name="render-http-row">
+                                  <xsl:with-param name="label" select="'Stack'"/>
+                                  <xsl:with-param name="value" select="$http-powered-by-stack"/>
+                                </xsl:call-template>
+                                <xsl:call-template name="render-http-row">
+                                  <xsl:with-param name="label" select="'Powered-By'"/>
+                                  <xsl:with-param name="value" select="$http-powered-by-evidence"/>
+                                </xsl:call-template>
+                              </div>
+                            </xsl:if>
                           </td>
                           <td>
                             <xsl:call-template name="render-cpe-text">
@@ -71,6 +189,7 @@
                   </tbody>
                 </table>
               </div>
+              <xsl:call-template name="render-service-distribution"/>
             </xsl:when>
             <xsl:otherwise>
               <xsl:call-template name="render-empty-state">
@@ -122,25 +241,38 @@
           <xsl:choose>
             <xsl:when test="count(/nmaprun/host/ports/port[state/@state='open']) &gt; 0">
               <xsl:call-template name="render-service-counts-data"/>
-              <div class="my-4 row" style="margin: 20px 0;">
-	                <div id="flex-container" class="d-flex flex-wrap gap-4 align-items-start">
-	                  <div class="chart-container" style="flex: 1; max-width: 75%;">
-	                    <h4 class="fs-6 mt-4">Service Distribution Across Hosts</h4>
-	                    <div id="serviceChart" style="width: 100%; height: 250px"/>
-	                  </div>
-	                  <div class="list-container">
-                    <h3 class="fs-5 mb-3">Most Common Services</h3>
-                    <ul id="topServicesLedger" class="list-group" style="font-size: 16px; color: #333; font-weight: bold;">
-                    </ul>
+              <details class="visualization-card visualization-card-collapsible my-4" data-plot-targets="serviceChart" open="open">
+                <summary class="visualization-card-summary">
+                  <div class="visualization-card-header">
+                    <h4 class="visualization-card-title">Service Distribution Across Hosts</h4>
+                    <p class="visualization-card-note">See which services are most widespread and which appear on only a few hosts. Useful for separating normal baseline services from uncommon ones.</p>
+                  </div>
+                </summary>
+                <div class="visualization-card-body">
+                  <div class="service-distribution-layout">
+                    <div class="service-ledger-stack">
+                      <section class="service-ledger-section" aria-labelledby="topServicesLedgerTitle">
+                        <h5 id="topServicesLedgerTitle" class="service-ledger-title">Top 5 Common</h5>
+                        <div id="topServicesLedger" role="list"></div>
+                      </section>
+                    </div>
+                    <div class="service-distribution-chart">
+                      <div id="serviceChart" style="width: 100%; height: 220px"/>
+                    </div>
+                    <div class="service-ledger-stack">
+                      <section class="service-ledger-section" aria-labelledby="bottomServicesLedgerTitle">
+                        <h5 id="bottomServicesLedgerTitle" class="service-ledger-title">Top 5 Rare</h5>
+                        <div id="bottomServicesLedger" role="list"></div>
+                      </section>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </details>
+              <xsl:if test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
+                <xsl:call-template name="render-host-service-relationships-card"/>
+              </xsl:if>
             </xsl:when>
-            <xsl:otherwise>
-              <xsl:call-template name="render-empty-state">
-                <xsl:with-param name="message" select="'No open services are available for service distribution.'"/>
-              </xsl:call-template>
-            </xsl:otherwise>
+            <xsl:otherwise/>
           </xsl:choose>
   </xsl:template>
 </xsl:stylesheet>

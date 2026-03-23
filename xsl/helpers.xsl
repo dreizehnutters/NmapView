@@ -14,6 +14,47 @@
     </xsl:choose>
   </xsl:template>
 
+  <xsl:template name="render-ipv4-sort-key">
+    <xsl:param name="address"/>
+    <xsl:variable name="octet-1" select="substring-before($address, '.')"/>
+    <xsl:variable name="rest-1" select="substring-after($address, '.')"/>
+    <xsl:variable name="octet-2" select="substring-before($rest-1, '.')"/>
+    <xsl:variable name="rest-2" select="substring-after($rest-1, '.')"/>
+    <xsl:variable name="octet-3" select="substring-before($rest-2, '.')"/>
+    <xsl:variable name="octet-4" select="substring-after($rest-2, '.')"/>
+    <xsl:value-of select="concat(
+      '4-',
+      format-number(number($octet-1), '000'),
+      '.',
+      format-number(number($octet-2), '000'),
+      '.',
+      format-number(number($octet-3), '000'),
+      '.',
+      format-number(number($octet-4), '000')
+    )"/>
+  </xsl:template>
+
+  <xsl:template name="render-address-sort-key">
+    <xsl:param name="address"/>
+    <xsl:variable name="normalized-address" select="normalize-space($address)"/>
+    <xsl:choose>
+      <xsl:when test="string($normalized-address) = '' or $normalized-address = 'N/A'">
+        <xsl:text></xsl:text>
+      </xsl:when>
+      <xsl:when test="contains($normalized-address, '.') and not(contains($normalized-address, ':'))">
+        <xsl:call-template name="render-ipv4-sort-key">
+          <xsl:with-param name="address" select="$normalized-address"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:when test="contains($normalized-address, ':')">
+        <xsl:value-of select="concat('6-', translate($normalized-address, 'ABCDEF', 'abcdef'))"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="concat('z-', translate($normalized-address, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'))"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
   <xsl:template name="extract-first-dns-name">
     <xsl:param name="text"/>
     <xsl:variable name="normalized-text" select="normalize-space($text)"/>
@@ -338,6 +379,8 @@
     <xsl:param name="secondary" select="''"/>
     <xsl:param name="row-class" select="''"/>
     <xsl:param name="value-class" select="''"/>
+    <xsl:param name="data-valid-from" select="''"/>
+    <xsl:param name="data-valid-to" select="''"/>
     <xsl:if test="string($primary) != '' or string($secondary) != ''">
       <div>
         <xsl:attribute name="class">
@@ -359,6 +402,16 @@
               <xsl:value-of select="$value-class"/>
             </xsl:if>
           </xsl:attribute>
+          <xsl:if test="string($data-valid-from) != ''">
+            <xsl:attribute name="data-valid-from">
+              <xsl:value-of select="$data-valid-from"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:if test="string($data-valid-to) != ''">
+            <xsl:attribute name="data-valid-to">
+              <xsl:value-of select="$data-valid-to"/>
+            </xsl:attribute>
+          </xsl:if>
           <xsl:value-of select="$primary"/>
           <xsl:if test="string($secondary) != ''">
             <xsl:text> – </xsl:text>

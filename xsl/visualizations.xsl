@@ -5,32 +5,92 @@
   </xsl:template>
 
   <xsl:template name="render-visualization-styles">
-          ul#topServicesLedger {
-            list-style: none;
-            padding: 0;
-            max-width: 400px;
-            margin-top: 2rem;
+          #topServicesLedger,
+          #bottomServicesLedger {
+            display: block;
+            max-width: 100%;
+            margin: 0;
+            padding: 0.7rem 0.85rem;
+            border-radius: 0.85rem;
+            background: var(--report-surface);
+            border: 1px solid var(--report-border);
             font-family: Arial, sans-serif;
+            line-height: 1.45;
           }
 
-          ul#topServicesLedger li {
-            background: #f8f9fa;
-            border-radius: 6px;
-            padding: 10px 15px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 16px;
-            gap: 3rem;
+          .service-ledger-item {
+            display: inline;
+            padding: 0;
+            font-size: 0.92rem;
+            line-height: 1.2;
           }
 
-          ul#topServicesLedger .badge {
+          .service-ledger-name {
+            font-weight: 700;
+            color: #212529;
+            white-space: nowrap;
+          }
+
+          .service-ledger-separator {
+            display: inline-block;
+            margin: 0 0.2rem;
+            color: #6c757d;
+            font-weight: 700;
+            line-height: 1;
+            vertical-align: middle;
+          }
+
+          .service-ledger-item .badge {
+            display: inline-block;
+            margin-left: 0.4rem;
             background-color: #007bff;
             color: white;
-            padding: 6px 12px;
+            padding: 0.18rem 0.48rem;
             border-radius: 999px;
-            font-size: 14px;
+            font-size: 0.72rem;
+            line-height: 1.1;
+            vertical-align: baseline;
+          }
+
+          .service-distribution-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.7rem;
+            align-items: start;
+          }
+
+          .service-distribution-chart {
+            min-width: 0;
+          }
+
+          .service-ledger-stack {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 0.6rem 0.85rem;
+          }
+
+          .service-ledger-section {
+            display: inline-grid;
+            justify-items: center;
+            gap: 0.55rem;
+            width: fit-content;
+            max-width: 100%;
+          }
+
+          .service-ledger-title {
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #212529;
+          }
+
+          @media (max-width: 992px) {
+            .service-ledger-stack {
+              flex-direction: column;
+              align-items: center;
+            }
           }
 
           .visualization-grid {
@@ -39,11 +99,44 @@
           }
 
           .visualization-card {
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--report-border);
             border-radius: 0.9rem;
-            background: #ffffff;
-            box-shadow: 0 0.35rem 1rem rgba(33, 37, 41, 0.05);
+            background: var(--report-surface);
+            box-shadow: var(--report-shadow);
             overflow: hidden;
+          }
+
+          .visualization-card-collapsible {
+            overflow: hidden;
+          }
+
+          .visualization-card-summary {
+            cursor: pointer;
+            background: var(--report-surface);
+            display: list-item;
+            padding: 1rem 1.1rem;
+            list-style-position: inside;
+          }
+
+          .visualization-card-summary::marker {
+            color: #3f5f74;
+            font-size: 1rem;
+          }
+
+          .visualization-card-summary::-webkit-details-marker {
+            color: #3f5f74;
+          }
+
+          .visualization-card-summary .visualization-card-header {
+            padding: 0;
+            display: inline-block;
+            vertical-align: top;
+            width: calc(100% - 1.4rem);
+            transform: translateY(0.08rem);
+          }
+
+          .visualization-card-collapsible[open] .visualization-card-summary {
+            border-bottom: 1px solid var(--report-border);
           }
 
           .visualization-card-header {
@@ -111,95 +204,7 @@
           <h2 id="visualizations" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Visualizations</h2>
           <xsl:choose>
             <xsl:when test="count(/nmaprun/host) &gt; 0">
-              <div class="visualization-grid">
-                <div class="visualization-card">
-                  <div class="visualization-card-header">
-                    <h4 class="visualization-card-title">Operating System Distribution</h4>
-                    <p class="visualization-card-note">Compare platform families and spot where host coverage clusters.</p>
-                  </div>
-                  <div class="visualization-card-body">
-                    <div id="osTreemap" style="width: 1250px; max-width: 100%; height: 420px; margin: 0 auto;"/>
-                  </div>
-                </div>
-                <xsl:choose>
-                  <xsl:when test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
-                    <div id="matrixCount" class="d-none">
-                      <xsl:for-each select="//host">
-                        <xsl:variable name="effective-hostname">
-                          <xsl:call-template name="resolve-effective-hostname"/>
-                        </xsl:variable>
-                        <div class="host">
-                          <xsl:attribute name="data-host">
-	                            <xsl:value-of select="address[1]/@addr"/>
-	                            <xsl:if test="string(normalize-space($effective-hostname)) != ''">
-	                              <xsl:text> - </xsl:text>
-	                              <xsl:value-of select="$effective-hostname"/>
-	                            </xsl:if>
-                          </xsl:attribute>
-                          <xsl:for-each select="ports/port[state/@state='open' and service/@name]">
-                            <span class="port" data-port="{@portid}" data-conf="{service/@conf}">
-                              <xsl:attribute name="data-service">
-                                <xsl:value-of select="@protocol"/>
-                                <xsl:text>:</xsl:text>
-                                <xsl:if test="service/@tunnel = 'ssl'">
-                                  <xsl:text>ssl/</xsl:text>
-                                </xsl:if>
-                                <xsl:value-of select="service/@name"/>
-                              </xsl:attribute>
-                            </span>
-                          </xsl:for-each>
-                        </div>
-                      </xsl:for-each>
-                    </div>
-                    <div class="visualization-card">
-                      <div class="visualization-card-header">
-                        <h4 class="visualization-card-title">Open Ports Per Host</h4>
-                        <p class="visualization-card-note">Spot the hosts carrying the widest exposed surface first. Darker bar colors indicate more potential issues for that host.</p>
-                      </div>
-                      <div class="visualization-card-body">
-                        <div id="openPortsPerHostChart" style="width: 100%;"/>
-                      </div>
-                    </div>
-                    <div class="visualization-card">
-                      <div class="visualization-card-header">
-                        <h4 class="visualization-card-title">Host-Service Relationships</h4>
-                        <p class="visualization-card-note">See which services repeat across hosts and where they concentrate.</p>
-                      </div>
-                      <div class="visualization-card-body">
-                        <div id="hostServiceGraph" style="width: 100%;"/>
-                      </div>
-                    </div>
-                    <div class="visualization-card">
-                      <div class="visualization-card-header">
-                        <h4 class="visualization-card-title">Host-Port Matrix</h4>
-                        <p class="visualization-card-note">Find hosts that stand out from the common port exposure pattern. Amber cells mark ports at or below the selected percentile on hosts that also remain at or below that percentile for open services.</p>
-                        <div class="visualization-controls" aria-label="Host-Port Matrix controls">
-                          <label class="visualization-control-group" for="portMatrixPercentile">
-                            <span class="visualization-control-label">Anomaly Percentile</span>
-                            <input type="range" id="portMatrixPercentile" min="0.05" max="0.95" step="0.05" value="0.95"/>
-                            <span class="visualization-control-value" id="portMatrixPercentileValue">95th percentile</span>
-                          </label>
-                        </div>
-                      </div>
-                      <div class="visualization-card-body">
-                        <div id="portHostMatrix" style="width: 100%;"/>
-                      </div>
-                    </div>
-                    <div class="visualization-card">
-                      <div class="visualization-card-header">
-                        <h4 class="visualization-card-title">Service-Port Heatmap</h4>
-                        <p class="visualization-card-note">Identify which named services dominate specific ports at a glance.</p>
-                      </div>
-                      <div class="visualization-card-body">
-                        <div id="protocolPortMatrix" style="width: 100%;"/>
-                      </div>
-                    </div>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <p class="text-muted fst-italic mb-3 visualization-empty">No named open services are available for service-based visualization plots.</p>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </div>
+              <p class="text-muted fst-italic mb-3 visualization-empty">Visualization plots are embedded above in Host Overview, Open Services, and Service Summary.</p>
             </xsl:when>
             <xsl:otherwise>
               <xsl:call-template name="render-empty-state">
@@ -207,6 +212,111 @@
               </xsl:call-template>
             </xsl:otherwise>
           </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="render-os-distribution-card">
+          <details class="visualization-card visualization-card-collapsible my-4" data-plot-targets="osTreemap">
+            <summary class="visualization-card-summary">
+              <div class="visualization-card-header">
+                <h4 class="visualization-card-title">Operating System Distribution</h4>
+                <p class="visualization-card-note">See which OS families dominate the environment and where platform diversity or concentration stands out.</p>
+              </div>
+            </summary>
+            <div class="visualization-card-body">
+              <div id="osTreemap" style="width: 1250px; max-width: 100%; height: 420px; margin: 0 auto;"/>
+            </div>
+          </details>
+  </xsl:template>
+
+  <xsl:template name="render-open-ports-per-host-card">
+          <details class="visualization-card visualization-card-collapsible my-4" data-plot-targets="openPortsPerHostChart" open="open">
+            <summary class="visualization-card-summary">
+              <div class="visualization-card-header">
+                <h4 class="visualization-card-title">Open Ports Per Host</h4>
+                <p class="visualization-card-note">Compare host exposure at a glance. Use it to spot high-exposure systems and hosts that combine broad surface area with unusual service profiles.</p>
+              </div>
+            </summary>
+            <div class="visualization-card-body">
+              <div id="openPortsPerHostChart" style="width: 100%;"/>
+            </div>
+          </details>
+  </xsl:template>
+
+  <xsl:template name="render-host-service-relationships-card">
+          <details class="visualization-card visualization-card-collapsible my-4" data-plot-targets="hostServiceGraph">
+            <summary class="visualization-card-summary">
+              <div class="visualization-card-header">
+                <h4 class="visualization-card-title">Host-Service Relationships</h4>
+                <p class="visualization-card-note">See which services are shared across hosts and which ones are isolated. Useful for spotting common baselines versus one-off systems.</p>
+              </div>
+            </summary>
+            <div class="visualization-card-body">
+              <div id="hostServiceGraph" style="width: 100%;"/>
+            </div>
+          </details>
+  </xsl:template>
+
+  <xsl:template name="render-service-matrix-data">
+          <div id="matrixCount" class="d-none">
+            <xsl:for-each select="//host">
+              <xsl:variable name="effective-hostname">
+                <xsl:call-template name="resolve-effective-hostname"/>
+              </xsl:variable>
+              <xsl:variable name="ip" select="address[not(@addrtype='mac')][1]/@addr"/>
+              <div class="host">
+                <xsl:attribute name="data-address">
+                  <xsl:value-of select="$ip"/>
+                </xsl:attribute>
+                <xsl:attribute name="data-host">
+	                  <xsl:value-of select="$ip"/>
+	                  <xsl:if test="string(normalize-space($effective-hostname)) != ''">
+	                    <xsl:text> - </xsl:text>
+	                    <xsl:value-of select="$effective-hostname"/>
+	                  </xsl:if>
+                </xsl:attribute>
+                <xsl:for-each select="ports/port[state/@state='open' and service/@name]">
+                  <span class="port" data-port="{@portid}" data-conf="{service/@conf}">
+                    <xsl:attribute name="data-service">
+                      <xsl:value-of select="@protocol"/>
+                      <xsl:text>:</xsl:text>
+                      <xsl:if test="service/@tunnel = 'ssl'">
+                        <xsl:text>ssl/</xsl:text>
+                      </xsl:if>
+                      <xsl:value-of select="service/@name"/>
+                    </xsl:attribute>
+                  </span>
+                </xsl:for-each>
+              </div>
+            </xsl:for-each>
+          </div>
+  </xsl:template>
+
+  <xsl:template name="render-host-port-matrix-card">
+          <details class="visualization-card visualization-card-collapsible my-4" data-plot-targets="portHostMatrix" open="open">
+            <summary class="visualization-card-summary">
+              <div class="visualization-card-header">
+                <h4 class="visualization-card-title">Host-Port Matrix</h4>
+                <p class="visualization-card-note">See which ports appear on which hosts. Useful for spotting hosts that break the common exposure pattern or carry unusual ports. For visual clarity, the 95th percentile of uncommon ports is highlighted.</p>
+              </div>
+            </summary>
+            <div class="visualization-card-body">
+              <div id="portHostMatrix" style="width: 100%;"/>
+            </div>
+          </details>
+  </xsl:template>
+
+  <xsl:template name="render-service-port-heatmap-card">
+          <details class="visualization-card visualization-card-collapsible my-4" data-plot-targets="protocolPortMatrix">
+            <summary class="visualization-card-summary">
+              <div class="visualization-card-header">
+                <h4 class="visualization-card-title">Service-Port Heatmap</h4>
+                <p class="visualization-card-note">See which services cluster on which ports. Useful for confirming expected port usage and spotting unusual service-to-port combinations.</p>
+              </div>
+            </summary>
+            <div class="visualization-card-body">
+              <div id="protocolPortMatrix" style="width: 100%;"/>
+            </div>
+          </details>
   </xsl:template>
 
   <xsl:template name="render-visualization-scripts">
@@ -252,39 +362,50 @@
             return numbers[index];
           }
 
-          function formatPercentileLabel(percentile) {
-            const value = Math.round(clamp(Number(percentile), 0, 1) * 100);
-            const remainderTen = value % 10;
-            const remainderHundred = value % 100;
-            let suffix = "th";
-
-            if (remainderHundred < 11 || remainderHundred > 13) {
-              if (remainderTen === 1) suffix = "st";
-              else if (remainderTen === 2) suffix = "nd";
-              else if (remainderTen === 3) suffix = "rd";
-            }
-
-            return `${value}${suffix} percentile`;
-          }
-
-          function renderTopServices(sortedServices) {
-            const ledger = document.getElementById("topServicesLedger");
+          function renderServiceLedger(ledgerId, services, separatorText) {
+            const ledger = document.getElementById(ledgerId);
             if (!ledger) return;
 
             ledger.textContent = "";
-            sortedServices.slice(0, 5).forEach(([service, count]) => {
-              const listItem = document.createElement("li");
-              const title = document.createElement("strong");
+            (services || []).forEach(([service, count], index) => {
+              if (index > 0) {
+                const separator = document.createElement("span");
+                separator.className = "service-ledger-separator";
+                separator.textContent = separatorText;
+                ledger.appendChild(separator);
+              }
+
+              const listItem = document.createElement("div");
+              const title = document.createElement("span");
               const badge = document.createElement("span");
 
+              listItem.className = "service-ledger-item";
+              listItem.setAttribute("role", "listitem");
+              title.className = "service-ledger-name";
               title.textContent = service;
               badge.className = "badge";
               badge.textContent = String(count);
+              badge.title = `${count} host${count === 1 ? "" : "s"}`;
 
               listItem.appendChild(title);
               listItem.appendChild(badge);
               ledger.appendChild(listItem);
             });
+          }
+
+          function renderServiceLedgers(sortedServices) {
+            const topServices = sortedServices.slice(0, 5);
+            const bottomServices = sortedServices.length <= 5
+              ? sortedServices.slice()
+              : [...sortedServices]
+                .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0], undefined, {
+                  numeric: true,
+                  sensitivity: "base"
+                }))
+                .slice(0, 5);
+
+            renderServiceLedger("topServicesLedger", topServices, ">");
+            renderServiceLedger("bottomServicesLedger", bottomServices, "<");
           }
 
           function classifyOperatingSystemFamily(name) {
@@ -310,6 +431,308 @@
             }));
 
             return `Host details:<br>${uniqueHostDetails.join("<br>")}`;
+          }
+
+          function normalizeUniquenessService(service) {
+            const normalized = (service || "").trim().toLowerCase();
+            if (!normalized) {
+              return "";
+            }
+
+            const separatorIndex = normalized.indexOf(":");
+            const protocol = separatorIndex === -1 ? "" : normalized.slice(0, separatorIndex);
+            let serviceName = separatorIndex === -1 ? normalized : normalized.slice(separatorIndex + 1);
+
+            if (!serviceName || serviceName === "unknown") {
+              return "";
+            }
+
+            if (serviceName === "ssl/http" || serviceName === "ssl/https" || serviceName === "https") {
+              serviceName = "https";
+            }
+
+            return protocol ? `${protocol}:${serviceName}` : serviceName;
+          }
+
+          function formatUniquenessServiceLabel(serviceKey) {
+            const normalized = normalizeUniquenessService(serviceKey);
+            if (!normalized) {
+              return "unknown";
+            }
+
+            const separatorIndex = normalized.indexOf(":");
+            if (separatorIndex === -1) {
+              return normalized;
+            }
+
+            const protocol = normalized.slice(0, separatorIndex).toUpperCase();
+            const serviceName = normalized.slice(separatorIndex + 1);
+            return `${serviceName} (${protocol})`;
+          }
+
+          function setHostUniquenessCell(cell, options = {}) {
+            if (!cell) {
+              return;
+            }
+
+            const {
+              score = null,
+              rawScore = 0,
+              contributors = [],
+              isUp = false,
+              hasQualifyingServices = false
+            } = options;
+
+            cell.textContent = "";
+
+            if (!isUp) {
+              cell.dataset.order = "-1";
+              cell.dataset.search = "N/A";
+
+              const placeholder = document.createElement("span");
+              placeholder.className = "text-muted";
+              placeholder.textContent = "N/A";
+              cell.appendChild(placeholder);
+              return;
+            }
+
+            const normalizedScore = Number.isFinite(score) ? score : 0;
+            const value = document.createElement("span");
+            value.textContent = normalizedScore.toFixed(1);
+            if (normalizedScore <= 0) {
+              value.className = "text-muted";
+            }
+
+            if (contributors.length > 0) {
+              value.title = `Relative rarity score within this scan. Raw score: ${rawScore.toFixed(2)}. Top contributors: ${contributors.join(", ")}`;
+            } else if (hasQualifyingServices) {
+              value.title = `Relative rarity score within this scan. Raw score: ${rawScore.toFixed(2)}. No standout services on this host.`;
+            } else {
+              value.title = "No qualifying named services on this host.";
+            }
+
+            cell.dataset.order = normalizedScore.toFixed(4);
+            cell.dataset.search = normalizedScore.toFixed(1);
+            cell.appendChild(value);
+          }
+
+          function buildHostUniquenessScoreMap(hostOverviewTable) {
+            if (!hostOverviewTable) {
+              return new Map();
+            }
+
+            const headers = Array.from(hostOverviewTable.querySelectorAll("thead th")).map(header => (header.textContent || "").trim());
+            const addressColumnIndex = headers.indexOf("Address");
+            if (addressColumnIndex === -1) {
+              return new Map();
+            }
+
+            const rows = Array.from(hostOverviewTable.querySelectorAll("tbody tr"));
+            if (rows.length === 0) {
+              return new Map();
+            }
+
+            const upRows = rows.filter(row => (row.dataset.state || "").trim() === "up");
+            const totalUpHosts = upRows.length;
+            const hostServices = new Map();
+            const serviceFrequency = new Map();
+
+            document.querySelectorAll("#matrixCount .host").forEach(hostElement => {
+              const address = (hostElement.dataset.address || "").trim();
+              if (!address) {
+                return;
+              }
+
+              const uniqueServices = new Map();
+
+              hostElement.querySelectorAll(".port").forEach(portElement => {
+                const confidence = Number.parseInt(portElement.dataset.conf || "", 10);
+                if (Number.isFinite(confidence) && confidence <= 3) {
+                  return;
+                }
+
+                const serviceKey = normalizeUniquenessService(portElement.dataset.service || "");
+                if (!serviceKey) {
+                  return;
+                }
+
+                if (!uniqueServices.has(serviceKey)) {
+                  uniqueServices.set(serviceKey, {
+                    key: serviceKey,
+                    label: formatUniquenessServiceLabel(serviceKey)
+                  });
+                }
+              });
+
+              hostServices.set(address, uniqueServices);
+              uniqueServices.forEach((_, serviceKey) => {
+                serviceFrequency.set(serviceKey, (serviceFrequency.get(serviceKey) || 0) + 1);
+              });
+            });
+
+            const hostRawScores = new Map();
+            let maxRawScore = 0;
+
+            upRows.forEach(row => {
+              const cells = row.querySelectorAll("td");
+              const address = (row.dataset.address || (cells.length > addressColumnIndex ? cells[addressColumnIndex].textContent : "") || "").trim();
+              if (!address) {
+                return;
+              }
+              const services = hostServices.get(address) || new Map();
+              const contributors = [];
+              let rawScore = 0;
+
+              services.forEach(entry => {
+                const frequency = serviceFrequency.get(entry.key) || 0;
+                if (!frequency || totalUpHosts <= 1) {
+                  return;
+                }
+
+                const weight = Math.log2(totalUpHosts / frequency);
+                if (!Number.isFinite(weight) || weight <= 0) {
+                  return;
+                }
+
+                rawScore += weight;
+                contributors.push({
+                  label: entry.label,
+                  weight: weight
+                });
+              });
+
+              contributors.sort((a, b) => b.weight - a.weight || a.label.localeCompare(b.label, undefined, {
+                numeric: true,
+                sensitivity: "base"
+              }));
+
+              hostRawScores.set(address, {
+                rawScore,
+                contributors: contributors.slice(0, 3).map(entry => `${entry.label} (${entry.weight.toFixed(2)})`),
+                hasQualifyingServices: services.size > 0
+              });
+              maxRawScore = Math.max(maxRawScore, rawScore);
+            });
+
+            const hostScores = new Map();
+            hostRawScores.forEach((scoreDetails, address) => {
+              hostScores.set(address, {
+                ...scoreDetails,
+                score: maxRawScore > 0 ? (scoreDetails.rawScore / maxRawScore) * 100 : 0
+              });
+            });
+
+            return hostScores;
+          }
+
+          function initializeHostUniquenessScores() {
+            const hostOverviewTable = document.getElementById("table-overview");
+            if (!hostOverviewTable) {
+              return new Map();
+            }
+
+            const headers = Array.from(hostOverviewTable.querySelectorAll("thead th")).map(header => (header.textContent || "").trim());
+            const addressColumnIndex = headers.indexOf("Address");
+            const uniquenessColumnIndex = headers.indexOf("Uniqueness");
+            if (addressColumnIndex === -1 || uniquenessColumnIndex === -1) {
+              return new Map();
+            }
+
+            const rows = Array.from(hostOverviewTable.querySelectorAll("tbody tr"));
+            if (rows.length === 0) {
+              return new Map();
+            }
+
+            const hostScores = buildHostUniquenessScoreMap(hostOverviewTable);
+
+            rows.forEach(row => {
+              const cells = row.querySelectorAll("td");
+              if (cells.length <= uniquenessColumnIndex) {
+                return;
+              }
+
+              const cell = cells[uniquenessColumnIndex];
+              const isUp = (row.dataset.state || "").trim() === "up";
+              if (!isUp) {
+                setHostUniquenessCell(cell, { isUp: false });
+                return;
+              }
+
+              const address = (row.dataset.address || cells[addressColumnIndex].textContent || "").trim();
+              const scoreDetails = hostScores.get(address) || {
+                score: 0,
+                rawScore: 0,
+                contributors: [],
+                hasQualifyingServices: false
+              };
+
+              setHostUniquenessCell(cell, {
+                score: scoreDetails.score,
+                rawScore: scoreDetails.rawScore,
+                contributors: scoreDetails.contributors,
+                isUp: true,
+                hasQualifyingServices: scoreDetails.hasQualifyingServices
+              });
+            });
+
+            return hostScores;
+          }
+
+          function getCollapsiblePlotTargets(detailsElement) {
+            return (detailsElement && detailsElement.dataset.plotTargets
+              ? detailsElement.dataset.plotTargets.split(/\s+/)
+              : [])
+              .map(value => value.trim())
+              .filter(Boolean);
+          }
+
+          function refreshVisualizationPlot(plotId) {
+            const plotElement = document.getElementById(plotId);
+            if (!plotElement || !window.Plotly || !plotElement.data) {
+              return;
+            }
+
+            if (plotId === "osTreemap") {
+              const parentWidth = plotElement.parentElement ? plotElement.parentElement.clientWidth : 0;
+              const treemapWidth = Math.min(1250, Math.max(parentWidth || 0, 320));
+              const treemapHeight = Math.max(315, Math.round(treemapWidth * 0.336));
+
+              plotElement.style.width = `${treemapWidth}px`;
+              plotElement.style.height = `${treemapHeight}px`;
+              plotElement.style.margin = "0 auto";
+              Plotly.relayout(plotElement, {
+                width: treemapWidth,
+                height: treemapHeight
+              });
+            } else if (plotId === "serviceChart") {
+              plotElement.style.width = "100%";
+              Plotly.relayout(plotElement, {
+                autosize: true,
+                height: 220
+              });
+            }
+
+            Plotly.Plots.resize(plotElement);
+          }
+
+          function refreshCollapsibleVisualization(detailsElement) {
+            getCollapsiblePlotTargets(detailsElement).forEach(refreshVisualizationPlot);
+          }
+
+          function getReportCssVar(name, fallback) {
+            try {
+              const value = window.getComputedStyle(document.documentElement).getPropertyValue(name);
+              return (value || "").trim() || fallback;
+            } catch (error) {
+              return fallback;
+            }
+          }
+
+          function getPlotLayoutTheme() {
+            return {
+              paper_bgcolor: getReportCssVar("--report-surface", "#f7f9fb"),
+              plot_bgcolor: getReportCssVar("--report-surface", "#f7f9fb")
+            };
           }
         ]]></script>
         <script><![CDATA[
@@ -360,7 +783,7 @@
               const layout = {
                 title: "",
                 barmode: "stack",
-                height: 250,
+                height: 220,
                 xaxis: {
                   title: "Frequency",
                   automargin: true,
@@ -375,11 +798,12 @@
                 },
                 showlegend: false,
                 margin: {
-                  t: 40,
-                  b: 80,
+                  t: 24,
+                  b: 34,
                   l: 50,
                   r: 30
-                }
+                },
+                ...getPlotLayoutTheme()
               };
 
               Plotly.newPlot("serviceChart", traces, layout, {
@@ -387,7 +811,7 @@
                 responsive: true
               });
 
-              renderTopServices(sortedServices);
+              renderServiceLedgers(sortedServices);
             }
 
             const hostOverviewTable = document.getElementById("table-overview");
@@ -457,7 +881,7 @@
             const treemapValues = [osEntries.reduce((total, entry) => total + entry.hosts, 0)];
             const treemapCustomData = [["All OS families", String(treemapValues[0])]];
             const treemapHoverText = [];
-            const treemapColors = ["#495057"];
+            const treemapColors = [getReportCssVar("--report-surface-muted", "#e6ebf0")];
             const treemapWidth = Math.min(1250, osTreemap.parentElement ? osTreemap.parentElement.clientWidth : 1250);
             const treemapHeight = Math.max(315, Math.round(treemapWidth * 0.336));
 
@@ -521,7 +945,8 @@
               title: "",
               width: treemapWidth,
               height: treemapHeight,
-              margin: { t: 10, l: 10, r: 10, b: 10 }
+              margin: { t: 10, l: 10, r: 10, b: 10 },
+              ...getPlotLayoutTheme()
             }, {
               displayModeBar: false,
               responsive: true
@@ -555,10 +980,15 @@
             });
 
             const ports = Array.from(portsSet).sort((a, b) => a - b);
+            const portCoverageCounts = Object.fromEntries(
+              ports.map(port => [
+                port,
+                hosts.reduce((count, host) => count + (openServices[host][port] ? 1 : 0), 0)
+              ])
+            );
             const portHostMatrix = document.getElementById("portHostMatrix");
             if (portHostMatrix) {
-              const percentileInput = document.getElementById("portMatrixPercentile");
-              const percentileValue = document.getElementById("portMatrixPercentileValue");
+              const fixedPercentile = 0.95;
               const sortedHosts = [...hosts].sort((a, b) => a.localeCompare(b, undefined, {
                 numeric: true,
                 sensitivity: "base"
@@ -601,7 +1031,6 @@
                   tickwidth: 1
                 },
                 yaxis: {
-                  title: { text: "Host" },
                   type: "category",
                   autorange: "reversed",
                   automargin: true,
@@ -613,15 +1042,13 @@
                 margin: { t: 80, l: 120, r: 50, b: 100 },
                 dragmode: false,
                 width: dynamicWidth,
-                height: dynamicHeight
+                height: dynamicHeight,
+                ...getPlotLayoutTheme()
               };
 
               function renderPortHostMatrix(percentile) {
                 const anomalyHostThreshold = calculatePercentile(hostCountValues, percentile);
                 const anomalyPortThreshold = calculatePercentile(portCountValues, percentile);
-                if (percentileValue) {
-                  percentileValue.textContent = formatPercentileLabel(percentile);
-                }
 
                 const z = sortedHosts.map(host =>
                   ports.map(port => {
@@ -693,7 +1120,7 @@
                   xgap: 2,
                   ygap: 2,
                   hoverongaps: false,
-                  hovertemplate: "Host: %{customdata[0]}<br>Port: %{customdata[1]}<br>Service: %{customdata[2]}<br>Open services on host: %{customdata[3]}<br>Hosts with port: %{customdata[4]}<br>Host threshold: %{customdata[5]} service(s)<br>Port threshold: %{customdata[6]} host(s)<br>Class: %{customdata[7]}<extra></extra>",
+                  hovertemplate: "Host: %{customdata[0]}<br>Port: %{customdata[1]}<br>Service: %{customdata[2]}<br>Open services on host: %{customdata[3]}<br>Hosts with port: %{customdata[4]}<extra></extra>",
                   text: zText
                 }];
 
@@ -705,14 +1132,7 @@
                 Plotly.newPlot("portHostMatrix", data, layout, matrixConfig);
               }
 
-              const initialPercentile = percentileInput ? Number.parseFloat(percentileInput.value) || 0.5 : 0.5;
-              renderPortHostMatrix(initialPercentile);
-
-              if (percentileInput) {
-                percentileInput.addEventListener("input", () => {
-                  renderPortHostMatrix(Number.parseFloat(percentileInput.value) || 0.5);
-                });
-              }
+              renderPortHostMatrix(fixedPercentile);
             }
 
             const protocolPortMatrix = document.getElementById("protocolPortMatrix");
@@ -720,9 +1140,12 @@
               return;
             }
 
+            const heatmapPorts = [...ports].sort((a, b) =>
+              (portCoverageCounts[b] || 0) - (portCoverageCounts[a] || 0) || a - b
+            );
             const services = Array.from(servicesSet).sort();
             const z = services.map(service =>
-              ports.map(port => {
+              heatmapPorts.map(port => {
                 let count = 0;
                 for (const host of hosts) {
                   if (openServices[host][port] === service) count++;
@@ -746,19 +1169,19 @@
             });
             const zText = sortedZ.map(row => row.map(value => value > 0 ? value.toString() : ""));
             const hoverData = sortedServices.map((service, index) =>
-              ports.map(port => [String(port), service, String(sortedTotals[index])])
+              heatmapPorts.map(port => [String(port), service, String(sortedTotals[index])])
             );
             const yLabels = sortedServices.map((service, index) => `${service} (${sortedTotals[index]})`);
 
             const data = [{
               z: sortedZ,
-              x: ports.map(String),
+              x: heatmapPorts.map(String),
               y: yLabels,
               text: zText,
               customdata: hoverData,
               type: "heatmap",
-              colorscale: "Portland",
-              showscale: true,
+              colorscale: "BuGn",
+              showscale: false,
               hoverongaps: false,
               hovertemplate: "Port: %{customdata[0]}<br>Service: %{customdata[1]}<br>Total: %{customdata[2]}<br>Occurrences: %{z}<extra></extra>",
               texttemplate: "%{text}",
@@ -766,7 +1189,7 @@
             }];
 
             const dynamicHeight = Math.max(600, sortedServices.length * heatmapTileSize + 160);
-            const dynamicWidth = Math.max(900, ports.length * heatmapTileSize + 260);
+            const dynamicWidth = Math.max(900, heatmapPorts.length * heatmapTileSize + 260);
             protocolPortMatrix.style.height = dynamicHeight + "px";
             protocolPortMatrix.style.width = dynamicWidth + "px";
             protocolPortMatrix.style.margin = "0 auto";
@@ -781,13 +1204,13 @@
                 automargin: true
               },
               yaxis: {
-                title: { text: "Service" },
                 automargin: true
               },
               margin: { t: 80, l: 200, r: 50, b: 100 },
               width: dynamicWidth,
               height: dynamicHeight,
-              dragmode: false
+              dragmode: false,
+              ...getPlotLayoutTheme()
             };
 
             Plotly.newPlot("protocolPortMatrix", data, layout, matrixConfig);
@@ -795,6 +1218,7 @@
             const openPortsPerHostChart = document.getElementById("openPortsPerHostChart");
             if (openPortsPerHostChart) {
               const hostOverviewTable = document.getElementById("table-overview");
+              const hostUniquenessScores = buildHostUniquenessScoreMap(hostOverviewTable);
               const hostIssueCounts = new Map();
 
               if (hostOverviewTable) {
@@ -841,16 +1265,37 @@
                 return hostIssueCounts.get(address) || 0;
               }
 
+              function getHostUniquenessDetails(hostLabel) {
+                if (hostUniquenessScores.has(hostLabel)) {
+                  return hostUniquenessScores.get(hostLabel) || null;
+                }
+
+                const separatorIndex = hostLabel.indexOf(" - ");
+                if (separatorIndex === -1) {
+                  return hostUniquenessScores.get(hostLabel) || null;
+                }
+
+                const address = hostLabel.slice(0, separatorIndex).trim();
+                return hostUniquenessScores.get(address) || null;
+              }
+
               const hostOpenPortCounts = hosts
                 .map(host => ({
                   host,
                   tcp: Object.entries(openServices[host]).filter(([, service]) => service.startsWith("tcp:")).length,
                   udp: Object.entries(openServices[host]).filter(([, service]) => service.startsWith("udp:")).length,
-                  issues: getHostIssueCount(host)
+                  issues: getHostIssueCount(host),
+                  uniquenessDetails: getHostUniquenessDetails(host)
                 }))
                 .map(entry => ({
                   ...entry,
-                  total: entry.tcp + entry.udp
+                  total: entry.tcp + entry.udp,
+                  uniqueness: entry.uniquenessDetails && Number.isFinite(entry.uniquenessDetails.score)
+                    ? entry.uniquenessDetails.score
+                    : 0,
+                  uniquenessContributors: entry.uniquenessDetails && Array.isArray(entry.uniquenessDetails.contributors)
+                    ? entry.uniquenessDetails.contributors
+                    : []
                 }))
                 .sort((a, b) => b.total - a.total || a.host.localeCompare(b.host));
               const truncatedHosts = hostOpenPortCounts.map(entry => truncateLabel(entry.host));
@@ -973,6 +1418,43 @@
                     color: "#ffffff"
                   }
                 }
+              }, {
+                type: "scatter",
+                mode: "markers",
+                y: truncatedHosts,
+                x: hostOpenPortCounts.map(entry => entry.uniqueness),
+                xaxis: "x2",
+                customdata: hostOpenPortCounts.map(entry => [
+                  entry.host,
+                  String(entry.tcp),
+                  String(entry.udp),
+                  String(entry.total),
+                  String(entry.issues),
+                  entry.uniqueness.toFixed(1),
+                  entry.uniquenessContributors.length > 0
+                    ? entry.uniquenessContributors.join(", ")
+                    : "No standout services"
+                ]),
+                marker: {
+                  size: 10,
+                  symbol: "diamond",
+                  opacity: 0.95,
+                  color: "#3f5f74",
+                  line: {
+                    color: getReportCssVar("--report-surface", "#f7f9fb"),
+                    width: 1.5
+                  }
+                },
+                hovertemplate: "%{customdata[0]}<br>Total open ports: %{customdata[3]}<br>TCP: %{customdata[1]}<br>UDP: %{customdata[2]}<br>Potential issues: %{customdata[4]}<br>Uniqueness: %{customdata[5]}<br>Drivers: %{customdata[6]}<extra></extra>",
+                hoverlabel: {
+                  bgcolor: "#43505c",
+                  bordercolor: "#2f3943",
+                  font: {
+                    color: "#ffffff"
+                  }
+                },
+                showlegend: false,
+                cliponaxis: false
               }];
 
               const dynamicHeight = Math.max(320, hostOpenPortCounts.length * 28);
@@ -983,7 +1465,7 @@
 
               const layout = {
                 title: "",
-                margin: { t: 20, l: 220, r: 60, b: 50 },
+                margin: { t: 60, l: 220, r: 90, b: 50 },
                 width: dynamicWidth,
                 height: dynamicHeight,
                 xaxis: {
@@ -999,6 +1481,25 @@
                   ticktext: xGuideValues.map(String),
                   showline: true,
                   linecolor: "rgba(0,0,0,0.25)",
+                  linewidth: 1,
+                  ticks: "outside",
+                  ticklen: 6,
+                  tickcolor: "rgba(0,0,0,0.2)"
+                },
+                xaxis2: {
+                  title: { text: "Uniqueness" },
+                  overlaying: "x",
+                  side: "top",
+                  range: [0, 100],
+                  automargin: true,
+                  fixedrange: true,
+                  showgrid: false,
+                  zeroline: false,
+                  tickmode: "array",
+                  tickvals: [0, 20, 40, 60, 80, 100],
+                  ticktext: ["0", "20", "40", "60", "80", "100"],
+                  showline: true,
+                  linecolor: "rgba(0,0,0,0.22)",
                   linewidth: 1,
                   ticks: "outside",
                   ticklen: 6,
@@ -1021,7 +1522,8 @@
                 barmode: "stack",
                 showlegend: false,
                 dragmode: false,
-                bargap: 0.1
+                bargap: 0.1,
+                ...getPlotLayoutTheme()
               };
 
               Plotly.newPlot("openPortsPerHostChart", data, layout, matrixConfig);
@@ -1097,7 +1599,8 @@
                   height: dynamicHeight,
                   font: {
                     size: 12
-                  }
+                  },
+                  ...getPlotLayoutTheme()
                 };
 
                 Plotly.newPlot("hostServiceGraph", data, layout, {
@@ -1106,6 +1609,24 @@
                 });
               }
             }
+          });
+        ]]></script>
+        <script><![CDATA[
+          document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll("details.visualization-card-collapsible").forEach(detailsElement => {
+              detailsElement.addEventListener("toggle", function() {
+                if (!detailsElement.open) {
+                  return;
+                }
+
+                window.requestAnimationFrame(() => refreshCollapsibleVisualization(detailsElement));
+                window.setTimeout(() => refreshCollapsibleVisualization(detailsElement), 140);
+              });
+
+              if (detailsElement.open) {
+                window.requestAnimationFrame(() => refreshCollapsibleVisualization(detailsElement));
+              }
+            });
           });
         ]]></script>
   </xsl:template>

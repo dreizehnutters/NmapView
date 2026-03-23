@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:template name="render-scanned-hosts">
-          <h2 id="scannedhosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Host Overview</h2>
+          <h2 id="scannedhosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded"><span class="section-heading-title">Host Overview</span><small class="section-heading-subtitle">Review scanned hosts at a high level to understand exposure, identity, and triage priority.</small></h2>
           <xsl:variable name="recorded-hosts" select="count(/nmaprun/host)"/>
           <xsl:variable name="runstats-total-hosts" select="number(/nmaprun/runstats/hosts/@total)"/>
           <xsl:choose>
 	            <xsl:when test="$recorded-hosts &gt; 0">
-	              <xsl:call-template name="render-service-distribution"/>
 	              <div class="table-responsive">
                 <table id="table-overview" class="table table-striped table-hover align-middle" role="grid">
                   <thead class="table-light">
@@ -17,15 +16,20 @@
 	                      <th scope="col">OS</th>
 	                      <th scope="col">Address</th>
 	                      <th scope="col">Hostname</th>
+	                      <th scope="col">Open TCP Ports</th>
+	                      <th scope="col">Open UDP Ports</th>
 	                      <th scope="col">
 	                        <span title="Estimated by Nmap from TCP timestamps; useful as context, not an exact reboot time.">Uptime (est.)</span>
 	                      </th>
 	                      <th scope="col">
-	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Distance (hops)</span>
+	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Hops</span>
 	                      </th>
-	                      <th scope="col">Pot. Issues</th>
-	                      <th scope="col">Open TCP Ports</th>
-	                      <th scope="col">Open UDP Ports</th>
+	                      <th scope="col">
+	                        <span title="Aggregate count of Vulners matches across this host's open services. Treat as a rough indicator only; it can include false positives.">Pot. Issues</span>
+	                      </th>
+	                      <th scope="col">
+	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Uniqueness</span>
+	                      </th>
 	                    </tr>
 	                  </thead>
 	                  <tbody>
@@ -40,13 +44,14 @@
 	                      <xsl:variable name="hostname">
                           <xsl:call-template name="resolve-effective-hostname"/>
                         </xsl:variable>
+	                      <xsl:variable name="ip" select="address[not(@addrtype='mac')][1]/@addr"/>
 	                      <xsl:variable name="mac-address" select="address[@addrtype='mac']/@addr"/>
 	                      <xsl:variable name="mac-vendor" select="address[@addrtype='mac']/@vendor"/>
 	                      <xsl:variable name="os-name" select="os/osmatch[1]/@name"/>
 	                      <xsl:variable name="has-uptime-estimate" select="status/@state='up' and (string(uptime/@lastboot) != '' or $uptime-seconds &gt; 0)"/>
-	                      <tr>
+	                      <tr data-state="{status/@state}" data-address="{$ip}">
                         <td>
-                          <span class="badge bg-warning">
+                          <span class="badge text-bg-secondary">
                             <xsl:if test="status/@state='up'">
                               <xsl:attribute name="class">badge bg-success</xsl:attribute>
                             </xsl:if>
@@ -84,7 +89,11 @@
                           </xsl:choose>
                         </td>
                         <td>
-                          <xsl:variable name="ip" select="address[not(@addrtype='mac')][1]/@addr"/>
+                          <xsl:attribute name="data-order">
+                            <xsl:call-template name="render-address-sort-key">
+                              <xsl:with-param name="address" select="$ip"/>
+                            </xsl:call-template>
+                          </xsl:attribute>
                           <xsl:choose>
                             <xsl:when test="$is-up">
                               <xsl:call-template name="render-onlinehosts-link">
@@ -107,6 +116,50 @@
 	                          </xsl:choose>
 	                        </td>
 	                        <td>
+                          <xsl:attribute name="data-order">
+                            <xsl:choose>
+                              <xsl:when test="$is-up">
+                                <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='tcp'])"/>
+                              </xsl:when>
+                              <xsl:otherwise>-1</xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                          <xsl:choose>
+                            <xsl:when test="$is-up">
+                              <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='tcp'])"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <span class="text-muted">N/A</span>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </td>
+                        <td>
+                          <xsl:attribute name="data-order">
+                            <xsl:choose>
+                              <xsl:when test="$is-up">
+                                <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='udp'])"/>
+                              </xsl:when>
+                              <xsl:otherwise>-1</xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                          <xsl:choose>
+                            <xsl:when test="$is-up">
+                              <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='udp'])"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <span class="text-muted">N/A</span>
+                            </xsl:otherwise>
+                          </xsl:choose>
+                        </td>
+	                        <td>
+                          <xsl:attribute name="data-order">
+                            <xsl:choose>
+                              <xsl:when test="$has-uptime-estimate and string($uptime-seconds-raw) != ''">
+                                <xsl:value-of select="$uptime-seconds"/>
+                                </xsl:when>
+                                <xsl:otherwise>-1</xsl:otherwise>
+                              </xsl:choose>
+                            </xsl:attribute>
 	                          <xsl:choose>
 	                            <xsl:when test="$has-uptime-estimate">
 	                              <span>
@@ -155,6 +208,14 @@
 	                          </xsl:choose>
 	                        </td>
 	                        <td>
+                            <xsl:attribute name="data-order">
+                              <xsl:choose>
+                                <xsl:when test="status/@state='up' and string(distance/@value) != ''">
+                                  <xsl:value-of select="number(distance/@value)"/>
+                                </xsl:when>
+                                <xsl:otherwise>-1</xsl:otherwise>
+                              </xsl:choose>
+                            </xsl:attribute>
 	                          <xsl:choose>
 	                            <xsl:when test="status/@state='up' and string(distance/@value) != ''">
 	                              <span>
@@ -167,13 +228,19 @@
 	                            </xsl:otherwise>
 	                          </xsl:choose>
 	                        </td>
-	                        <td>
-	                          <xsl:choose>
+                        <td>
+                          <xsl:attribute name="data-order">
+                            <xsl:choose>
+                              <xsl:when test="not($is-up)">-1</xsl:when>
+                              <xsl:otherwise><xsl:value-of select="$vuln-count"/></xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                          <xsl:choose>
                             <xsl:when test="not($is-up)">
                               <span class="text-muted">N/A</span>
                             </xsl:when>
                             <xsl:when test="$vuln-count &gt; 0">
-                              <span class="badge rounded-pill text-bg-warning host-vuln-badge">
+                              <span>
                                 <xsl:attribute name="title">
                                   <xsl:value-of select="$vuln-count"/>
                                   <xsl:text> Vulners entries across open services</xsl:text>
@@ -182,24 +249,14 @@
                               </span>
                             </xsl:when>
                             <xsl:otherwise>
-                              <span class="badge rounded-pill text-bg-secondary host-vuln-badge">0</span>
+                              <span class="text-muted">0</span>
                             </xsl:otherwise>
                           </xsl:choose>
                         </td>
-                        <td>
+                        <td class="host-uniqueness-cell" data-order="0" data-search="0">
                           <xsl:choose>
                             <xsl:when test="$is-up">
-                              <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='tcp'])"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                              <span class="text-muted">N/A</span>
-                            </xsl:otherwise>
-                          </xsl:choose>
-                        </td>
-                        <td>
-                          <xsl:choose>
-                            <xsl:when test="$is-up">
-                              <xsl:value-of select="count(ports/port[state/@state='open' and @protocol='udp'])"/>
+                              <span class="text-muted">Calculating...</span>
                             </xsl:when>
                             <xsl:otherwise>
                               <span class="text-muted">N/A</span>
@@ -211,6 +268,10 @@
                   </tbody>
                 </table>
               </div>
+              <xsl:if test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
+                <xsl:call-template name="render-open-ports-per-host-card"/>
+              </xsl:if>
+              <xsl:call-template name="render-os-distribution-card"/>
             </xsl:when>
             <xsl:when test="$runstats-total-hosts = 1">
               <xsl:variable name="scan-target-raw">
@@ -238,32 +299,42 @@
 	                      <th scope="col">OS</th>
 	                      <th scope="col">Address</th>
 	                      <th scope="col">Hostname</th>
+	                      <th scope="col">Open TCP Ports</th>
+	                      <th scope="col">Open UDP Ports</th>
 	                      <th scope="col">
 	                        <span title="Estimated by Nmap from TCP timestamps; useful as context, not an exact reboot time.">Uptime (est.)</span>
 	                      </th>
 	                      <th scope="col">
-	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Distance (hops)</span>
+	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Hops</span>
 	                      </th>
-	                      <th scope="col">Pot. Issues</th>
-	                      <th scope="col">Open TCP Ports</th>
-	                      <th scope="col">Open UDP Ports</th>
+	                      <th scope="col">
+	                        <span title="Aggregate count of Vulners matches across this host's open services. Treat as a rough indicator only; it can include false positives.">Pot. Issues</span>
+	                      </th>
+	                      <th scope="col">
+	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Uniqueness</span>
+	                      </th>
 	                    </tr>
 	                  </thead>
 	                  <tbody>
-                      <tr>
+                      <tr data-state="down" data-address="{$scan-target}">
                         <td>
-                          <span class="badge bg-warning">down</span>
+                          <span class="badge text-bg-secondary">down</span>
                         </td>
-                        <td>
+                        <td data-order="-1">
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td data-order="-1">
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td data-order="-1">
                           <span class="text-muted">N/A</span>
                         </td>
                         <td>
-                          <span class="text-muted">N/A</span>
-                        </td>
-                        <td>
-                          <span class="text-muted">N/A</span>
-                        </td>
-                        <td>
+                          <xsl:attribute name="data-order">
+                            <xsl:call-template name="render-address-sort-key">
+                              <xsl:with-param name="address" select="$scan-target"/>
+                            </xsl:call-template>
+                          </xsl:attribute>
                           <xsl:choose>
                             <xsl:when test="string($scan-target) != ''">
                               <xsl:value-of select="$scan-target"/>
@@ -273,22 +344,25 @@
                             </xsl:otherwise>
                           </xsl:choose>
                         </td>
-                        <td>
+                        <td data-order="-1">
                           <span class="text-muted">N/A</span>
                         </td>
-                        <td>
+                        <td data-order="-1">
                           <span class="text-muted">N/A</span>
                         </td>
-                        <td>
+                        <td data-order="-1">
                           <span class="text-muted">N/A</span>
                         </td>
-                        <td>
+                        <td data-order="-1">
                           <span class="text-muted">N/A</span>
                         </td>
-                        <td>
+                        <td data-order="-1">
                           <span class="text-muted">N/A</span>
                         </td>
-                        <td>
+                        <td data-order="-1">
+                          <span class="text-muted">N/A</span>
+                        </td>
+                        <td class="host-uniqueness-cell" data-order="-1" data-search="N/A">
                           <span class="text-muted">N/A</span>
                         </td>
                       </tr>
@@ -305,7 +379,7 @@
   </xsl:template>
   <xsl:template name="render-online-hosts">
           <hr class="my-4"/>
-          <h2 id="onlinehosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Host Details</h2>
+          <h2 id="onlinehosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded"><span class="section-heading-title">Host Details</span><small class="section-heading-subtitle">Inspect each host in full detail, including ports, scripts, service fingerprints, and OS hints.</small></h2>
           <xsl:choose>
             <xsl:when test="count(/nmaprun/host[status/@state='up']) &gt; 0">
               <div class="host-controls mb-3">

@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:template name="render-service-inventory">
           <hr class="my-4"/>
-          <h2 id="serviceinventory" class="fs-4 mt-5 mb-3 bg-light p-3 rounded d-flex justify-content-between align-items-center">Service Summary<small class="text-muted ms-auto"><em>Note: Nmap's service detection might produce false positives.</em></small></h2>
+          <h2 id="serviceinventory" class="fs-4 mt-5 mb-3 bg-light p-3 rounded"><span class="section-heading-title">Service Summary</span><small class="section-heading-subtitle">See which services are most common, where they appear, and how broadly they are distributed across hosts.</small></h2>
           <xsl:choose>
             <xsl:when test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
               <div class="table-responsive">
@@ -70,6 +70,9 @@
                   </tbody>
                 </table>
               </div>
+              <xsl:call-template name="render-service-matrix-data"/>
+              <xsl:call-template name="render-host-port-matrix-card"/>
+              <xsl:call-template name="render-service-port-heatmap-card"/>
             </xsl:when>
             <xsl:otherwise>
               <xsl:call-template name="render-empty-state">

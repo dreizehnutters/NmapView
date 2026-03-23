@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:template name="render-web-services">
           <hr class="my-4"/>
-          <h2 id="webservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded">Web &amp; TLS Services</h2>
+          <h2 id="webtlsservices" class="fs-4 mt-5 mb-3 bg-light p-3 rounded"><span class="section-heading-title">Web/TLS Services</span><small class="section-heading-subtitle">Triage web-facing and/or TLS-enabled services using HTTP fingerprints and certificate details.</small></h2>
           <xsl:choose>
             <xsl:when test="count(/nmaprun/host/ports/port[(@protocol='tcp') and (state/@state='open') and (starts-with(service/@name, 'http') or script[@id='ssl-cert'])]) &gt; 0">
               <div class="table-responsive">
@@ -179,6 +179,8 @@
                                 <xsl:with-param name="primary" select="script/table[@key='validity']/elem[@key='notAfter']"/>
                                 <xsl:with-param name="row-class" select="'certificate-expiry-row'"/>
                                 <xsl:with-param name="value-class" select="'certificate-expiry-value'"/>
+                                <xsl:with-param name="data-valid-from" select="script/table[@key='validity']/elem[@key='notBefore']"/>
+                                <xsl:with-param name="data-valid-to" select="script/table[@key='validity']/elem[@key='notAfter']"/>
                               </xsl:call-template>
                               <xsl:call-template name="render-certificate-row">
                                 <xsl:with-param name="label" select="'SigAlgo'"/>
@@ -187,7 +189,7 @@
                             </div>
                           </td>
                           <xsl:choose>
-                            <xsl:when test="count(service/@tunnel) &gt; 0 or service/@name = 'https' or service/@name = 'https-alt'">
+                            <xsl:when test="service/@tunnel = 'ssl' or service/@name = 'https' or service/@name = 'https-alt'">
                               <td>
                                 <xsl:call-template name="render-service-url">
                                   <xsl:with-param name="scheme" select="'https'"/>
@@ -215,7 +217,7 @@
             </xsl:when>
             <xsl:otherwise>
               <xsl:call-template name="render-empty-state">
-                <xsl:with-param name="message" select="'No web or TLS services were detected in this scan.'"/>
+                <xsl:with-param name="message" select="'No Web/TLS services were detected in this scan.'"/>
               </xsl:call-template>
             </xsl:otherwise>
           </xsl:choose>
