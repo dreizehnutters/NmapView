@@ -2,73 +2,50 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:template name="render-service-inventory">
           <hr class="my-4"/>
-          <h2 id="serviceinventory" class="fs-4 mt-5 mb-3 bg-light p-3 rounded"><span class="section-heading-title">Service Summary</span><small class="section-heading-subtitle">See which services are most common, where they appear, and how broadly they are distributed across hosts.</small></h2>
+          <h2 id="serviceinventory" class="fs-4 mt-5 mb-3 bg-light p-3 rounded"><span class="section-heading-title">Service Summary</span><small class="section-heading-subtitle">Compare service variants by exact detected product and version while preserving host coverage and exposed ports.</small></h2>
           <xsl:choose>
             <xsl:when test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
               <div class="table-responsive">
-                <table id="service-inventory" class="table table-striped table-hover table-bordered dataTable align-middle" role="grid">
+                <table id="service-inventory" class="table table-striped table-hover table-bordered align-middle dataTable" role="grid">
                   <thead class="table-light">
                     <tr>
-                      <th scope="col">Service Name</th>
-                      <th scope="col">Ports</th>
-                      <th scope="col">Count</th>
-                      <th scope="col">Hosts</th>
+                      <th scope="col" class="service-inventory-name-column">Service Name</th>
+                      <th scope="col" class="service-inventory-count-column">Host Count</th>
+                      <th scope="col">Host Details</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <xsl:for-each select="//host/ports/port[state/@state='open' and service/@name]
-                                          [generate-id() = generate-id(
-                                            key('serviceGroup',
-                                                concat(
-                                                  substring('ssl/', 1, (service/@tunnel = 'ssl') * string-length('ssl/')),
-                                                  service/@name,
-                                                  '-',
-                                                  @protocol
-                                                )
-                                            )[1]
-                                          )]">
-                      <xsl:variable name="key" select="concat(
-                                                  substring('ssl/', 1, (service/@tunnel = 'ssl') * string-length('ssl/')),
-                                                  service/@name,
-                                                  '-',
-                                                  @protocol
-                                                )" />
-                      <tr>
-                        <td>
-                          <xsl:value-of select="concat(
-                                                substring('ssl/', 1, (service/@tunnel = 'ssl') * string-length('ssl/')),
-                                                service/@name
-                                              )"/>
-                        </td>
-                        <td class="port-list">
-                          <xsl:attribute name="data-ports">
-                            <xsl:for-each select="key('serviceGroup', $key)">
-                              <xsl:sort select="@portid" data-type="number"/>
-                              <xsl:value-of select="@portid"/>
-                              <xsl:if test="position() != last()">,</xsl:if>
-                            </xsl:for-each>
-                          </xsl:attribute>
-                          <span class="display-ports">Loading...</span>
-                        </td>
-                        <td>
-                          <xsl:value-of select="count(key('serviceGroup', $key))"/>
-                        </td>
-                        <td class="host-list">
-                          <xsl:attribute name="data-hosts">
-                            <xsl:for-each select="key('serviceGroup', $key)">
-                              <xsl:variable name="ip" select="ancestor::host/address[not(@addrtype='mac')]/@addr"/>
-                              <xsl:if test="not(preceding::host/address[not(@addrtype='mac')]/@addr = $ip)">
-                                <xsl:if test="position() != 1">,</xsl:if>
-                                <xsl:value-of select="$ip"/>
-                              </xsl:if>
-                            </xsl:for-each>
-                          </xsl:attribute>
-                          <span class="display-hosts">Loading...</span>
-                        </td>
-                      </tr>
-                    </xsl:for-each>
-                  </tbody>
+                  <tbody id="serviceInventoryTableBody"/>
                 </table>
+              </div>
+              <div id="serviceInventoryData" class="d-none">
+                <xsl:for-each select="//host/ports/port[state/@state='open' and service/@name]">
+                  <xsl:variable name="effective-hostname">
+                    <xsl:call-template name="resolve-effective-hostname"/>
+                  </xsl:variable>
+                  <span class="service-inventory-entry">
+                    <xsl:attribute name="data-service">
+                      <xsl:call-template name="render-service-name"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="data-product">
+                      <xsl:value-of select="service/@product"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="data-version">
+                      <xsl:value-of select="service/@version"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="data-address">
+                      <xsl:value-of select="ancestor::host[1]/address[not(@addrtype='mac')][1]/@addr"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="data-hostname">
+                      <xsl:value-of select="$effective-hostname"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="data-port">
+                      <xsl:value-of select="@portid"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="data-protocol">
+                      <xsl:value-of select="@protocol"/>
+                    </xsl:attribute>
+                  </span>
+                </xsl:for-each>
               </div>
               <xsl:call-template name="render-service-matrix-data"/>
               <xsl:call-template name="render-host-port-matrix-card"/>

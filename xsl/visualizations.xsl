@@ -52,6 +52,11 @@
             vertical-align: baseline;
           }
 
+          .service-ledger-item a.badge {
+            text-decoration: none;
+            cursor: pointer;
+          }
+
           .service-distribution-layout {
             display: grid;
             grid-template-columns: 1fr;
@@ -194,6 +199,29 @@
             padding: 0.75rem 0.9rem 1rem;
           }
 
+          .visualization-scroll-x {
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 0.2rem;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .visualization-scroll-x > div {
+            min-width: max-content;
+          }
+
+          .visualization-scroll-note {
+            margin: 0 0 0.55rem;
+            color: #6c757d;
+            font-size: 0.84rem;
+          }
+
+          .visualization-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 0.55rem;
+          }
+
           .visualization-empty {
             margin-top: 1rem;
           }
@@ -223,6 +251,9 @@
               </div>
             </summary>
             <div class="visualization-card-body">
+              <div class="visualization-actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="osTreemap">Export PNG</button>
+              </div>
               <div id="osTreemap" style="width: 1250px; max-width: 100%; height: 420px; margin: 0 auto;"/>
             </div>
           </details>
@@ -237,6 +268,9 @@
               </div>
             </summary>
             <div class="visualization-card-body">
+              <div class="visualization-actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="openPortsPerHostChart">Export PNG</button>
+              </div>
               <div id="openPortsPerHostChart" style="width: 100%;"/>
             </div>
           </details>
@@ -251,6 +285,9 @@
               </div>
             </summary>
             <div class="visualization-card-body">
+              <div class="visualization-actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="hostServiceGraph">Export PNG</button>
+              </div>
               <div id="hostServiceGraph" style="width: 100%;"/>
             </div>
           </details>
@@ -296,11 +333,16 @@
             <summary class="visualization-card-summary">
               <div class="visualization-card-header">
                 <h4 class="visualization-card-title">Host-Port Matrix</h4>
-                <p class="visualization-card-note">See which ports appear on which hosts. Useful for spotting hosts that break the common exposure pattern or carry unusual ports. For visual clarity, the 95th percentile of uncommon ports is highlighted.</p>
+                <p class="visualization-card-note">See which ports appear on which hosts and spot unusual exposure patterns. The 95th percentile of uncommon ports from the scan data is highlighted.</p>
               </div>
             </summary>
             <div class="visualization-card-body">
-              <div id="portHostMatrix" style="width: 100%;"/>
+              <div class="visualization-actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="portHostMatrix">Export PNG</button>
+              </div>
+              <div class="visualization-scroll-x">
+                <div id="portHostMatrix" style="width: 100%;"/>
+              </div>
             </div>
           </details>
   </xsl:template>
@@ -314,7 +356,12 @@
               </div>
             </summary>
             <div class="visualization-card-body">
-              <div id="protocolPortMatrix" style="width: 100%;"/>
+              <div class="visualization-actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="protocolPortMatrix">Export PNG</button>
+              </div>
+              <div class="visualization-scroll-x">
+                <div id="protocolPortMatrix" style="width: 100%;"/>
+              </div>
             </div>
           </details>
   </xsl:template>
@@ -362,9 +409,10 @@
             return numbers[index];
           }
 
-          function renderServiceLedger(ledgerId, services, separatorText) {
+          function renderServiceLedger(ledgerId, services, separatorText, options = {}) {
             const ledger = document.getElementById(ledgerId);
             if (!ledger) return;
+            const { hostMap = new Map(), linkSingleHost = false } = options;
 
             ledger.textContent = "";
             (services || []).forEach(([service, count], index) => {
@@ -377,7 +425,11 @@
 
               const listItem = document.createElement("div");
               const title = document.createElement("span");
-              const badge = document.createElement("span");
+              const hosts = Array.from(hostMap.get(service) || []);
+              const singleHostLink = linkSingleHost && hosts.length === 1 ? hosts[0] : "";
+              const badge = singleHostLink
+                ? document.createElement("a")
+                : document.createElement("span");
 
               listItem.className = "service-ledger-item";
               listItem.setAttribute("role", "listitem");
@@ -385,7 +437,12 @@
               title.textContent = service;
               badge.className = "badge";
               badge.textContent = String(count);
-              badge.title = `${count} host${count === 1 ? "" : "s"}`;
+              badge.title = singleHostLink
+                ? `Jump to ${singleHostLink}`
+                : `${count} host${count === 1 ? "" : "s"}`;
+              if (singleHostLink) {
+                badge.href = `#onlinehosts-${singleHostLink.replace(/[.:]/g, "-")}`;
+              }
 
               listItem.appendChild(title);
               listItem.appendChild(badge);
@@ -393,7 +450,7 @@
             });
           }
 
-          function renderServiceLedgers(sortedServices) {
+          function renderServiceLedgers(sortedServices, hostMap) {
             const topServices = sortedServices.slice(0, 5);
             const bottomServices = sortedServices.length <= 5
               ? sortedServices.slice()
@@ -404,8 +461,8 @@
                 }))
                 .slice(0, 5);
 
-            renderServiceLedger("topServicesLedger", topServices, ">");
-            renderServiceLedger("bottomServicesLedger", bottomServices, "<");
+            renderServiceLedger("topServicesLedger", topServices, ">", { hostMap });
+            renderServiceLedger("bottomServicesLedger", bottomServices, "<", { hostMap, linkSingleHost: true });
           }
 
           function classifyOperatingSystemFamily(name) {
@@ -516,6 +573,21 @@
             cell.appendChild(value);
           }
 
+          function getHostOverviewRows(hostOverviewTable) {
+            if (!hostOverviewTable) {
+              return [];
+            }
+
+            if (window.jQuery && $.fn.dataTable && $.fn.dataTable.isDataTable(hostOverviewTable)) {
+              const tableApi = $(hostOverviewTable).DataTable();
+              if (tableApi) {
+                return tableApi.rows().nodes().toArray();
+              }
+            }
+
+            return Array.from(hostOverviewTable.querySelectorAll("tbody tr"));
+          }
+
           function buildHostUniquenessScoreMap(hostOverviewTable) {
             if (!hostOverviewTable) {
               return new Map();
@@ -527,7 +599,7 @@
               return new Map();
             }
 
-            const rows = Array.from(hostOverviewTable.querySelectorAll("tbody tr"));
+            const rows = getHostOverviewRows(hostOverviewTable);
             if (rows.length === 0) {
               return new Map();
             }
@@ -633,12 +705,12 @@
 
             const headers = Array.from(hostOverviewTable.querySelectorAll("thead th")).map(header => (header.textContent || "").trim());
             const addressColumnIndex = headers.indexOf("Address");
-            const uniquenessColumnIndex = headers.indexOf("Uniqueness");
+            const uniquenessColumnIndex = headers.indexOf("Rarity");
             if (addressColumnIndex === -1 || uniquenessColumnIndex === -1) {
               return new Map();
             }
 
-            const rows = Array.from(hostOverviewTable.querySelectorAll("tbody tr"));
+            const rows = getHostOverviewRows(hostOverviewTable);
             if (rows.length === 0) {
               return new Map();
             }
@@ -674,6 +746,17 @@
                 hasQualifyingServices: scoreDetails.hasQualifyingServices
               });
             });
+
+            if (window.jQuery && $.fn.dataTable && $.fn.dataTable.isDataTable(hostOverviewTable)) {
+              const tableApi = $(hostOverviewTable).DataTable();
+              if (tableApi) {
+                tableApi.rows().invalidate("dom").draw(false);
+                tableApi.columns.adjust();
+                if (tableApi.fixedHeader && typeof tableApi.fixedHeader.adjust === "function") {
+                  tableApi.fixedHeader.adjust();
+                }
+              }
+            }
 
             return hostScores;
           }
@@ -734,21 +817,50 @@
               plot_bgcolor: getReportCssVar("--report-surface", "#f7f9fb")
             };
           }
+
+          function initializePlotExportButtons() {
+            document.querySelectorAll("[data-plot-export]").forEach(button => {
+              button.addEventListener("click", () => {
+                const plotId = button.getAttribute("data-plot-export");
+                const plotElement = plotId ? document.getElementById(plotId) : null;
+                if (!plotElement || !window.Plotly) {
+                  return;
+                }
+
+                Plotly.downloadImage(plotElement, {
+                  format: "png",
+                  filename: `nmapview-${plotId}`,
+                  width: plotElement.clientWidth || undefined,
+                  height: plotElement.clientHeight || undefined,
+                  scale: 2
+                });
+              });
+            });
+          }
         ]]></script>
         <script><![CDATA[
           document.addEventListener("DOMContentLoaded", function() {
+            initializePlotExportButtons();
             const serviceChart = document.getElementById("serviceChart");
             if (serviceChart) {
               const serviceCounts = {};
+              const serviceHosts = new Map();
 
               document.querySelectorAll("#serviceCounts .service").forEach(element => {
                 const service = element.getAttribute("data-service");
                 const port = element.getAttribute("data-portid");
                 const protocol = element.getAttribute("data-porto");
+                const address = (element.getAttribute("data-address") || "").trim();
 
                 if (service && port) {
                   const key = `${service} (${protocol}/${port})`;
                   serviceCounts[key] = (serviceCounts[key] || 0) + 1;
+                  if (address) {
+                    if (!serviceHosts.has(key)) {
+                      serviceHosts.set(key, new Set());
+                    }
+                    serviceHosts.get(key).add(address);
+                  }
                 }
               });
 
@@ -811,7 +923,7 @@
                 responsive: true
               });
 
-              renderServiceLedgers(sortedServices);
+              renderServiceLedgers(sortedServices, serviceHosts);
             }
 
             const hostOverviewTable = document.getElementById("table-overview");
@@ -822,7 +934,7 @@
             }
 
             const hostOverviewHeaders = Array.from(hostOverviewTable.querySelectorAll("thead th")).map(header => (header.textContent || "").trim());
-            const osColumnIndex = hostOverviewHeaders.indexOf("OS");
+            const osColumnIndex = hostOverviewHeaders.indexOf("OS (est.)");
             const addressColumnIndex = hostOverviewHeaders.indexOf("Address");
             const hostnameColumnIndex = hostOverviewHeaders.indexOf("Hostname");
             if (osColumnIndex === -1 || addressColumnIndex === -1 || hostnameColumnIndex === -1) {
@@ -1445,7 +1557,7 @@
                     width: 1.5
                   }
                 },
-                hovertemplate: "%{customdata[0]}<br>Total open ports: %{customdata[3]}<br>TCP: %{customdata[1]}<br>UDP: %{customdata[2]}<br>Potential issues: %{customdata[4]}<br>Uniqueness: %{customdata[5]}<br>Drivers: %{customdata[6]}<extra></extra>",
+                hovertemplate: "%{customdata[0]}<br>Total open ports: %{customdata[3]}<br>TCP: %{customdata[1]}<br>UDP: %{customdata[2]}<br>Potential issues: %{customdata[4]}<br>Rarity: %{customdata[5]}<br>Drivers: %{customdata[6]}<extra></extra>",
                 hoverlabel: {
                   bgcolor: "#43505c",
                   bordercolor: "#2f3943",
@@ -1487,7 +1599,7 @@
                   tickcolor: "rgba(0,0,0,0.2)"
                 },
                 xaxis2: {
-                  title: { text: "Uniqueness" },
+                  title: { text: "Rarity" },
                   overlaying: "x",
                   side: "top",
                   range: [0, 100],

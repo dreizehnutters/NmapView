@@ -16,9 +16,10 @@ Andreas Hontzia (@honze_net) & LRVT (@l4rm4nd) & Fabian Kopp (@dreizehnutters)
   <xsl:template match="/">
     <html lang="en">
       <xsl:call-template name="render-head"/>
-      <body>
+      <body class="report-initializing">
+        <xsl:call-template name="render-loading-overlay"/>
         <xsl:call-template name="render-navbar"/>
-        <div id="reportContent" class="container-fluid px-4" style="min-width: fit-content;">
+        <div id="reportContent" class="container-fluid px-4">
           <xsl:call-template name="render-summary"/>
           <xsl:call-template name="render-scanned-hosts"/>
           <xsl:call-template name="render-open-services"/>

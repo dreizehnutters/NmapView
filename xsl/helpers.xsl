@@ -158,24 +158,6 @@
   </xsl:template>
 
   <xsl:template name="resolve-inferred-hostname">
-    <xsl:variable name="cert-san" select="ancestor-or-self::host[1]/ports/port[script[@id='ssl-cert']][1]/script/table[@key='extensions']/table[elem[@key='name']='X509v3 Subject Alternative Name'][1]/elem[@key='value']"/>
-    <xsl:variable name="cert-san-output">
-      <xsl:choose>
-        <xsl:when test="string($cert-san) != ''">
-          <xsl:value-of select="$cert-san"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="substring-before(substring-after(ancestor-or-self::host[1]/ports/port[script[@id='ssl-cert']][1]/script[@id='ssl-cert']/@output, 'Subject Alternative Name:'), '&#xA;')"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:variable name="cert-dns">
-      <xsl:call-template name="extract-first-dns-name">
-        <xsl:with-param name="text" select="$cert-san-output"/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="cert-cn" select="normalize-space(ancestor-or-self::host[1]/ports/port[script[@id='ssl-cert']][1]/script/table[@key='subject']/elem[@key='commonName'])"/>
-    <xsl:variable name="cert-cn-output" select="normalize-space(substring-before(substring-after(ancestor-or-self::host[1]/ports/port[script[@id='ssl-cert']][1]/script[@id='ssl-cert']/@output, 'Subject: commonName='), '/'))"/>
     <xsl:variable name="location-url">
       <xsl:choose>
         <xsl:when test="string(ancestor-or-self::host[1]/ports/port[script[@id='http-title']/elem[@key='redirect_url']][1]/script[@id='http-title']/elem[@key='redirect_url']) != ''">
@@ -213,41 +195,10 @@
         <xsl:with-param name="url" select="$location-url"/>
       </xsl:call-template>
     </xsl:variable>
-    <xsl:choose>
-      <xsl:when test="string($cert-dns) != ''">
-        <xsl:value-of select="$cert-dns"/>
-      </xsl:when>
-      <xsl:when test="string($cert-cn) != '' and $cert-cn != 'localhost' and string(translate($cert-cn, '0123456789.:-[]', '')) != ''">
-        <xsl:value-of select="$cert-cn"/>
-      </xsl:when>
-      <xsl:when test="string($cert-cn-output) != '' and $cert-cn-output != 'localhost' and string(translate($cert-cn-output, '0123456789.:-[]', '')) != ''">
-        <xsl:value-of select="$cert-cn-output"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$location-host"/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:value-of select="$location-host"/>
   </xsl:template>
 
   <xsl:template name="resolve-inferred-hostname-source">
-    <xsl:variable name="cert-san" select="ancestor-or-self::host[1]/ports/port[script[@id='ssl-cert']][1]/script/table[@key='extensions']/table[elem[@key='name']='X509v3 Subject Alternative Name'][1]/elem[@key='value']"/>
-    <xsl:variable name="cert-san-output">
-      <xsl:choose>
-        <xsl:when test="string($cert-san) != ''">
-          <xsl:value-of select="$cert-san"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="substring-before(substring-after(ancestor-or-self::host[1]/ports/port[script[@id='ssl-cert']][1]/script[@id='ssl-cert']/@output, 'Subject Alternative Name:'), '&#xA;')"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:variable name="cert-dns">
-      <xsl:call-template name="extract-first-dns-name">
-        <xsl:with-param name="text" select="$cert-san-output"/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="cert-cn" select="normalize-space(ancestor-or-self::host[1]/ports/port[script[@id='ssl-cert']][1]/script/table[@key='subject']/elem[@key='commonName'])"/>
-    <xsl:variable name="cert-cn-output" select="normalize-space(substring-before(substring-after(ancestor-or-self::host[1]/ports/port[script[@id='ssl-cert']][1]/script[@id='ssl-cert']/@output, 'Subject: commonName='), '/'))"/>
     <xsl:variable name="location-url">
       <xsl:choose>
         <xsl:when test="string(ancestor-or-self::host[1]/ports/port[script[@id='http-title']/elem[@key='redirect_url']][1]/script[@id='http-title']/elem[@key='redirect_url']) != ''">
@@ -257,9 +208,6 @@
       </xsl:choose>
     </xsl:variable>
     <xsl:choose>
-      <xsl:when test="string($cert-dns) != '' or (string($cert-cn) != '' and $cert-cn != 'localhost' and string(translate($cert-cn, '0123456789.:-[]', '')) != '') or (string($cert-cn-output) != '' and $cert-cn-output != 'localhost' and string(translate($cert-cn-output, '0123456789.:-[]', '')) != '')">
-        <xsl:text>inferred-cert</xsl:text>
-      </xsl:when>
       <xsl:when test="string($location-url) != ''">
         <xsl:text>inferred-location</xsl:text>
       </xsl:when>
@@ -268,26 +216,11 @@
   </xsl:template>
 
   <xsl:template name="resolve-effective-hostname">
-    <xsl:choose>
-      <xsl:when test="string(normalize-space(ancestor-or-self::host[1]/hostnames/hostname[1]/@name)) != ''">
-        <xsl:value-of select="normalize-space(ancestor-or-self::host[1]/hostnames/hostname[1]/@name)"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:call-template name="resolve-inferred-hostname"/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:value-of select="normalize-space(ancestor-or-self::host[1]/hostnames/hostname[1]/@name)"/>
   </xsl:template>
 
   <xsl:template name="resolve-effective-hostname-source">
-    <xsl:choose>
-      <xsl:when test="string(normalize-space(ancestor-or-self::host[1]/hostnames/hostname[1]/@name)) != ''">
-        <xsl:value-of select="normalize-space(ancestor-or-self::host[1]/hostnames/hostname[1]/@type)"/>
-      </xsl:when>
-      <xsl:when test="string(normalize-space(ancestor-or-self::host[1]/hostnames/hostname[1]/@name)) = '' and string(normalize-space(ancestor-or-self::host[1])) != ''">
-        <xsl:call-template name="resolve-inferred-hostname-source"/>
-      </xsl:when>
-      <xsl:otherwise/>
-    </xsl:choose>
+    <xsl:value-of select="normalize-space(ancestor-or-self::host[1]/hostnames/hostname[1]/@type)"/>
   </xsl:template>
 
   <xsl:template name="extract-last-token">

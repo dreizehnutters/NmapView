@@ -202,6 +202,7 @@
   <xsl:template name="render-service-counts-data">
           <div id="serviceCounts" class="d-none">
             <xsl:for-each select="//host">
+              <xsl:variable name="ip" select="address[not(@addrtype='mac')][1]/@addr"/>
               <xsl:for-each select="ports/port[state/@state='open']">
                 <span class="service">
                   <xsl:attribute name="data-service">
@@ -231,6 +232,9 @@
                   <xsl:attribute name="data-porto">
                     <xsl:value-of select="@protocol"/>
                   </xsl:attribute>
+                  <xsl:attribute name="data-address">
+                    <xsl:value-of select="$ip"/>
+                  </xsl:attribute>
                 </span>
               </xsl:for-each>
             </xsl:for-each>
@@ -249,6 +253,9 @@
                   </div>
                 </summary>
                 <div class="visualization-card-body">
+                  <div class="visualization-actions">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="serviceChart">Export PNG</button>
+                  </div>
                   <div class="service-distribution-layout">
                     <div class="service-ledger-stack">
                       <section class="service-ledger-section" aria-labelledby="topServicesLedgerTitle">

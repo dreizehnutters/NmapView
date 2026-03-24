@@ -13,7 +13,7 @@
 	                      <th scope="col">State</th>
 	                      <th scope="col">Mac</th>
 	                      <th scope="col">Vendor</th>
-	                      <th scope="col">OS</th>
+	                      <th scope="col">OS (est.)</th>
 	                      <th scope="col">Address</th>
 	                      <th scope="col">Hostname</th>
 	                      <th scope="col">Open TCP Ports</th>
@@ -25,10 +25,10 @@
 	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Hops</span>
 	                      </th>
 	                      <th scope="col">
-	                        <span title="Aggregate count of Vulners matches across this host's open services. Treat as a rough indicator only; it can include false positives.">Pot. Issues</span>
+	                        <span title="Aggregate count of Vulners matches across this host's open services. Treat as a rough indicator only; it can include false positives.">Issues (est.)</span>
 	                      </th>
 	                      <th scope="col">
-	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Uniqueness</span>
+	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Rarity</span>
 	                      </th>
 	                    </tr>
 	                  </thead>
@@ -296,7 +296,7 @@
 	                      <th scope="col">State</th>
 	                      <th scope="col">Mac</th>
 	                      <th scope="col">Vendor</th>
-	                      <th scope="col">OS</th>
+	                      <th scope="col">OS (est.)</th>
 	                      <th scope="col">Address</th>
 	                      <th scope="col">Hostname</th>
 	                      <th scope="col">Open TCP Ports</th>
@@ -308,10 +308,10 @@
 	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Hops</span>
 	                      </th>
 	                      <th scope="col">
-	                        <span title="Aggregate count of Vulners matches across this host's open services. Treat as a rough indicator only; it can include false positives.">Pot. Issues</span>
+	                        <span title="Aggregate count of Vulners matches across this host's open services. Treat as a rough indicator only; it can include false positives.">Issues (est.)</span>
 	                      </th>
 	                      <th scope="col">
-	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Uniqueness</span>
+	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Rarity</span>
 	                      </th>
 	                    </tr>
 	                  </thead>
