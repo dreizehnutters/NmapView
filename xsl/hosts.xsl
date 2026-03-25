@@ -448,7 +448,14 @@
                           <xsl:for-each select="ports/port">
                             <tr>
                               <td>
-                                <xsl:value-of select="@portid"/>
+                                <xsl:call-template name="render-endpoint-link">
+                                  <xsl:with-param name="address" select="ancestor::host[1]/address[not(@addrtype='mac')][1]/@addr"/>
+                                  <xsl:with-param name="port" select="@portid"/>
+                                  <xsl:with-param name="protocol" select="@protocol"/>
+                                  <xsl:with-param name="service-name" select="service/@name"/>
+                                  <xsl:with-param name="tunnel" select="service/@tunnel"/>
+                                  <xsl:with-param name="text" select="@portid"/>
+                                </xsl:call-template>
                               </td>
                               <td>
                                 <xsl:value-of select="@protocol"/>
@@ -495,10 +502,10 @@
                           (<xsl:value-of select="@accuracy"/>%)
                         </h5>
                         <xsl:for-each select="osclass">
-                          <p><strong>Device Type:</strong><xsl:value-of select="@type"/><br/><strong>Running:</strong><xsl:value-of select="@vendor"/><xsl:value-of select="@osfamily"/><xsl:value-of select="@osgen"/>
-                            (<xsl:value-of select="@accuracy"/>%)<br/>
+                          <p><strong>Device Type:</strong><xsl:text> </xsl:text><xsl:value-of select="@type"/><br/><strong>Running:</strong><xsl:text> </xsl:text><xsl:value-of select="normalize-space(concat(@vendor, ' ', @osfamily, ' ', @osgen))"/>
+                            <xsl:text> (</xsl:text><xsl:value-of select="@accuracy"/><xsl:text>%)</xsl:text><br/>
                             <strong>OS CPE:</strong>
-                            <xsl:if test="count(cpe) &gt; 0"><xsl:call-template name="render-nvd-cpe-link"><xsl:with-param name="cpe" select="cpe"/></xsl:call-template></xsl:if>
+                            <xsl:text> </xsl:text><xsl:if test="count(cpe) &gt; 0"><xsl:call-template name="render-nvd-cpe-link"><xsl:with-param name="cpe" select="cpe"/></xsl:call-template></xsl:if>
                           </p>
                         </xsl:for-each>
                       </xsl:for-each>

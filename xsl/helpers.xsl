@@ -282,6 +282,75 @@
     </a>
   </xsl:template>
 
+  <xsl:template name="render-endpoint-host">
+    <xsl:param name="host"/>
+    <xsl:variable name="normalized-host" select="normalize-space($host)"/>
+    <xsl:choose>
+      <xsl:when test="contains($normalized-host, ':') and not(starts-with($normalized-host, '[')) and not(contains($normalized-host, ']'))">
+        <xsl:text>[</xsl:text>
+        <xsl:value-of select="$normalized-host"/>
+        <xsl:text>]</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$normalized-host"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="render-endpoint-link">
+    <xsl:param name="address"/>
+    <xsl:param name="port"/>
+    <xsl:param name="protocol" select="'tcp'"/>
+    <xsl:param name="service-name" select="''"/>
+    <xsl:param name="tunnel" select="''"/>
+    <xsl:param name="text" select="''"/>
+    <xsl:param name="class" select="'endpoint-link'"/>
+    <xsl:variable name="normalized-address" select="normalize-space($address)"/>
+    <xsl:variable name="normalized-port" select="normalize-space($port)"/>
+    <xsl:variable name="normalized-text" select="normalize-space($text)"/>
+    <xsl:variable name="normalized-service" select="translate(normalize-space($service-name), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"/>
+    <xsl:variable name="normalized-protocol" select="translate(normalize-space($protocol), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"/>
+    <xsl:variable name="scheme">
+      <xsl:choose>
+        <xsl:when test="$tunnel = 'ssl' or starts-with($normalized-service, 'ssl/') or contains($normalized-service, 'https')">https</xsl:when>
+        <xsl:otherwise>http</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:variable name="formatted-host">
+      <xsl:call-template name="render-endpoint-host">
+        <xsl:with-param name="host" select="$normalized-address"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:choose>
+      <xsl:when test="string($normalized-address) != '' and string($normalized-port) != ''">
+        <a target="_blank" rel="noopener noreferrer">
+          <xsl:if test="string(normalize-space($class)) != ''">
+            <xsl:attribute name="class">
+              <xsl:value-of select="$class"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:attribute name="href">
+            <xsl:value-of select="concat($scheme, '://', $formatted-host, ':', $normalized-port)"/>
+          </xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="string($normalized-text) != ''">
+              <xsl:value-of select="$normalized-text"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="$normalized-port"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </a>
+      </xsl:when>
+      <xsl:when test="string($normalized-text) != ''">
+        <xsl:value-of select="$normalized-text"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$normalized-port"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
   <xsl:template name="render-nvd-cpe-link">
     <xsl:param name="cpe"/>
     <a class="cpe-copy" title="Click to copy CPE">
@@ -458,9 +527,14 @@
     <xsl:param name="scheme"/>
     <xsl:param name="host"/>
     <xsl:param name="port"/>
+    <xsl:variable name="formatted-host">
+      <xsl:call-template name="render-endpoint-host">
+        <xsl:with-param name="host" select="$host"/>
+      </xsl:call-template>
+    </xsl:variable>
     <xsl:call-template name="render-external-link">
-      <xsl:with-param name="href" select="concat($scheme, '://', $host, ':', $port)"/>
-      <xsl:with-param name="text" select="concat($scheme, '://', $host, ':', $port)"/>
+      <xsl:with-param name="href" select="concat($scheme, '://', $formatted-host, ':', $port)"/>
+      <xsl:with-param name="text" select="concat($scheme, '://', $formatted-host, ':', $port)"/>
     </xsl:call-template>
   </xsl:template>
 

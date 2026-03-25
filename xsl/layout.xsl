@@ -132,6 +132,12 @@
             text-decoration: none !important;
           }
 
+          .endpoint-link {
+            color: inherit;
+            white-space: nowrap;
+            text-decoration: none;
+          }
+
           .host-list {
             display: grid;
             gap: 1rem;
@@ -141,29 +147,35 @@
             min-width: 18rem;
           }
 
-          .service-inventory-name-column,
-          .service-inventory-name-cell {
-            width: 8.5rem;
-            max-width: 10rem;
-            white-space: normal;
-            overflow-wrap: anywhere;
+          #service-inventory {
+            width: 100% !important;
           }
 
-          .service-inventory-count-column {
-            width: 7.25rem;
-            white-space: nowrap;
+          #service-inventory thead th,
+          #service-inventory tbody td {
+            text-align: left;
+          }
+
+          #service-inventory thead th {
+            width: 100%;
           }
 
           #service-inventory tbody tr > td {
             --service-inventory-row-bg: #edf2f6;
             --service-inventory-row-bg-muted: #dbe4ec;
             --service-inventory-row-bg-soft: rgba(219, 228, 236, 0.8);
+            --service-inventory-nested-bg: #fbfcfd;
+            --service-inventory-nested-bg-muted: #f2f5f8;
+            --service-inventory-nested-bg-soft: rgba(242, 245, 248, 0.92);
           }
 
           #service-inventory.table-striped > tbody > tr:nth-of-type(odd) > td {
             --service-inventory-row-bg: #fbfcfd;
             --service-inventory-row-bg-muted: #f2f5f8;
             --service-inventory-row-bg-soft: rgba(242, 245, 248, 0.92);
+            --service-inventory-nested-bg: #edf2f6;
+            --service-inventory-nested-bg-muted: #dbe4ec;
+            --service-inventory-nested-bg-soft: rgba(219, 228, 236, 0.8);
           }
 
           .service-inventory-service-details {
@@ -211,6 +223,12 @@
             align-items: baseline;
           }
 
+          .service-inventory-service-title {
+            font-weight: 600;
+            color: #24313d;
+            overflow-wrap: anywhere;
+          }
+
           .service-inventory-service-meta {
             color: #5b6977;
             font-size: 0.92rem;
@@ -225,14 +243,28 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
+            table-layout: fixed;
+          }
+
+          .service-inventory-host-table-wrapper .dt-buttons,
+          .service-inventory-host-table-wrapper .dataTables_filter,
+          .service-inventory-host-table-wrapper .dt-search {
+            margin-bottom: 0.45rem;
+          }
+
+          .service-inventory-host-table-wrapper .dt-buttons .btn,
+          .service-inventory-host-table-wrapper .dt-buttons .dt-button {
+            padding: 0.2rem 0.45rem;
+            font-size: 0.72rem;
           }
 
           .service-inventory-host-table th,
           .service-inventory-host-table td {
             padding: 0.35rem 0.45rem;
             border-top: 1px solid rgba(188, 200, 214, 0.7);
-            vertical-align: top;
+            vertical-align: middle;
             text-align: left;
+            overflow-wrap: anywhere;
           }
 
           .service-inventory-host-table thead th {
@@ -256,24 +288,206 @@
           }
 
           .service-inventory-host-bucket-column {
-            width: 30%;
+            width: 40%;
           }
 
           .service-inventory-host-column {
-            width: 26%;
+            width: 10%;
           }
 
           .service-inventory-host-ports-column {
-            width: 22%;
+            width: 10%;
           }
 
           .service-inventory-host-service-column {
-            width: 22%;
+            width: 40%;
           }
 
           .service-inventory-host-link {
             color: #0a58ca;
             overflow-wrap: anywhere;
+          }
+
+          .service-inventory-script-list {
+            display: grid;
+            gap: 0.45rem;
+          }
+
+          .service-inventory-script-group-details {
+            display: block;
+          }
+
+          .service-inventory-script-group-summary {
+            cursor: pointer;
+            list-style: none;
+            color: #4f5e6d;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0.35rem 0.45rem;
+            border: 1px solid rgba(188, 200, 214, 0.7);
+            border-radius: 0.45rem;
+            background: var(--service-inventory-nested-bg-soft);
+          }
+
+          .service-inventory-script-group-summary::-webkit-details-marker {
+            display: none;
+          }
+
+          .service-inventory-script-group-summary::before {
+            content: "▸";
+            display: inline-block;
+            margin-right: 0.3rem;
+            color: #3f5f74;
+            transition: transform 0.16s ease;
+          }
+
+          .service-inventory-script-group-details[open] .service-inventory-script-group-summary::before {
+            transform: rotate(90deg);
+          }
+
+          .service-inventory-script-group-body {
+            margin-top: 0.45rem;
+          }
+
+          .service-inventory-http-details {
+            display: grid;
+            gap: 0.55rem;
+          }
+
+          .service-inventory-http-block {
+            display: grid;
+            gap: 0.18rem;
+            padding: 0.45rem 0.55rem;
+            border: 1px solid rgba(188, 200, 214, 0.7);
+            border-radius: 0.45rem;
+            background: var(--service-inventory-nested-bg-soft);
+          }
+
+          .service-inventory-http-port-label {
+            color: #4f5e6d;
+            font-size: 0.78rem;
+            font-weight: 600;
+          }
+
+          .service-inventory-http-row {
+            display: flex;
+            gap: 0.35rem;
+            align-items: flex-start;
+          }
+
+          .service-inventory-http-label {
+            color: #4f5e6d;
+            font-size: 0.78rem;
+            font-weight: 600;
+            flex: 0 0 auto;
+          }
+
+          .service-inventory-http-value {
+            color: #24313d;
+            font-size: 0.78rem;
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+
+          .service-inventory-vulners {
+            display: grid;
+            gap: 0.35rem;
+            margin-top: 0.55rem;
+            padding: 0.45rem 0.55rem;
+            border: 1px solid rgba(188, 200, 214, 0.7);
+            border-radius: 0.45rem;
+            background: var(--service-inventory-nested-bg-soft);
+          }
+
+          .service-inventory-vulners-summary {
+            color: #4f5e6d;
+            font-size: 0.78rem;
+            font-weight: 600;
+          }
+
+          .service-inventory-vulners-list {
+            display: grid;
+            gap: 0.25rem;
+          }
+
+          .service-inventory-vulners-item {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            align-items: baseline;
+            font-size: 0.78rem;
+          }
+
+          .service-inventory-vulners-item strong {
+            color: #4f5e6d;
+          }
+
+          .service-inventory-vulners-more {
+            color: #6c757d;
+            font-size: 0.75rem;
+          }
+
+          .service-inventory-script-item-details {
+            display: block;
+          }
+
+          .service-inventory-script-item-summary {
+            cursor: pointer;
+            list-style: none;
+            color: #4f5e6d;
+            font-size: 0.78rem;
+            font-weight: 600;
+            overflow-wrap: anywhere;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            padding: 0.35rem 0.45rem;
+            border: 1px solid rgba(188, 200, 214, 0.7);
+            border-radius: 0.45rem;
+            background: var(--service-inventory-nested-bg-soft);
+          }
+
+          .service-inventory-script-item-summary::-webkit-details-marker {
+            display: none;
+          }
+
+          .service-inventory-script-item-summary::before {
+            content: "▸";
+            display: inline-block;
+            margin-right: 0.3rem;
+            color: #3f5f74;
+            transition: transform 0.16s ease;
+          }
+
+          .service-inventory-script-item-details[open] .service-inventory-script-item-summary::before {
+            transform: rotate(90deg);
+          }
+
+          .service-inventory-script-item {
+            display: grid;
+            gap: 0.15rem;
+          }
+
+          .service-inventory-script-label {
+            color: #4f5e6d;
+            font-size: 0.78rem;
+            font-weight: 600;
+            overflow-wrap: anywhere;
+          }
+
+          .service-inventory-script-output {
+            margin: 0.35rem 0 0;
+            padding: 0.45rem 0.55rem;
+            color: #24313d;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+            font-size: 0.78rem;
+            line-height: 1.35;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            border: 1px solid rgba(188, 200, 214, 0.7);
+            border-radius: 0.45rem;
+            background: var(--service-inventory-nested-bg);
           }
 
           .service-inventory-empty {
@@ -424,6 +638,12 @@
             color: #8a5a00;
           }
 
+          .certificate-expiry-badge.is-self-signed {
+            background: #eef1f4;
+            border-color: #cfd6de;
+            color: #495057;
+          }
+
           .http-title-block {
             max-width: 20rem;
           }
@@ -554,23 +774,19 @@
           }
 
           .summary-note {
-            display: inline-flex;
-            align-items: flex-start;
-            gap: 0.5rem;
-            margin-top: 0.85rem;
+            margin: 0.85rem 0 0;
             color: #5f6e7d;
             font-size: 0.9rem;
             line-height: 1.45;
           }
 
           .summary-note-icon {
-            display: inline-block;
+            display: inline;
             color: #3f5f74;
             font-size: 0.95rem;
             font-weight: 600;
-            flex: 0 0 auto;
             line-height: 1;
-            margin-top: 0.1rem;
+            margin-right: 0.25rem;
           }
 
           .density-controls {
@@ -794,6 +1010,27 @@
             line-height: 1.4;
           }
 
+          .section-disclosure {
+            margin-top: 3rem;
+          }
+
+          .section-disclosure > summary {
+            list-style: none;
+            cursor: pointer;
+          }
+
+          .section-disclosure > summary::-webkit-details-marker {
+            display: none;
+          }
+
+          .section-disclosure > summary > h2 {
+            margin-bottom: 0;
+          }
+
+          .section-disclosure-body {
+            margin-top: 1rem;
+          }
+
           .table {
             --bs-table-bg: var(--report-surface);
             --bs-table-striped-bg: #eef3f7;
@@ -951,15 +1188,12 @@
                   <a class="nav-link" href="#serviceinventory">Service Summary</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#webtlsservices">Web/TLS Services</a>
-                </li>
-                <li class="nav-item">
                   <a class="nav-link" href="#onlinehosts">Host Details</a>
                 </li>
               </ul>
               <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                  <a class="nav-link navbar-version-link" href="https://github.com/dreizehnutters/NmapView">NmapView v3.2</a>
+                  <a class="nav-link navbar-version-link" href="https://github.com/dreizehnutters/NmapView">NmapView v3.3</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="https://github.com/dreizehnutters/NmapView">
@@ -1107,10 +1341,7 @@
                 <xsl:value-of select="/nmaprun/@args"/>
               </pre>
             </details>
-            <div class="summary-note">
-              <span class="summary-note-icon">ⓘ</span>
-              <span>Nmap's service detection is heuristic and may include false positives.</span>
-            </div>
+            <p class="summary-note"><span class="summary-note-icon">ⓘ</span>Nmap's service detection is heuristic and may include false positives.</p>
             <div class="summary-toolbar">
               <div class="density-controls" aria-label="Table density controls">
                 <span class="density-controls-label">Table Density</span>
@@ -1224,51 +1455,58 @@
             return `${roundedYears} year${roundedYears === 1 ? "" : "s"}`;
           }
 
-          function initializeCertificateExpiryAlerts() {
+          function buildCertificateExpiryBadge(rawValidFrom, rawExpiry) {
             const dayMs = 24 * 60 * 60 * 1000;
             const msPerYear = 365.2425 * dayMs;
+            const normalizedExpiry = String(rawExpiry || "").trim();
+            const expiryTimestamp = parseCertificateExpiry(normalizedExpiry);
+            if (expiryTimestamp === null) {
+              return null;
+            }
 
+            const normalizedValidFrom = String(rawValidFrom || "").trim();
+            const validFromTimestamp = parseCertificateExpiry(normalizedValidFrom);
+            const now = Date.now();
+            const daysRemaining = Math.ceil((expiryTimestamp - now) / dayMs);
+            const validityYears = validFromTimestamp !== null
+              ? (expiryTimestamp - validFromTimestamp) / msPerYear
+              : null;
+            const isLongLived = validityYears !== null && validityYears >= 10;
+            let statusText = "Valid";
+            let statusClass = "is-valid";
+
+            if (expiryTimestamp < now) {
+              statusText = "Expired";
+              statusClass = "is-expired";
+            } else if (daysRemaining <= 30) {
+              statusText = "Expiring soon";
+              statusClass = "is-expiring";
+            } else if (isLongLived) {
+              statusText = "10y+ lifetime";
+              statusClass = "is-long-lived";
+            }
+
+            const badge = document.createElement("span");
+            badge.className = `certificate-expiry-badge ${statusClass}`;
+            badge.textContent = statusText;
+            badge.title = isLongLived
+              ? `${normalizedValidFrom} to ${normalizedExpiry} (${formatCertificateLifetimeYears(validityYears)})`
+              : `${normalizedExpiry} (${formatCertificateDayCount(daysRemaining)})`;
+            return badge;
+          }
+
+          function initializeCertificateExpiryAlerts() {
             document.querySelectorAll(".certificate-expiry-value").forEach(element => {
               if (element.querySelector(".certificate-expiry-badge")) {
                 return;
               }
 
               const rawExpiry = (element.textContent || "").trim();
-              const expiryTimestamp = parseCertificateExpiry(rawExpiry);
-              if (expiryTimestamp === null) {
-                return;
-              }
-
               const rawValidFrom = (element.getAttribute("data-valid-from") || "").trim();
-              const validFromTimestamp = parseCertificateExpiry(rawValidFrom);
-
-              const now = Date.now();
-              const daysRemaining = Math.ceil((expiryTimestamp - now) / dayMs);
-              const validityYears = validFromTimestamp !== null
-                ? (expiryTimestamp - validFromTimestamp) / msPerYear
-                : null;
-              const isLongLived = validityYears !== null && validityYears >= 10;
-              let statusText = "Valid";
-              let statusClass = "is-valid";
-
-              if (expiryTimestamp < now) {
-                statusText = "Expired";
-                statusClass = "is-expired";
-              } else if (daysRemaining <= 30) {
-                statusText = "Expiring soon";
-                statusClass = "is-expiring";
-              } else if (isLongLived) {
-                statusText = "10y+ lifetime";
-                statusClass = "is-long-lived";
+              const badge = buildCertificateExpiryBadge(rawValidFrom, rawExpiry);
+              if (badge) {
+                element.appendChild(badge);
               }
-
-              const badge = document.createElement("span");
-              badge.className = `certificate-expiry-badge ${statusClass}`;
-              badge.textContent = statusText;
-              badge.title = isLongLived
-                ? `${rawValidFrom} to ${rawExpiry} (${formatCertificateLifetimeYears(validityYears)})`
-                : `${rawExpiry} (${formatCertificateDayCount(daysRemaining)})`;
-              element.appendChild(badge);
             });
           }
 
@@ -1446,8 +1684,136 @@
             return Number(leftPort) - Number(rightPort) || compareInventoryText(leftProtocol, rightProtocol);
           }
 
+          function formatEndpointBrowserHost(address) {
+            const normalizedAddress = String(address || "").trim();
+            if (!normalizedAddress) {
+              return "";
+            }
+
+            return normalizedAddress.includes(":") &&
+              !normalizedAddress.startsWith("[") &&
+              !normalizedAddress.endsWith("]")
+              ? `[${normalizedAddress}]`
+              : normalizedAddress;
+          }
+
+          function inferEndpointBrowserScheme(serviceName, protocol) {
+            const normalizedService = String(serviceName || "").trim().toLowerCase();
+            const normalizedProtocol = String(protocol || "").trim().toLowerCase();
+
+            if (normalizedService.startsWith("ssl/") || normalizedService.includes("https")) {
+              return "https";
+            }
+
+            return normalizedProtocol === "udp" ? "http" : "http";
+          }
+
+          function createBrowserEndpointLink(address, port, protocol, serviceName, text, className = "endpoint-link") {
+            const normalizedAddress = String(address || "").trim();
+            const normalizedPort = String(port || "").trim();
+            const normalizedProtocol = String(protocol || "").trim().toLowerCase();
+            const linkText = String(text || normalizedPort).trim();
+
+            if (!normalizedAddress || !normalizedPort) {
+              const fallback = document.createElement("span");
+              fallback.textContent = linkText;
+              return fallback;
+            }
+
+            const link = document.createElement("a");
+            const browserHost = formatEndpointBrowserHost(normalizedAddress);
+            const browserScheme = inferEndpointBrowserScheme(serviceName, normalizedProtocol);
+
+            link.className = className;
+            link.href = `${browserScheme}://${browserHost}:${normalizedPort}`;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = linkText;
+            return link;
+          }
+
           function formatInventoryPortList(portSet) {
             return Array.from(portSet || []).sort(compareInventoryPortLabels).join(", ");
+          }
+
+          function compareInventoryScriptRecords(left, right) {
+            return compareInventoryPortLabels(left.portLabel, right.portLabel) ||
+              compareInventoryText(left.id, right.id) ||
+              compareInventoryText(left.output, right.output);
+          }
+
+          function compareInventoryHttpRecords(left, right) {
+            return compareInventoryPortLabels(left.portLabel, right.portLabel);
+          }
+
+          function appendServiceInventoryDetailRow(container, label, value) {
+            const normalizedValue = String(value || "").trim();
+            if (!normalizedValue) {
+              return;
+            }
+
+            const row = document.createElement("div");
+            const rowLabel = document.createElement("span");
+            const rowValue = document.createElement("span");
+
+            row.className = "service-inventory-http-row";
+            rowLabel.className = "service-inventory-http-label";
+            rowValue.className = "service-inventory-http-value";
+            rowLabel.textContent = `${label}:`;
+            rowValue.textContent = normalizedValue;
+            row.appendChild(rowLabel);
+            row.appendChild(rowValue);
+            container.appendChild(row);
+          }
+
+          function shouldSuppressRawHttpScript(scriptId, hasHttpDetails) {
+            if (!hasHttpDetails) {
+              return false;
+            }
+
+            return [
+              "http-title",
+              "http-server-header",
+              "http-headers",
+              "fingerprint-strings"
+            ].includes(String(scriptId || "").trim());
+          }
+
+          function parseVulnersEntries(raw) {
+            const cleaned = String(raw || "").replace(/\r\n/g, "\n").trim();
+            if (!cleaned) {
+              return [];
+            }
+
+            const entries = [];
+            cleaned
+              .split("\n")
+              .map(line => line.trim())
+              .filter(Boolean)
+              .forEach(line => {
+                if (!line.includes("\t")) {
+                  return;
+                }
+
+                const parts = line.split("\t").map(part => part.trim()).filter(Boolean);
+                if (parts.length < 3) {
+                  return;
+                }
+
+                const [id, score, url] = parts;
+                if (!id || !score || !url || !/^https:\/\/vulners\.com\/[^/]+\/.+$/.test(url)) {
+                  return;
+                }
+
+                entries.push({
+                  id,
+                  score: Number(score),
+                  scoreText: score,
+                  href: url
+                });
+              });
+
+            return entries.sort((a, b) => b.score - a.score || compareInventoryText(a.id, b.id));
           }
 
           function formatInventoryHostCount(count) {
@@ -1467,6 +1833,226 @@
             }
 
             return `${knownVariantCount} Variant${knownVariantCount === 1 ? "" : "s"}${hasUnknown ? " + Unknown" : ""}`;
+          }
+
+          let serviceInventoryExportRows = [];
+          const serviceInventoryExportColumns = [
+            "Service",
+            "Bucket",
+            "Host",
+            "Port(s)",
+            "HTTP Title",
+            "HTTP Server",
+            "HTTP Location",
+            "HTTP Stack",
+            "HTTP Powered-By",
+            "Vulners",
+            "NSE Scripts"
+          ];
+
+          function buildServiceInventoryVulnersSummary(vulnersRecords) {
+            return vulnersRecords
+              .flatMap(record => record.entries.map(entry => {
+                const suffix = record.portLabel ? ` (${record.portLabel})` : "";
+                return `${entry.id}${suffix} [CVSS ${entry.scoreText}]`;
+              }))
+              .join("; ");
+          }
+
+          function buildServiceInventoryScriptSummary(scriptRecords, hostDisplayLabel) {
+            return scriptRecords.map(scriptRecord => {
+              return scriptRecord.portLabel
+                ? `${scriptRecord.id} (${hostDisplayLabel} | ${scriptRecord.portLabel})`
+                : `${scriptRecord.id} (${hostDisplayLabel})`;
+            }).join("; ");
+          }
+
+          function applyServiceInventoryExportData(data) {
+            data.header = serviceInventoryExportColumns.slice();
+            data.body = serviceInventoryExportRows.map(row =>
+              serviceInventoryExportColumns.map(column => row[column] || "")
+            );
+          }
+
+          function buildDataTableJsonExportAction(exportName) {
+            return function (e, dt) {
+              const visibleColumns = dt.columns(':visible');
+              const headerIndexes = visibleColumns.indexes().toArray();
+              const headers = visibleColumns.header().toArray().map(h => $(h).text().trim());
+
+              const data = dt.rows({ search: 'applied' }).nodes().toArray().map(row => {
+                const obj = {};
+                headerIndexes.forEach((columnIndex, i) => {
+                  const cell = $(row).find('th, td').get(columnIndex);
+                  obj[headers[i]] = cell ? $(cell).text().trim() : '';
+                });
+                return obj;
+              });
+
+              const json = JSON.stringify(data, null, 2);
+              const blob = new Blob([json], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `${exportName}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+          }
+
+          function formatServiceInventoryRowsAsDelimited(rows, delimiter = "\t") {
+            const lines = [
+              serviceInventoryExportColumns.join(delimiter),
+              ...rows.map(row => serviceInventoryExportColumns.map(column => {
+                const value = String(row[column] || "").replace(/\r?\n/g, " ").trim();
+                return delimiter === ";"
+                  ? `"${value.replace(/"/g, '""')}"`
+                  : value;
+              }).join(delimiter))
+            ];
+            return lines.join("\n");
+          }
+
+          function downloadServiceInventoryRows(rows, filename, type) {
+            const payload = type === "json"
+              ? JSON.stringify(rows, null, 2)
+              : formatServiceInventoryRowsAsDelimited(rows, ";");
+            const mime = type === "json" ? "application/json" : "text/csv";
+            const blob = new Blob([payload], { type: mime });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+          }
+
+          function sanitizeServiceInventoryFilename(value) {
+            return String(value || "")
+              .trim()
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-+|-+$/g, "") || "service";
+          }
+
+          function initializeServiceInventoryNestedTable(tableElement) {
+            if (!tableElement || !(window.jQuery && $.fn.dataTable)) {
+              return;
+            }
+
+            if ($.fn.dataTable.isDataTable(tableElement)) {
+              const existing = $(tableElement).DataTable();
+              const existingWrapper = existing.table().container();
+              if (existingWrapper) {
+                existingWrapper.classList.add("service-inventory-host-table-wrapper");
+              }
+              existing.columns.adjust();
+              return existing;
+            }
+
+            const exportName = tableElement.getAttribute("data-export-name") || "nmapview-service-details";
+            const api = $(tableElement).DataTable({
+              paging: false,
+              searching: true,
+              info: true,
+              ordering: true,
+              order: [[0, 'asc'], [1, 'asc']],
+              stateSave: false,
+              autoWidth: false,
+              dom: '<"d-flex justify-content-between align-items-center mb-2"fB>rti',
+              buttons: [
+                {
+                  extend: 'colvis',
+                  text: 'Columns',
+                  className: 'btn btn-light'
+                },
+                {
+                  extend: 'copyHtml5',
+                  text: 'Copy',
+                  title: exportName,
+                  exportOptions: { columns: ':visible', orthogonal: 'export' },
+                  className: 'btn btn-light'
+                },
+                {
+                  extend: 'csvHtml5',
+                  text: 'CSV',
+                  filename: exportName,
+                  fieldSeparator: ';',
+                  exportOptions: { columns: ':visible', orthogonal: 'export' },
+                  className: 'btn btn-light'
+                },
+                {
+                  extend: 'excelHtml5',
+                  text: 'Excel',
+                  filename: exportName,
+                  autoFilter: true,
+                  exportOptions: { columns: ':visible', orthogonal: 'export' },
+                  className: 'btn btn-light'
+                },
+                {
+                  text: 'Copy IP:Port',
+                  className: 'btn btn-light',
+                  action: async function (e, dt) {
+                    const endpoints = [];
+
+                    dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+                      const address = (row.getAttribute('data-address') || '').trim();
+                      const rawPorts = (row.getAttribute('data-ports') || '').trim();
+                      if (!address || !rawPorts) {
+                        return;
+                      }
+
+                      rawPorts
+                        .split(',')
+                        .map(port => port.trim())
+                        .filter(Boolean)
+                        .forEach(portLabel => {
+                          const [port] = portLabel.split('/');
+                          if (port) {
+                            endpoints.push(`${address}:${port}`);
+                          }
+                        });
+                    });
+
+                    await copyTextToClipboard([...new Set(endpoints)].join('\n'));
+                  }
+                },
+                {
+                  text: 'JSON',
+                  className: 'btn btn-light',
+                  action: buildDataTableJsonExportAction(exportName)
+                }
+              ]
+            });
+            const wrapper = api.table().container();
+            if (wrapper) {
+              wrapper.classList.add("service-inventory-host-table-wrapper");
+            }
+            return api;
+          }
+
+          function initializeServiceInventoryNestedTables() {
+            document.querySelectorAll(".service-inventory-service-details").forEach(details => {
+              const nestedTable = details.querySelector(".service-inventory-host-table");
+              if (!nestedTable) {
+                return;
+              }
+
+              const ensureInitialized = () => {
+                const api = initializeServiceInventoryNestedTable(nestedTable);
+                if (api && typeof api.columns?.adjust === "function") {
+                  api.columns.adjust();
+                }
+              };
+
+              ensureInitialized();
+
+              details.addEventListener("toggle", () => {
+                if (details.open) {
+                  ensureInitialized();
+                }
+              });
+            });
           }
 
           function buildServiceInventoryTable() {
@@ -1523,7 +2109,10 @@
                 variantRecord.hosts.set(address, {
                   address,
                   hostname,
-                  ports: new Set()
+                  ports: new Set(),
+                  scripts: new Map(),
+                  httpDetails: new Map(),
+                  vulners: new Map()
                 });
               }
               const variantHostRecord = variantRecord.hosts.get(address);
@@ -1534,22 +2123,80 @@
                 variantHostRecord.ports.add(portLabel);
                 variantRecord.ports.add(portLabel);
               }
+
+              const httpTitle = (entry.getAttribute("data-http-title") || "").trim();
+              const httpLocation = (entry.getAttribute("data-http-location") || "").trim();
+              const httpServer = (entry.getAttribute("data-http-server") || "").trim();
+              const httpStack = (entry.getAttribute("data-http-stack") || "").trim();
+              const httpPoweredBy = (entry.getAttribute("data-http-powered-by") || "").trim();
+              const rawVulners = (entry.getAttribute("data-vulners") || "").trim();
+              if ([httpTitle, httpLocation, httpServer, httpStack, httpPoweredBy].some(Boolean)) {
+                const httpKey = portLabel || `${service}|${address}`;
+                if (!variantHostRecord.httpDetails.has(httpKey)) {
+                  variantHostRecord.httpDetails.set(httpKey, {
+                    portLabel: portLabel || "",
+                    title: httpTitle,
+                    location: httpLocation,
+                    server: httpServer,
+                    stack: httpStack,
+                    poweredBy: httpPoweredBy
+                  });
+                }
+              }
+              const vulnersEntries = parseVulnersEntries(rawVulners);
+              if (vulnersEntries.length > 0) {
+                const vulnersKey = portLabel || `${service}|${address}|vulners`;
+                if (!variantHostRecord.vulners.has(vulnersKey)) {
+                  variantHostRecord.vulners.set(vulnersKey, {
+                    portLabel: portLabel || "",
+                    entries: vulnersEntries
+                  });
+                }
+              }
+
+              Array.from(entry.querySelectorAll(".service-inventory-script")).forEach(scriptEntry => {
+                const scriptId = (scriptEntry.getAttribute("data-id") || "").trim();
+                const scriptOutput = (scriptEntry.textContent || "").trim();
+                const scriptPort = (scriptEntry.getAttribute("data-port") || "").trim();
+                const scriptProtocol = (scriptEntry.getAttribute("data-protocol") || "").trim();
+                const scriptPortLabel = scriptPort && scriptProtocol ? `${scriptPort}/${scriptProtocol}` : portLabel;
+                const scriptValidFrom = (scriptEntry.getAttribute("data-valid-from") || "").trim();
+                const scriptValidTo = (scriptEntry.getAttribute("data-valid-to") || "").trim();
+                const scriptSelfSigned = (scriptEntry.getAttribute("data-self-signed") || "").trim() === "true";
+
+                if (!scriptId || !scriptOutput) {
+                  return;
+                }
+
+                const scriptKey = `${scriptPortLabel}::${scriptId}::${scriptOutput}`;
+                if (!variantHostRecord.scripts.has(scriptKey)) {
+                  variantHostRecord.scripts.set(scriptKey, {
+                    id: scriptId,
+                    output: scriptOutput,
+                    portLabel: scriptPortLabel || "",
+                    validFrom: scriptValidFrom,
+                    validTo: scriptValidTo,
+                    selfSigned: scriptSelfSigned
+                  });
+                }
+              });
             });
 
             const sortedServices = Array.from(services.values()).sort((left, right) => {
               return right.hosts.size - left.hosts.size || compareInventoryText(left.name, right.name);
             });
 
+            serviceInventoryExportRows = [];
             tableBody.textContent = "";
+            let nestedTableIndex = 0;
 
             sortedServices.forEach(serviceRecord => {
               const row = document.createElement("tr");
-              const serviceCell = document.createElement("td");
-              const countCell = document.createElement("td");
               const hostsCell = document.createElement("td");
               const serviceDetails = document.createElement("details");
               const serviceSummary = document.createElement("summary");
               const serviceLine = document.createElement("div");
+              const serviceTitle = document.createElement("span");
               const serviceMeta = document.createElement("span");
               const serviceBody = document.createElement("div");
               const hostTable = document.createElement("table");
@@ -1570,27 +2217,29 @@
               serviceDetails.className = "service-inventory-service-details";
               serviceSummary.className = "service-inventory-service-summary";
               serviceLine.className = "service-inventory-summary-line";
+              serviceTitle.className = "service-inventory-service-title";
               serviceMeta.className = "service-inventory-service-meta";
               serviceBody.className = "service-inventory-service-body";
               hostTable.className = "service-inventory-host-table";
+              hostTable.id = `serviceInventoryNestedTable${nestedTableIndex += 1}`;
+              hostTable.setAttribute("data-export-name", `nmapview-service-${sanitizeServiceInventoryFilename(serviceRecord.name)}`);
               hostTableBucketHeader.className = "service-inventory-host-bucket-column";
               hostTableHostHeader.className = "service-inventory-host-column";
               hostTablePortsHeader.className = "service-inventory-host-ports-column";
               hostTableServiceHeader.className = "service-inventory-host-service-column";
 
-              serviceCell.className = "service-inventory-name-cell";
-              serviceCell.textContent = serviceRecord.name;
-              countCell.textContent = String(serviceRecord.hosts.size);
-              countCell.dataset.order = String(serviceRecord.hosts.size);
               hostsCell.className = "service-inventory-hosts-cell";
+              hostsCell.dataset.order = String(serviceRecord.hosts.size);
 
+              serviceTitle.textContent = serviceRecord.name;
               serviceMeta.textContent = `${formatInventoryHostCount(serviceRecord.hosts.size)} • ${formatInventoryVariantSummary(variants)}`;
+              serviceLine.appendChild(serviceTitle);
               serviceLine.appendChild(serviceMeta);
               serviceSummary.appendChild(serviceLine);
               hostTableBucketHeader.textContent = "Product";
               hostTableHostHeader.textContent = "Host";
               hostTablePortsHeader.textContent = "Port(s)";
-              hostTableServiceHeader.textContent = "Service";
+              hostTableServiceHeader.textContent = "Details";
               hostTableHeadRow.appendChild(hostTableBucketHeader);
               hostTableHeadRow.appendChild(hostTableHostHeader);
               hostTableHeadRow.appendChild(hostTablePortsHeader);
@@ -1599,6 +2248,7 @@
 
               let previousProductGroup = "";
               let previousVariantLabel = "";
+              const serviceScopedExportRows = [];
 
               variants.forEach(variantRecord => {
                 const hosts = Array.from(variantRecord.hosts.values()).sort((left, right) => {
@@ -1614,10 +2264,26 @@
                   const portsCell = document.createElement("td");
                   const serviceCell = document.createElement("td");
                   const link = document.createElement("a");
+                  const portLabels = Array.from(hostRecord.ports || []).sort(compareInventoryPortLabels);
+                  const httpDetails = Array.from(hostRecord.httpDetails ? hostRecord.httpDetails.values() : [])
+                    .sort(compareInventoryHttpRecords);
+                  const vulnersRecords = Array.from(hostRecord.vulners ? hostRecord.vulners.values() : [])
+                    .sort((left, right) => compareInventoryPortLabels(left.portLabel, right.portLabel));
+                  const scriptRecords = Array.from(hostRecord.scripts ? hostRecord.scripts.values() : [])
+                    .sort(compareInventoryScriptRecords);
+                  const hostDisplayLabel = buildServiceInventoryHostLabel(hostRecord.hostname, hostRecord.address);
+                  const filteredScriptRecords = scriptRecords.filter(scriptRecord =>
+                    scriptRecord.id !== "vulners" &&
+                    !shouldSuppressRawHttpScript(scriptRecord.id, httpDetails.length > 0)
+                  );
+                  const primaryHttpRecord = httpDetails[0] || {};
+
+                  row.setAttribute("data-address", hostRecord.address);
+                  row.setAttribute("data-ports", portLabels.join(","));
 
                   link.className = "service-inventory-host-link";
                   link.href = `#onlinehosts-${hostRecord.address.replace(/[.:]/g, "-")}`;
-                  link.textContent = buildServiceInventoryHostLabel(hostRecord.hostname, hostRecord.address);
+                  link.textContent = hostDisplayLabel;
                   if (variantRecord.productGroup !== previousProductGroup) {
                     row.classList.add("service-inventory-product-separator");
                     previousProductGroup = variantRecord.productGroup;
@@ -1628,10 +2294,164 @@
                   }
                   bucketCell.textContent = variantRecord.label;
                   hostCell.appendChild(link);
-                  portsCell.textContent = hostRecord.ports && hostRecord.ports.size > 0
-                    ? formatInventoryPortList(hostRecord.ports)
-                    : "";
-                  serviceCell.textContent = serviceRecord.name;
+                  if (portLabels.length > 0) {
+                    portLabels.forEach((portLabel, index) => {
+                      const [port, protocol] = String(portLabel || "").split("/");
+                      if (index > 0) {
+                        portsCell.appendChild(document.createTextNode(", "));
+                      }
+                      portsCell.appendChild(createBrowserEndpointLink(
+                        hostRecord.address,
+                        port,
+                        protocol || "",
+                        serviceRecord.name,
+                        portLabel
+                      ));
+                    });
+                  }
+                  if (httpDetails.length > 0 || vulnersRecords.length > 0 || filteredScriptRecords.length > 0) {
+                    const detailsGroup = document.createElement("details");
+                    const detailsSummary = document.createElement("summary");
+                    const detailsBody = document.createElement("div");
+
+                    detailsGroup.className = "service-inventory-script-group-details";
+                    detailsSummary.className = "service-inventory-script-group-summary";
+                    detailsBody.className = "service-inventory-script-group-body";
+                    detailsSummary.textContent = "Show Details";
+
+                    if (httpDetails.length > 0) {
+                      const httpDetailsContainer = document.createElement("div");
+                      httpDetailsContainer.className = "service-inventory-http-details";
+
+                      httpDetails.forEach(httpRecord => {
+                        const httpBlock = document.createElement("div");
+                        httpBlock.className = "http-details-block service-inventory-http-block";
+
+                        if (httpRecord.portLabel) {
+                          const httpPortLabel = document.createElement("div");
+                          httpPortLabel.className = "service-inventory-http-port-label";
+                          httpPortLabel.textContent = `HTTP (${httpRecord.portLabel})`;
+                          httpBlock.appendChild(httpPortLabel);
+                        }
+
+                        appendServiceInventoryDetailRow(httpBlock, "Title", httpRecord.title);
+                        appendServiceInventoryDetailRow(httpBlock, "Server", httpRecord.server);
+                        appendServiceInventoryDetailRow(httpBlock, "Location", httpRecord.location);
+                        appendServiceInventoryDetailRow(httpBlock, "Stack", httpRecord.stack);
+                        appendServiceInventoryDetailRow(httpBlock, "Powered-By", httpRecord.poweredBy);
+                        httpDetailsContainer.appendChild(httpBlock);
+                      });
+
+                      detailsBody.appendChild(httpDetailsContainer);
+                    }
+
+                    if (vulnersRecords.length > 0) {
+                      const vulnersContainer = document.createElement("div");
+                      const vulnersSummary = document.createElement("div");
+                      const vulnersList = document.createElement("div");
+                      const flattenedVulners = vulnersRecords.flatMap(record =>
+                        record.entries.map(entry => ({
+                          ...entry,
+                          portLabel: record.portLabel
+                        }))
+                      );
+                      const totalFindings = flattenedVulners.length;
+                      const topFinding = flattenedVulners[0];
+
+                      vulnersContainer.className = "service-inventory-vulners";
+                      vulnersSummary.className = "service-inventory-vulners-summary";
+                      vulnersList.className = "service-inventory-vulners-list";
+                      vulnersSummary.textContent = topFinding
+                        ? `Vulners: ${totalFindings} finding${totalFindings === 1 ? "" : "s"}, top CVSS ${topFinding.scoreText}`
+                        : `Vulners: ${totalFindings} finding${totalFindings === 1 ? "" : "s"}`;
+
+                      flattenedVulners.slice(0, 3).forEach(entry => {
+                        const item = document.createElement("div");
+                        const score = document.createElement("strong");
+                        const link = document.createElement("a");
+
+                        item.className = "service-inventory-vulners-item";
+                        score.textContent = `CVSS ${entry.scoreText}`;
+                        link.href = entry.href;
+                        link.target = "_blank";
+                        link.rel = "noopener noreferrer";
+                        link.textContent = entry.portLabel ? `${entry.id} (${entry.portLabel})` : entry.id;
+                        item.appendChild(score);
+                        item.appendChild(link);
+                        vulnersList.appendChild(item);
+                      });
+
+                      if (totalFindings > 3) {
+                        const more = document.createElement("div");
+                        more.className = "service-inventory-vulners-more";
+                        more.textContent = `Showing a compact subset of ${totalFindings} findings`;
+                        vulnersList.appendChild(more);
+                      }
+
+                      vulnersContainer.appendChild(vulnersSummary);
+                      vulnersContainer.appendChild(vulnersList);
+                      detailsBody.appendChild(vulnersContainer);
+                    }
+
+                    if (filteredScriptRecords.length > 0) {
+                      const scriptList = document.createElement("div");
+
+                      scriptList.className = "service-inventory-script-list";
+
+                      filteredScriptRecords.forEach(scriptRecord => {
+                      const scriptItem = document.createElement("details");
+                      const scriptLabel = document.createElement("summary");
+                      const scriptOutput = document.createElement("pre");
+
+                      scriptItem.className = "service-inventory-script-item-details";
+                      scriptLabel.className = "service-inventory-script-item-summary";
+                      scriptOutput.className = "service-inventory-script-output";
+                      scriptLabel.textContent = scriptRecord.portLabel
+                        ? `${scriptRecord.id} (${hostDisplayLabel} | ${scriptRecord.portLabel})`
+                        : `${scriptRecord.id} (${hostDisplayLabel})`;
+                      if (scriptRecord.id === "ssl-cert" && scriptRecord.validTo) {
+                        const expiryBadge = buildCertificateExpiryBadge(scriptRecord.validFrom, scriptRecord.validTo);
+                        if (expiryBadge) {
+                          scriptLabel.appendChild(expiryBadge);
+                        }
+                      }
+                      if (scriptRecord.id === "ssl-cert" && scriptRecord.selfSigned) {
+                        const selfSignedBadge = document.createElement("span");
+                        selfSignedBadge.className = "certificate-expiry-badge is-self-signed";
+                        selfSignedBadge.textContent = "Self-signed";
+                        selfSignedBadge.title = "Certificate subject and issuer match";
+                        scriptLabel.appendChild(selfSignedBadge);
+                      }
+                      scriptOutput.textContent = scriptRecord.output;
+                      scriptItem.appendChild(scriptLabel);
+                      scriptItem.appendChild(scriptOutput);
+                      scriptList.appendChild(scriptItem);
+                      });
+
+                      scriptList.classList.add("service-inventory-script-group-body");
+                      detailsBody.appendChild(scriptList);
+                    }
+
+                    detailsGroup.appendChild(detailsSummary);
+                    detailsGroup.appendChild(detailsBody);
+                    serviceCell.appendChild(detailsGroup);
+                  }
+
+                  const exportRow = {
+                    "Service": serviceRecord.name,
+                    "Bucket": variantRecord.label,
+                    "Host": hostDisplayLabel,
+                    "Port(s)": formatInventoryPortList(hostRecord.ports),
+                    "HTTP Title": primaryHttpRecord.title || "",
+                    "HTTP Server": primaryHttpRecord.server || "",
+                    "HTTP Location": primaryHttpRecord.location || "",
+                    "HTTP Stack": primaryHttpRecord.stack || "",
+                    "HTTP Powered-By": primaryHttpRecord.poweredBy || "",
+                    "Vulners": buildServiceInventoryVulnersSummary(vulnersRecords),
+                    "NSE Scripts": buildServiceInventoryScriptSummary(filteredScriptRecords, hostDisplayLabel)
+                  };
+                  serviceInventoryExportRows.push(exportRow);
+                  serviceScopedExportRows.push(exportRow);
                   row.appendChild(bucketCell);
                   row.appendChild(hostCell);
                   row.appendChild(portsCell);
@@ -1647,8 +2467,6 @@
               serviceDetails.appendChild(serviceBody);
               hostsCell.appendChild(serviceDetails);
 
-              row.appendChild(serviceCell);
-              row.appendChild(countCell);
               row.appendChild(hostsCell);
               tableBody.appendChild(row);
             });
@@ -1750,6 +2568,16 @@
             return target;
           }
 
+          function openAncestorDetails(target) {
+            let current = target ? target.parentElement : null;
+            while (current) {
+              if (current.tagName === "DETAILS") {
+                current.open = true;
+              }
+              current = current.parentElement;
+            }
+          }
+
           function getReportScrollTop(target) {
             if (!target) {
               return 0;
@@ -1792,8 +2620,29 @@
 
             const target = document.querySelector(hash);
             if (target) {
+              openAncestorDetails(target);
               scrollToReportTarget(target);
             }
+          }
+
+          function initializeDeferredSectionTables() {
+            const webSection = document.getElementById("webtlsservices-panel");
+            if (!webSection) {
+              return;
+            }
+
+            webSection.addEventListener("toggle", () => {
+              if (!webSection.open) {
+                return;
+              }
+
+              const webTable = $("#web-services");
+              if (webTable.length && $.fn.dataTable.isDataTable(webTable)) {
+                const api = webTable.DataTable();
+                api.columns.adjust();
+                window.requestAnimationFrame(syncDataTableFixedHeaders);
+              }
+            });
           }
 
           function finalizeReportInitialization() {
@@ -2149,7 +2998,8 @@
             };
             const exportName = exportNames[selector] || "nmapview-table-export";
             const defaultOrders = {
-              "#service-inventory": [[1, "desc"], [0, "asc"]]
+              "#table-services": [[2, "asc"]],
+              "#service-inventory": [[0, "desc"]]
             };
             const buttons = [
               {
@@ -2162,6 +3012,7 @@
                 text: 'Copy',
                 title: exportName,
                 exportOptions: { columns: ':visible', orthogonal: 'export' },
+                customizeData: selector === '#service-inventory' ? applyServiceInventoryExportData : undefined,
                 className: 'btn btn-light'
               },
               {
@@ -2170,6 +3021,7 @@
                 filename: exportName,
                 fieldSeparator: ';',
                 exportOptions: { columns: ':visible', orthogonal: 'export' },
+                customizeData: selector === '#service-inventory' ? applyServiceInventoryExportData : undefined,
                 className: 'btn btn-light'
               },
               {
@@ -2178,12 +3030,25 @@
                 filename: exportName,
                 autoFilter: true,
                 exportOptions: { columns: ':visible', orthogonal: 'export' },
+                customizeData: selector === '#service-inventory' ? applyServiceInventoryExportData : undefined,
                 className: 'btn btn-light'
               },
               {
                 text: 'JSON',
                 className: 'btn btn-light',
                 action: function (e, dt, node, config) {
+                  if (selector === '#service-inventory') {
+                    const json = JSON.stringify(serviceInventoryExportRows, null, 2);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${exportName}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    return;
+                  }
+
                   const visibleColumns = dt.columns(':visible');
                   const headerIndexes = visibleColumns.indexes().toArray();
                   const headers = visibleColumns.header().toArray().map(h => $(h).text().trim());
@@ -2253,6 +3118,7 @@
 
               const headers = Array.from(tableElement.querySelectorAll("thead th")).map(header => ($(header).text() || '').trim());
               [
+                "Port",
                 "Count",
                 "Host Count",
                 "Uptime (est.)",
@@ -2269,9 +3135,9 @@
               });
 
               if (selector === '#service-inventory') {
-                const hostsColumnIndex = headers.indexOf("Hosts");
-                if (hostsColumnIndex !== -1) {
-                  columnDefs.push({ targets: [hostsColumnIndex], orderable: false });
+                const hostDetailsColumnIndex = headers.indexOf("Host Details");
+                if (hostDetailsColumnIndex !== -1) {
+                  columnDefs.push({ targets: [hostDetailsColumnIndex], type: 'num' });
                 }
               }
             }
@@ -2581,9 +3447,11 @@
 	              initializeHostToggle();
 	              initializeKeywordHighlighter();
 	              initializeCpeCopy();
+                initializeDeferredSectionTables();
 	              initializeCertificateExpiryAlerts();
                 formatVulnersChunks();
                 buildServiceInventoryTable();
+                initializeServiceInventoryNestedTables();
 	              initializeDataTable('#table-services');
 	              initializeDataTable('#table-overview');
 	              initializeDataTable('#web-services');

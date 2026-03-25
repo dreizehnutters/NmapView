@@ -321,6 +321,16 @@
                       </xsl:if>
                       <xsl:value-of select="service/@name"/>
                     </xsl:attribute>
+                    <xsl:attribute name="data-service-graph-label">
+                      <xsl:if test="service/@tunnel = 'ssl'">
+                        <xsl:text>ssl/</xsl:text>
+                      </xsl:if>
+                      <xsl:value-of select="service/@name"/>
+                      <xsl:text> </xsl:text>
+                      <xsl:value-of select="@portid"/>
+                      <xsl:text>/</xsl:text>
+                      <xsl:value-of select="@protocol"/>
+                    </xsl:attribute>
                   </span>
                 </xsl:for-each>
               </div>
@@ -1569,7 +1579,7 @@
                 cliponaxis: false
               }];
 
-              const dynamicHeight = Math.max(320, hostOpenPortCounts.length * 28);
+              const dynamicHeight = Math.max(220, hostOpenPortCounts.length * 24 + 36);
               const dynamicWidth = Math.max(900, Math.min(window.innerWidth - 40, 1400));
               openPortsPerHostChart.style.height = dynamicHeight + "px";
               openPortsPerHostChart.style.width = dynamicWidth + "px";
@@ -1577,7 +1587,7 @@
 
               const layout = {
                 title: "",
-                margin: { t: 60, l: 220, r: 90, b: 50 },
+                margin: { t: 34, l: 220, r: 90, b: 28 },
                 width: dynamicWidth,
                 height: dynamicHeight,
                 xaxis: {
@@ -1647,10 +1657,31 @@
                 numeric: true,
                 sensitivity: "base"
               }));
-              const sortedServicesForGraph = Array.from(servicesSet).sort((a, b) => a.localeCompare(b, undefined, {
-                numeric: true,
-                sensitivity: "base"
-              }));
+              const serviceGraphCounts = new Map();
+              const hostServiceLabels = new Map();
+
+              hostDivs.forEach(hostDiv => {
+                const host = hostDiv.getAttribute("data-host");
+                const seenServiceLabels = new Set();
+
+                hostDiv.querySelectorAll("span.port").forEach(span => {
+                  const graphLabel = (span.getAttribute("data-service-graph-label") || "").trim();
+                  if (!graphLabel || seenServiceLabels.has(graphLabel)) {
+                    return;
+                  }
+                  seenServiceLabels.add(graphLabel);
+                  serviceGraphCounts.set(graphLabel, (serviceGraphCounts.get(graphLabel) || 0) + 1);
+                });
+
+                hostServiceLabels.set(host, seenServiceLabels);
+              });
+
+              const sortedServicesForGraph = Array.from(serviceGraphCounts.entries())
+                .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], undefined, {
+                  numeric: true,
+                  sensitivity: "base"
+                }))
+                .map(([service]) => service);
 
               const labels = [...sortedHosts, ...sortedServicesForGraph];
               const hostIndex = new Map(sortedHosts.map((host, index) => [host, index]));
@@ -1661,12 +1692,8 @@
               const value = [];
 
               sortedHosts.forEach(host => {
-                const seenServices = new Set();
-                Object.values(openServices[host]).forEach(service => {
-                  if (!service || seenServices.has(service)) {
-                    return;
-                  }
-                  seenServices.add(service);
+                const seenServices = hostServiceLabels.get(host) || new Set();
+                Array.from(seenServices).forEach(service => {
                   source.push(hostIndex.get(host));
                   target.push(serviceIndex.get(service));
                   value.push(1);

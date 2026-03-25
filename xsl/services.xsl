@@ -130,7 +130,14 @@
                             </xsl:call-template>
                           </td>
                           <td>
-                            <xsl:value-of select="@portid"/>
+                            <xsl:call-template name="render-endpoint-link">
+                              <xsl:with-param name="address" select="$ip"/>
+                              <xsl:with-param name="port" select="@portid"/>
+                              <xsl:with-param name="protocol" select="@protocol"/>
+                              <xsl:with-param name="service-name" select="service/@name"/>
+                              <xsl:with-param name="tunnel" select="service/@tunnel"/>
+                              <xsl:with-param name="text" select="@portid"/>
+                            </xsl:call-template>
                           </td>
                           <td>
                             <xsl:value-of select="@protocol"/>
