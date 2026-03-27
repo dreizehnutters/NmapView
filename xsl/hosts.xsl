@@ -25,9 +25,6 @@
 	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Hops</span>
 	                      </th>
 	                      <th scope="col">
-	                        <span title="Aggregate count of Vulners matches across this host's open services. Treat as a rough indicator only; it can include false positives.">Issues (est.)</span>
-	                      </th>
-	                      <th scope="col">
 	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Rarity</span>
 	                      </th>
 	                    </tr>
@@ -49,7 +46,7 @@
 	                      <xsl:variable name="mac-vendor" select="address[@addrtype='mac']/@vendor"/>
 	                      <xsl:variable name="os-name" select="os/osmatch[1]/@name"/>
 	                      <xsl:variable name="has-uptime-estimate" select="status/@state='up' and (string(uptime/@lastboot) != '' or $uptime-seconds &gt; 0)"/>
-	                      <tr data-state="{status/@state}" data-address="{$ip}">
+	                      <tr data-state="{status/@state}" data-address="{$ip}" data-issues="{$vuln-count}">
                         <td>
                           <span class="badge text-bg-secondary">
                             <xsl:if test="status/@state='up'">
@@ -228,31 +225,6 @@
 	                            </xsl:otherwise>
 	                          </xsl:choose>
 	                        </td>
-                        <td>
-                          <xsl:attribute name="data-order">
-                            <xsl:choose>
-                              <xsl:when test="not($is-up)">-1</xsl:when>
-                              <xsl:otherwise><xsl:value-of select="$vuln-count"/></xsl:otherwise>
-                            </xsl:choose>
-                          </xsl:attribute>
-                          <xsl:choose>
-                            <xsl:when test="not($is-up)">
-                              <span class="text-muted">N/A</span>
-                            </xsl:when>
-                            <xsl:when test="$vuln-count &gt; 0">
-                              <span>
-                                <xsl:attribute name="title">
-                                  <xsl:value-of select="$vuln-count"/>
-                                  <xsl:text> Vulners entries across open services</xsl:text>
-                                </xsl:attribute>
-                                <xsl:value-of select="$vuln-count"/>
-                              </span>
-                            </xsl:when>
-                            <xsl:otherwise>
-                              <span class="text-muted">0</span>
-                            </xsl:otherwise>
-                          </xsl:choose>
-                        </td>
                         <td class="host-uniqueness-cell" data-order="0" data-search="0">
                           <xsl:choose>
                             <xsl:when test="$is-up">
@@ -308,15 +280,12 @@
 	                        <span title="Approximate hop distance from the scanner, as reported by Nmap.">Hops</span>
 	                      </th>
 	                      <th scope="col">
-	                        <span title="Aggregate count of Vulners matches across this host's open services. Treat as a rough indicator only; it can include false positives.">Issues (est.)</span>
-	                      </th>
-	                      <th scope="col">
 	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Rarity</span>
 	                      </th>
 	                    </tr>
 	                  </thead>
 	                  <tbody>
-                      <tr data-state="down" data-address="{$scan-target}">
+                      <tr data-state="down" data-address="{$scan-target}" data-issues="0">
                         <td>
                           <span class="badge text-bg-secondary">down</span>
                         </td>
@@ -359,9 +328,6 @@
                         <td data-order="-1">
                           <span class="text-muted">N/A</span>
                         </td>
-                        <td data-order="-1">
-                          <span class="text-muted">N/A</span>
-                        </td>
                         <td class="host-uniqueness-cell" data-order="-1" data-search="N/A">
                           <span class="text-muted">N/A</span>
                         </td>
@@ -379,7 +345,7 @@
   </xsl:template>
   <xsl:template name="render-online-hosts">
           <hr class="my-4"/>
-          <h2 id="onlinehosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded"><span class="section-heading-title">Host Details</span><small class="section-heading-subtitle">Inspect each host in full detail, including ports, scripts, service fingerprints, and OS hints.</small></h2>
+          <h2 id="onlinehosts" class="fs-4 mt-5 mb-3 bg-light p-3 rounded"><span class="section-heading-title">Host Details</span><small class="section-heading-subtitle">Inspect each host in detail.</small></h2>
           <xsl:choose>
             <xsl:when test="count(/nmaprun/host[status/@state='up']) &gt; 0">
               <div class="host-controls mb-3">

@@ -2,6 +2,9 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:key name="serviceGroup" match="host/ports/port[state/@state='open' and service/@name]" use="concat(            substring('ssl/', 1, (service/@tunnel = 'ssl') * string-length('ssl/')),            service/@name,            '-',            @protocol          )"/>
   <xsl:key name="uniquePorts" match="port[state/@state='open']" use="@portid"/>
+  <xsl:key name="openPortProtocolGroup" match="host/ports/port[state/@state='open']" use="concat(@portid, '-', @protocol)"/>
+  <xsl:key name="rareServiceGroup" match="host/ports/port[state/@state='open' and service/@name]" use="concat(            substring('ssl/', 1, count(script[@id='ssl-cert']) * string-length('ssl/')),            substring(service/@name, 1, string-length(service/@name) * (number(service/@conf) &gt; 5)),            substring('unknown', 1, string-length('unknown') * not(number(service/@conf) &gt; 5)),            '-',            @protocol          )"/>
+  <xsl:key name="httpServiceBucketGroup" match="host/ports/port[state/@state='open' and service/@name and (contains(translate(service/@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'http') or script[@id='http-title'] or script[@id='http-headers'] or script[@id='http-server-header'])]" use="concat(substring('ssl/', 1, count(script[@id='ssl-cert']) * string-length('ssl/')), substring(service/@name, 1, string-length(service/@name) * (number(service/@conf) &gt; 5)), substring('unknown', 1, string-length('unknown') * not(number(service/@conf) &gt; 5)), '|', normalize-space(service/@product), '|', substring(normalize-space(service/@version), 1, string-length(normalize-space(service/@version)) * boolean(string(normalize-space(service/@product)))))"/>
   <xsl:output method="html" encoding="utf-8" indent="yes" doctype-system="about:legacy-compat"/>
 
   <xsl:template name="render-hostname-or-na">
@@ -367,12 +370,20 @@
 
   <xsl:template name="render-cpe-text">
     <xsl:param name="cpe"/>
-    <span class="cpe-copy" title="Click to copy CPE">
-      <xsl:attribute name="data-cpe">
-        <xsl:value-of select="$cpe"/>
-      </xsl:attribute>
-      <xsl:value-of select="$cpe"/>
-    </span>
+    <xsl:choose>
+      <xsl:when test="string($cpe) != ''">
+        <a class="cpe-inline-link" target="_blank" rel="noopener noreferrer" title="Open CPE details in PentestFactory">
+          <xsl:attribute name="href">
+            <xsl:text>https://cve.pentestfactory.de/?cpe=</xsl:text>
+            <xsl:value-of select="$cpe"/>
+          </xsl:attribute>
+          <span aria-hidden="true">⌕</span>
+        </a>
+      </xsl:when>
+      <xsl:otherwise>
+        <span class="text-muted">unknown</span>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template name="render-certificate-row">

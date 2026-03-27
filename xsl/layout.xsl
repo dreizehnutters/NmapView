@@ -161,21 +161,19 @@
           }
 
           #service-inventory tbody tr > td {
-            --service-inventory-row-bg: #edf2f6;
-            --service-inventory-row-bg-muted: #dbe4ec;
-            --service-inventory-row-bg-soft: rgba(219, 228, 236, 0.8);
-            --service-inventory-nested-bg: #fbfcfd;
-            --service-inventory-nested-bg-muted: #f2f5f8;
-            --service-inventory-nested-bg-soft: rgba(242, 245, 248, 0.92);
+            --service-inventory-row-bg: var(--report-surface);
+            --service-inventory-row-bg-muted: #eef3f7;
+            --service-inventory-row-bg-soft: rgba(238, 243, 247, 0.92);
+            --service-inventory-nested-bg: var(--service-inventory-row-bg);
+            --service-inventory-nested-bg-soft: var(--service-inventory-row-bg-soft);
           }
 
           #service-inventory.table-striped > tbody > tr:nth-of-type(odd) > td {
-            --service-inventory-row-bg: #fbfcfd;
-            --service-inventory-row-bg-muted: #f2f5f8;
-            --service-inventory-row-bg-soft: rgba(242, 245, 248, 0.92);
-            --service-inventory-nested-bg: #edf2f6;
-            --service-inventory-nested-bg-muted: #dbe4ec;
-            --service-inventory-nested-bg-soft: rgba(219, 228, 236, 0.8);
+            --service-inventory-row-bg: #eef3f7;
+            --service-inventory-row-bg-muted: var(--report-surface);
+            --service-inventory-row-bg-soft: rgba(247, 249, 251, 0.94);
+            --service-inventory-nested-bg: var(--service-inventory-row-bg);
+            --service-inventory-nested-bg-soft: var(--service-inventory-row-bg-soft);
           }
 
           .service-inventory-service-details {
@@ -308,6 +306,11 @@
             overflow-wrap: anywhere;
           }
 
+          .service-inventory-bucket-label {
+            font-weight: 500;
+            overflow-wrap: anywhere;
+          }
+
           .service-inventory-script-list {
             display: grid;
             gap: 0.45rem;
@@ -347,6 +350,32 @@
 
           .service-inventory-script-group-body {
             margin-top: 0.45rem;
+          }
+
+          .service-inventory-extra-info-details {
+            display: grid;
+            gap: 0.55rem;
+          }
+
+          .service-inventory-extra-info-block {
+            display: grid;
+            gap: 0.18rem;
+            padding: 0.45rem 0.55rem;
+            border: 1px solid rgba(188, 200, 214, 0.7);
+            border-radius: 0.45rem;
+            background: var(--service-inventory-nested-bg-soft);
+          }
+
+          .service-inventory-extra-info-port-label {
+            color: #4f5e6d;
+            font-size: 0.78rem;
+            font-weight: 600;
+          }
+
+          .service-inventory-extra-info-value {
+            color: #24313d;
+            white-space: normal;
+            overflow-wrap: anywhere;
           }
 
           .service-inventory-http-details {
@@ -505,40 +534,15 @@
 
           .host-entry-summary {
             cursor: pointer;
-            list-style: none;
             padding: 1rem 1.25rem;
             background: var(--report-surface-muted);
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-          }
-
-          .host-entry-summary::-webkit-details-marker {
-            display: none;
-          }
-
-          .host-entry-summary::before {
-            content: "+";
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 1.5rem;
-            height: 1.5rem;
-            border-radius: 999px;
-            background: #0d6efd;
-            color: #fff;
-            font-weight: 700;
-            flex: 0 0 auto;
-          }
-
-          .host-entry[open] .host-entry-summary::before {
-            content: "-";
+            position: relative;
           }
 
           .host-entry-anchor {
-            display: block;
-            position: relative;
+            position: absolute;
+            left: 0;
             top: -4rem;
             visibility: hidden;
             width: 0;
@@ -546,7 +550,7 @@
           }
 
           .host-entry-label {
-            flex: 1 1 auto;
+            display: inline;
           }
 
           .host-entry-body {
@@ -653,14 +657,6 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-          }
-
-          .web-http-column {
-            min-width: 22rem;
-          }
-
-          .web-cert-column {
-            min-width: 16rem;
           }
 
           .http-details-block {
@@ -883,6 +879,23 @@
             color: #0a58ca !important;
           }
 
+          .cpe-inline-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.4rem;
+            min-height: 1.4rem;
+            font-size: 1.15rem;
+            line-height: 1;
+            color: #4f5e6d;
+            text-decoration: none;
+          }
+
+          .cpe-inline-link:hover,
+          .cpe-inline-link:focus {
+            color: #0a58ca;
+          }
+
           .keyword-highlight-controls {
             display: flex;
             flex-wrap: wrap;
@@ -960,7 +973,6 @@
           #scannedhosts,
           #openservices,
           #serviceinventory,
-          #webtlsservices,
           #onlinehosts {
             scroll-margin-top: 5.5rem;
           }
@@ -1010,27 +1022,6 @@
             line-height: 1.4;
           }
 
-          .section-disclosure {
-            margin-top: 3rem;
-          }
-
-          .section-disclosure > summary {
-            list-style: none;
-            cursor: pointer;
-          }
-
-          .section-disclosure > summary::-webkit-details-marker {
-            display: none;
-          }
-
-          .section-disclosure > summary > h2 {
-            margin-bottom: 0;
-          }
-
-          .section-disclosure-body {
-            margin-top: 1rem;
-          }
-
           .table {
             --bs-table-bg: var(--report-surface);
             --bs-table-striped-bg: #eef3f7;
@@ -1066,6 +1057,18 @@
 
           .table-responsive > .dt-container {
             padding: 0.85rem 0.9rem 0.7rem;
+          }
+
+          .dt-buttons .btn.btn-subtle-action,
+          .dt-buttons .dt-button.btn-subtle-action {
+            opacity: 0.72;
+          }
+
+          .dt-buttons .btn.btn-subtle-action:hover,
+          .dt-buttons .btn.btn-subtle-action:focus,
+          .dt-buttons .dt-button.btn-subtle-action:hover,
+          .dt-buttons .dt-button.btn-subtle-action:focus {
+            opacity: 1;
           }
 
           .table-responsive > .dt-container .table {
@@ -1256,24 +1259,40 @@
                 )
               )[1]
             )])"/>
-          <xsl:variable name="web-tls-endpoints" select="count(/nmaprun/host/ports/port[(@protocol='tcp') and (state/@state='open') and (starts-with(service/@name, 'http') or script[@id='ssl-cert'])])"/>
+          <xsl:variable name="rare-services" select="count(//host/ports/port[state/@state='open' and service/@name]
+            [count(key('openPortProtocolGroup', concat(@portid, '-', @protocol))) = 1]
+            [generate-id() = generate-id(
+              key('rareServiceGroup',
+                concat(
+                  substring('ssl/', 1, count(script[@id='ssl-cert']) * string-length('ssl/')),
+                  substring(service/@name, 1, string-length(service/@name) * (number(service/@conf) &gt; 5)),
+                  substring('unknown', 1, string-length('unknown') * not(number(service/@conf) &gt; 5)),
+                  '-',
+                  @protocol
+                )
+              )[1]
+            )])"/>
+          <xsl:variable name="http-buckets" select="count(//host/ports/port[state/@state='open' and service/@name and (contains(translate(service/@name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'http') or script[@id='http-title'] or script[@id='http-headers'] or script[@id='http-server-header'])]
+            [generate-id() = generate-id(
+              key('httpServiceBucketGroup',
+                concat(
+                  substring('ssl/', 1, count(script[@id='ssl-cert']) * string-length('ssl/')),
+                  substring(service/@name, 1, string-length(service/@name) * (number(service/@conf) &gt; 5)),
+                  substring('unknown', 1, string-length('unknown') * not(number(service/@conf) &gt; 5)),
+                  '|',
+                  normalize-space(service/@product),
+                  '|',
+                  substring(normalize-space(service/@version), 1, string-length(normalize-space(service/@version)) * boolean(string(normalize-space(service/@product))))
+                )
+              )[1]
+            )])"/>
           <xsl:variable name="duration-seconds" select="number(/nmaprun/runstats/finished/@time) - number(/nmaprun/@start)"/>
           <xsl:variable name="duration-hours" select="floor($duration-seconds div 3600)"/>
           <xsl:variable name="duration-minutes" select="floor(($duration-seconds mod 3600) div 60)"/>
           <xsl:variable name="duration-remainder-seconds" select="floor($duration-seconds mod 60)"/>
           <div id="summary" class="bg-light p-4 rounded shadow-sm">
             <div class="row g-3 mb-4">
-              <div class="col-6 col-lg-3">
-                <a class="summary-card-link" href="#scannedhosts">
-                  <div class="summary-card is-clickable">
-                    <div class="summary-card-label">Hosts scanned</div>
-                    <div class="summary-card-value">
-                      <xsl:value-of select="$total-hosts"/>
-                    </div>
-                  </div>
-                </a>
-              </div>
-              <div class="col-6 col-lg-3">
+              <div class="col-6 col-lg">
                 <a class="summary-card-link" href="#openservices">
                   <div class="summary-card is-clickable">
                     <div class="summary-card-label">Open ports</div>
@@ -1283,7 +1302,7 @@
                   </div>
                 </a>
               </div>
-              <div class="col-6 col-lg-3">
+              <div class="col-6 col-lg">
                 <a class="summary-card-link" href="#serviceinventory">
                   <div class="summary-card is-clickable">
                     <div class="summary-card-label">Unique services</div>
@@ -1293,12 +1312,22 @@
                   </div>
                 </a>
               </div>
-              <div class="col-6 col-lg-3">
-                <a class="summary-card-link" href="#webtlsservices">
+              <div class="col-6 col-lg">
+                <a class="summary-card-link" href="#openservices">
                   <div class="summary-card is-clickable">
-                    <div class="summary-card-label">Web/TLS endpoints</div>
+                    <div class="summary-card-label">Rare services</div>
                     <div class="summary-card-value">
-                      <xsl:value-of select="$web-tls-endpoints"/>
+                      <xsl:value-of select="$rare-services"/>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="col-6 col-lg">
+                <a class="summary-card-link" href="#serviceinventory">
+                  <div class="summary-card is-clickable">
+                    <div class="summary-card-label">HTTP</div>
+                    <div class="summary-card-value">
+                      <xsl:value-of select="$http-buckets"/>
                     </div>
                   </div>
                 </a>
@@ -1318,19 +1347,21 @@
                 </xsl:attribute>
                 <xsl:value-of select="$up-hosts"/> Hosts up
               </div>
-              <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
-                <xsl:attribute name="style">
-                  <xsl:text>width:</xsl:text>
-                  <xsl:choose>
-                    <xsl:when test="$total-hosts &gt; 0">
-                      <xsl:value-of select="$down-hosts div $total-hosts * 100"/>
-                    </xsl:when>
-                    <xsl:otherwise>0</xsl:otherwise>
-                  </xsl:choose>
-                  <xsl:text>%;</xsl:text>
-                </xsl:attribute>
-                <xsl:value-of select="$down-hosts"/> Hosts down
-              </div>
+              <xsl:if test="number($down-hosts) &gt; 0">
+                <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                  <xsl:attribute name="style">
+                    <xsl:text>width:</xsl:text>
+                    <xsl:choose>
+                      <xsl:when test="$total-hosts &gt; 0">
+                        <xsl:value-of select="$down-hosts div $total-hosts * 100"/>
+                      </xsl:when>
+                      <xsl:otherwise>0</xsl:otherwise>
+                    </xsl:choose>
+                    <xsl:text>%;</xsl:text>
+                  </xsl:attribute>
+                  <xsl:value-of select="$down-hosts"/> Hosts down
+                </div>
+              </xsl:if>
             </div>
             <details class="summary-command">
               <summary>Nmap Version: <xsl:value-of select="/nmaprun/@version"/><xsl:text> | </xsl:text>Scan Duration: <xsl:value-of select="/nmaprun/@startstr"/> - <xsl:value-of select="/nmaprun/runstats/finished/@timestr"/><xsl:text> (</xsl:text><xsl:if test="$duration-hours &gt; 0"><xsl:value-of select="$duration-hours"/><xsl:text>h </xsl:text></xsl:if><xsl:if test="$duration-minutes &gt; 0 or $duration-hours &gt; 0"><xsl:value-of select="$duration-minutes"/><xsl:text>m </xsl:text></xsl:if><xsl:value-of select="$duration-remainder-seconds"/><xsl:text>s)</xsl:text></summary>
@@ -1609,42 +1640,6 @@
             });
           }
 
-          function formatInventoryLists() {
-            document.querySelectorAll("td.port-list").forEach(td => {
-              const raw = td.getAttribute("data-ports");
-              if (!raw) return;
-
-              const ports = raw.split(",").map(port => port.trim());
-              const uniquePorts = [...new Set(ports)].sort((a, b) => Number(a) - Number(b));
-              const container = td.querySelector(".display-ports");
-              if (container) {
-                container.textContent = uniquePorts.join(", ");
-              }
-            });
-
-            document.querySelectorAll("td.host-list").forEach(td => {
-              const raw = td.getAttribute("data-hosts");
-              if (!raw) return;
-
-              const hosts = raw.split(",").map(host => host.trim());
-              const uniqueHosts = [...new Set(hosts)];
-              const container = td.querySelector(".display-hosts");
-              if (!container) return;
-
-              container.textContent = "";
-              uniqueHosts.forEach((ip, index) => {
-                if (index > 0) {
-                  appendText(container, ", ");
-                }
-
-                const anchor = document.createElement("a");
-                anchor.href = `#onlinehosts-${ip.replace(/[.:]/g, "-")}`;
-                anchor.textContent = ip;
-                container.appendChild(anchor);
-              });
-            });
-          }
-
           function buildServiceInventoryVariantLabel(product, version) {
             const normalizedProduct = (product || "").trim();
             const normalizedVersion = (version || "").trim();
@@ -1820,10 +1815,6 @@
             return `${count} Host${count === 1 ? "" : "s"}`;
           }
 
-          function formatInventoryPortCount(count) {
-            return `${count} Port${count === 1 ? "" : "s"}`;
-          }
-
           function formatInventoryVariantSummary(variants) {
             const knownVariantCount = variants.filter(variant => !variant.isUnknown).length;
             const hasUnknown = variants.some(variant => variant.isUnknown);
@@ -1867,13 +1858,6 @@
             }).join("; ");
           }
 
-          function applyServiceInventoryExportData(data) {
-            data.header = serviceInventoryExportColumns.slice();
-            data.body = serviceInventoryExportRows.map(row =>
-              serviceInventoryExportColumns.map(column => row[column] || "")
-            );
-          }
-
           function buildDataTableJsonExportAction(exportName) {
             return function (e, dt) {
               const visibleColumns = dt.columns(':visible');
@@ -1911,20 +1895,6 @@
               }).join(delimiter))
             ];
             return lines.join("\n");
-          }
-
-          function downloadServiceInventoryRows(rows, filename, type) {
-            const payload = type === "json"
-              ? JSON.stringify(rows, null, 2)
-              : formatServiceInventoryRowsAsDelimited(rows, ";");
-            const mime = type === "json" ? "application/json" : "text/csv";
-            const blob = new Blob([payload], { type: mime });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = filename;
-            link.click();
-            URL.revokeObjectURL(url);
           }
 
           function sanitizeServiceInventoryFilename(value) {
@@ -1967,30 +1937,7 @@
                   className: 'btn btn-light'
                 },
                 {
-                  extend: 'copyHtml5',
                   text: 'Copy',
-                  title: exportName,
-                  exportOptions: { columns: ':visible', orthogonal: 'export' },
-                  className: 'btn btn-light'
-                },
-                {
-                  extend: 'csvHtml5',
-                  text: 'CSV',
-                  filename: exportName,
-                  fieldSeparator: ';',
-                  exportOptions: { columns: ':visible', orthogonal: 'export' },
-                  className: 'btn btn-light'
-                },
-                {
-                  extend: 'excelHtml5',
-                  text: 'Excel',
-                  filename: exportName,
-                  autoFilter: true,
-                  exportOptions: { columns: ':visible', orthogonal: 'export' },
-                  className: 'btn btn-light'
-                },
-                {
-                  text: 'Copy IP:Port',
                   className: 'btn btn-light',
                   action: async function (e, dt) {
                     const endpoints = [];
@@ -2016,6 +1963,22 @@
 
                     await copyTextToClipboard([...new Set(endpoints)].join('\n'));
                   }
+                },
+                {
+                  extend: 'csvHtml5',
+                  text: 'CSV',
+                  filename: exportName,
+                  fieldSeparator: ';',
+                  exportOptions: { columns: ':visible', orthogonal: 'export' },
+                  className: 'btn btn-light'
+                },
+                {
+                  extend: 'excelHtml5',
+                  text: 'Excel',
+                  filename: exportName,
+                  autoFilter: true,
+                  exportOptions: { columns: ':visible', orthogonal: 'export' },
+                  className: 'btn btn-light'
                 },
                 {
                   text: 'JSON',
@@ -2074,6 +2037,7 @@
               const protocol = (entry.getAttribute("data-protocol") || "").trim();
               const portLabel = port && protocol ? `${port}/${protocol}` : "";
               const variantLabel = buildServiceInventoryVariantLabel(product, version);
+              const extraInfo = (entry.getAttribute("data-extra-info") || "").trim();
 
               if (!service || !address) {
                 return;
@@ -2110,6 +2074,7 @@
                   address,
                   hostname,
                   ports: new Set(),
+                  extraInfoRecords: new Map(),
                   scripts: new Map(),
                   httpDetails: new Map(),
                   vulners: new Map()
@@ -2122,6 +2087,15 @@
               if (portLabel) {
                 variantHostRecord.ports.add(portLabel);
                 variantRecord.ports.add(portLabel);
+              }
+              if (extraInfo) {
+                const extraInfoKey = portLabel || `${service}|${address}|extra-info`;
+                if (!variantHostRecord.extraInfoRecords.has(extraInfoKey)) {
+                  variantHostRecord.extraInfoRecords.set(extraInfoKey, {
+                    portLabel: portLabel || "",
+                    value: extraInfo
+                  });
+                }
               }
 
               const httpTitle = (entry.getAttribute("data-http-title") || "").trim();
@@ -2260,11 +2234,14 @@
                 hosts.forEach(hostRecord => {
                   const row = document.createElement("tr");
                   const bucketCell = document.createElement("td");
+                  const bucketLabel = document.createElement("div");
                   const hostCell = document.createElement("td");
                   const portsCell = document.createElement("td");
                   const serviceCell = document.createElement("td");
                   const link = document.createElement("a");
                   const portLabels = Array.from(hostRecord.ports || []).sort(compareInventoryPortLabels);
+                  const extraInfoRecords = Array.from(hostRecord.extraInfoRecords ? hostRecord.extraInfoRecords.values() : [])
+                    .sort((left, right) => compareInventoryPortLabels(left.portLabel, right.portLabel) || compareInventoryText(left.value, right.value));
                   const httpDetails = Array.from(hostRecord.httpDetails ? hostRecord.httpDetails.values() : [])
                     .sort(compareInventoryHttpRecords);
                   const vulnersRecords = Array.from(hostRecord.vulners ? hostRecord.vulners.values() : [])
@@ -2292,7 +2269,9 @@
                     row.classList.add("service-inventory-variant-separator");
                     previousVariantLabel = variantRecord.label;
                   }
-                  bucketCell.textContent = variantRecord.label;
+                  bucketLabel.className = "service-inventory-bucket-label";
+                  bucketLabel.textContent = variantRecord.label;
+                  bucketCell.appendChild(bucketLabel);
                   hostCell.appendChild(link);
                   if (portLabels.length > 0) {
                     portLabels.forEach((portLabel, index) => {
@@ -2309,7 +2288,7 @@
                       ));
                     });
                   }
-                  if (httpDetails.length > 0 || vulnersRecords.length > 0 || filteredScriptRecords.length > 0) {
+                  if (extraInfoRecords.length > 0 || httpDetails.length > 0 || vulnersRecords.length > 0 || filteredScriptRecords.length > 0) {
                     const detailsGroup = document.createElement("details");
                     const detailsSummary = document.createElement("summary");
                     const detailsBody = document.createElement("div");
@@ -2318,6 +2297,31 @@
                     detailsSummary.className = "service-inventory-script-group-summary";
                     detailsBody.className = "service-inventory-script-group-body";
                     detailsSummary.textContent = "Show Details";
+
+                    if (extraInfoRecords.length > 0) {
+                      const extraInfoContainer = document.createElement("div");
+                      extraInfoContainer.className = "service-inventory-extra-info-details";
+
+                      extraInfoRecords.forEach(extraInfoRecord => {
+                        const extraInfoBlock = document.createElement("div");
+                        extraInfoBlock.className = "service-inventory-extra-info-block";
+
+                        if (extraInfoRecord.portLabel) {
+                          const extraInfoPortLabel = document.createElement("div");
+                          extraInfoPortLabel.className = "service-inventory-extra-info-port-label";
+                          extraInfoPortLabel.textContent = `Extra Info (${extraInfoRecord.portLabel})`;
+                          extraInfoBlock.appendChild(extraInfoPortLabel);
+                        }
+
+                        const extraInfoValue = document.createElement("div");
+                        extraInfoValue.className = "service-inventory-extra-info-value";
+                        extraInfoValue.textContent = extraInfoRecord.value;
+                        extraInfoBlock.appendChild(extraInfoValue);
+                        extraInfoContainer.appendChild(extraInfoBlock);
+                      });
+
+                      detailsBody.appendChild(extraInfoContainer);
+                    }
 
                     if (httpDetails.length > 0) {
                       const httpDetailsContainer = document.createElement("div");
@@ -2625,26 +2629,6 @@
             }
           }
 
-          function initializeDeferredSectionTables() {
-            const webSection = document.getElementById("webtlsservices-panel");
-            if (!webSection) {
-              return;
-            }
-
-            webSection.addEventListener("toggle", () => {
-              if (!webSection.open) {
-                return;
-              }
-
-              const webTable = $("#web-services");
-              if (webTable.length && $.fn.dataTable.isDataTable(webTable)) {
-                const api = webTable.DataTable();
-                api.columns.adjust();
-                window.requestAnimationFrame(syncDataTableFixedHeaders);
-              }
-            });
-          }
-
           function finalizeReportInitialization() {
             const overlay = document.getElementById("reportLoadingOverlay");
 
@@ -2658,6 +2642,11 @@
                 navigateToInitialHash();
               });
             });
+          }
+
+          function getDataTableHeaderOffset() {
+            const navbar = document.getElementById("mainNavbar");
+            return navbar ? Math.ceil(navbar.getBoundingClientRect().height) : 0;
           }
 
           function initializeHostToggle() {
@@ -2690,11 +2679,6 @@
             });
 
             syncLabel();
-          }
-
-          function getDataTableHeaderOffset() {
-            const navbar = document.getElementById("mainNavbar");
-            return navbar ? Math.ceil(navbar.getBoundingClientRect().height) : 0;
           }
 
           function syncDataTableFixedHeaders() {
@@ -2993,52 +2977,56 @@
             const exportNames = {
               "#table-services": "nmapview-open-services",
               "#table-overview": "nmapview-scanned-hosts",
-              "#web-services": "nmapview-web-tls-services",
               "#service-inventory": "nmapview-service-inventory"
             };
             const exportName = exportNames[selector] || "nmapview-table-export";
             const defaultOrders = {
-              "#table-services": [[2, "asc"]],
+              "#table-services": [[4, "asc"], [2, "asc"]],
               "#service-inventory": [[0, "desc"]]
             };
-            const buttons = [
-              {
-                extend: 'colvis',
-                text: 'Columns',
-                className: 'btn btn-light'
-              },
-              {
-                extend: 'copyHtml5',
-                text: 'Copy',
-                title: exportName,
-                exportOptions: { columns: ':visible', orthogonal: 'export' },
-                customizeData: selector === '#service-inventory' ? applyServiceInventoryExportData : undefined,
-                className: 'btn btn-light'
-              },
-              {
-                extend: 'csvHtml5',
-                text: 'CSV',
-                filename: exportName,
-                fieldSeparator: ';',
-                exportOptions: { columns: ':visible', orthogonal: 'export' },
-                customizeData: selector === '#service-inventory' ? applyServiceInventoryExportData : undefined,
-                className: 'btn btn-light'
-              },
-              {
-                extend: 'excelHtml5',
-                text: 'Excel',
-                filename: exportName,
-                autoFilter: true,
-                exportOptions: { columns: ':visible', orthogonal: 'export' },
-                customizeData: selector === '#service-inventory' ? applyServiceInventoryExportData : undefined,
-                className: 'btn btn-light'
-              },
-              {
-                text: 'JSON',
-                className: 'btn btn-light',
-                action: function (e, dt, node, config) {
-                  if (selector === '#service-inventory') {
-                    const json = JSON.stringify(serviceInventoryExportRows, null, 2);
+            const buttons = [];
+
+            if (selector !== '#service-inventory') {
+              buttons.push(
+                {
+                  extend: 'colvis',
+                  text: 'Columns',
+                  className: 'btn btn-light'
+                },
+                {
+                  extend: 'csvHtml5',
+                  text: 'CSV',
+                  filename: exportName,
+                  fieldSeparator: ';',
+                  exportOptions: { columns: ':visible', orthogonal: 'export' },
+                  className: 'btn btn-light'
+                },
+                {
+                  extend: 'excelHtml5',
+                  text: 'Excel',
+                  filename: exportName,
+                  autoFilter: true,
+                  exportOptions: { columns: ':visible', orthogonal: 'export' },
+                  className: 'btn btn-light'
+                },
+                {
+                  text: 'JSON',
+                  className: 'btn btn-light',
+                  action: function (e, dt, node, config) {
+                    const visibleColumns = dt.columns(':visible');
+                    const headerIndexes = visibleColumns.indexes().toArray();
+                    const headers = visibleColumns.header().toArray().map(h => $(h).text().trim());
+
+                    const data = dt.rows({ search: 'applied' }).nodes().toArray().map(row => {
+                      const obj = {};
+                      headerIndexes.forEach((columnIndex, i) => {
+                        const cell = $(row).find('td').get(columnIndex);
+                        obj[headers[i]] = cell ? $(cell).text().trim() : '';
+                      });
+                      return obj;
+                    });
+
+                    const json = JSON.stringify(data, null, 2);
                     const blob = new Blob([json], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -3046,65 +3034,99 @@
                     a.download = `${exportName}.json`;
                     a.click();
                     URL.revokeObjectURL(url);
-                    return;
                   }
-
-                  const visibleColumns = dt.columns(':visible');
-                  const headerIndexes = visibleColumns.indexes().toArray();
-                  const headers = visibleColumns.header().toArray().map(h => $(h).text().trim());
-
-                  const data = dt.rows({ search: 'applied' }).nodes().toArray().map(row => {
-                    const obj = {};
-                    headerIndexes.forEach((columnIndex, i) => {
-                      const cell = $(row).find('td').get(columnIndex);
-                      obj[headers[i]] = cell ? $(cell).text().trim() : '';
-                    });
-                    return obj;
-                  });
-
-                  const json = JSON.stringify(data, null, 2);
-                  const blob = new Blob([json], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${exportName}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
                 }
-              }
-            ];
+              );
 
-            if (selector === '#web-services') {
-              buttons.push({
-                extend: 'copyHtml5',
-                text: 'Copy URLs',
-                header: false,
-                title: exportName,
-                exportOptions: {  columns: [-1], orthogonal: 'export' },
-                className: 'btn btn-light'
-              });
+              if (selector !== '#table-services') {
+                buttons.splice(1, 0, {
+                  extend: 'copyHtml5',
+                  text: 'Copy',
+                  title: exportName,
+                  exportOptions: { columns: ':visible', orthogonal: 'export' },
+                  className: 'btn btn-light'
+                });
+              }
             }
 
             if (selector === '#table-services') {
               buttons.push({
-                text: 'Copy IP:Port',
-                className: 'btn btn-light',
-                action: async function (e, dt) {
-                  const endpoints = [];
+                extend: 'collection',
+                text: 'Copy',
+                className: 'btn btn-light btn-subtle-action',
+                buttons: [
+                  {
+                    extend: 'copyHtml5',
+                    text: 'All',
+                    title: exportName,
+                    exportOptions: { columns: ':visible', orthogonal: 'export' }
+                  },
+                  {
+                    text: 'IPs',
+                    action: async function (e, dt) {
+                      const addresses = [];
 
-                  dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
-                    const cells = $(row).find('td');
-                    const address = ($(cells.get(1)).text() || '').trim();
-                    const port = ($(cells.get(2)).text() || '').trim();
+                      dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+                        const cells = $(row).find('td');
+                        const address = ($(cells.get(1)).text() || '').trim();
 
-                    if (address && port) {
-                      endpoints.push(`${address}:${port}`);
+                        if (address) {
+                          addresses.push(address);
+                        }
+                      });
+
+                      const uniqueAddresses = [...new Set(addresses)]
+                        .sort((left, right) => left.localeCompare(right, undefined, {
+                          numeric: true,
+                          sensitivity: 'base'
+                        }));
+
+                      await copyTextToClipboard(uniqueAddresses.join('\n'));
                     }
-                  });
+                  },
+                  {
+                    text: 'Ports',
+                    action: async function (e, dt) {
+                      const ports = [];
 
-                  const uniqueEndpoints = [...new Set(endpoints)];
-                  await copyTextToClipboard(uniqueEndpoints.join('\n'));
-                }
+                      dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+                        const cells = $(row).find('td');
+                        const port = ($(cells.get(2)).text() || '').trim();
+
+                        if (port) {
+                          ports.push(port);
+                        }
+                      });
+
+                      const uniquePorts = [...new Set(ports)]
+                        .sort((left, right) => Number(left) - Number(right) || left.localeCompare(right, undefined, {
+                          numeric: true,
+                          sensitivity: 'base'
+                        }));
+
+                      await copyTextToClipboard(uniquePorts.join(','));
+                    }
+                  },
+                  {
+                    text: 'IP:Ports',
+                    action: async function (e, dt) {
+                      const endpoints = [];
+
+                      dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+                        const cells = $(row).find('td');
+                        const address = ($(cells.get(1)).text() || '').trim();
+                        const port = ($(cells.get(2)).text() || '').trim();
+
+                        if (address && port) {
+                          endpoints.push(`${address}:${port}`);
+                        }
+                      });
+
+                      const uniqueEndpoints = [...new Set(endpoints)];
+                      await copyTextToClipboard(uniqueEndpoints.join('\n'));
+                    }
+                  }
+                ]
               });
             }
 
@@ -3119,11 +3141,11 @@
               const headers = Array.from(tableElement.querySelectorAll("thead th")).map(header => ($(header).text() || '').trim());
               [
                 "Port",
+                "Port Hosts",
                 "Count",
                 "Host Count",
                 "Uptime (est.)",
                 "Hops",
-                "Issues (est.)",
                 "Rarity",
                 "Open TCP Ports",
                 "Open UDP Ports"
@@ -3147,7 +3169,7 @@
               order: defaultOrders[selector] || [[0, 'desc']],
               columnDefs: columnDefs,
               dom: '<"d-flex justify-content-between align-items-center mb-2"lfB>rtip',
-              stateSave: true,
+              stateSave: false,
               buttons: buttons,
               fixedHeader: {
                 header: true,
@@ -3166,9 +3188,9 @@
               }
             }
 
-            if (selector === '#table-services' || selector === '#web-services') {
+            if (selector === '#table-services') {
               initializeServiceDropdownFilter(table, tableElement, {
-                tableLabel: selector === '#web-services' ? "Web/TLS Services" : "Open Services"
+                tableLabel: "Open Services"
               });
             }
 
@@ -3444,17 +3466,15 @@
 	              pinReportToSummaryView();
 	              initializeNavbarToggle();
 	              initializeSectionNav();
-	              initializeHostToggle();
 	              initializeKeywordHighlighter();
 	              initializeCpeCopy();
-                initializeDeferredSectionTables();
 	              initializeCertificateExpiryAlerts();
                 formatVulnersChunks();
                 buildServiceInventoryTable();
                 initializeServiceInventoryNestedTables();
+	              initializeHostToggle();
 	              initializeDataTable('#table-services');
 	              initializeDataTable('#table-overview');
-	              initializeDataTable('#web-services');
 	              initializeDataTable('#service-inventory');
                 initializeHostUniquenessScores();
                 initializeDensityToggle();

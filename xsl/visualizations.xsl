@@ -1347,12 +1347,11 @@
                 const hostOverviewHeaders = Array.from(hostOverviewTable.querySelectorAll("thead th")).map(header => (header.textContent || "").trim());
                 const addressColumnIndex = hostOverviewHeaders.indexOf("Address");
                 const hostnameColumnIndex = hostOverviewHeaders.indexOf("Hostname");
-                const issuesColumnIndex = hostOverviewHeaders.indexOf("Pot. Issues");
 
-                if (addressColumnIndex !== -1 && issuesColumnIndex !== -1) {
+                if (addressColumnIndex !== -1) {
                   hostOverviewTable.querySelectorAll("tbody tr").forEach(row => {
                     const cells = row.querySelectorAll("td");
-                    if (cells.length <= Math.max(addressColumnIndex, issuesColumnIndex)) {
+                    if (cells.length <= addressColumnIndex) {
                       return;
                     }
 
@@ -1360,7 +1359,7 @@
                     const hostname = hostnameColumnIndex !== -1 && cells.length > hostnameColumnIndex
                       ? (cells[hostnameColumnIndex].textContent || "").trim()
                       : "";
-                    const issues = Number.parseInt((cells[issuesColumnIndex].textContent || "").trim(), 10) || 0;
+                    const issues = Number.parseInt((row.dataset.issues || "").trim(), 10) || 0;
 
                     if (address) {
                       hostIssueCounts.set(address, issues);
@@ -1579,8 +1578,9 @@
                 cliponaxis: false
               }];
 
-              const dynamicHeight = Math.max(220, hostOpenPortCounts.length * 24 + 36);
-              const dynamicWidth = Math.max(900, Math.min(window.innerWidth - 40, 1400));
+              const dynamicHeight = Math.max(260, hostOpenPortCounts.length * 30 + 42);
+              const dynamicWidth = Math.max(1100, Math.min(window.innerWidth - 24, 1700));
+              const yCategoryRange = [hostOpenPortCounts.length - 0.5, -0.5];
               openPortsPerHostChart.style.height = dynamicHeight + "px";
               openPortsPerHostChart.style.width = dynamicWidth + "px";
               openPortsPerHostChart.style.margin = "0 auto";
@@ -1630,9 +1630,11 @@
                 yaxis: {
                   automargin: true,
                   fixedrange: true,
-                  autorange: "reversed",
+                  categoryorder: "array",
+                  categoryarray: truncatedHosts,
+                  range: yCategoryRange,
                   showgrid: false,
-                  tickson: "boundaries",
+                  tickson: "labels",
                   ticks: "outside",
                   ticklen: 6,
                   tickcolor: "rgba(0,0,0,0.2)",
@@ -1644,7 +1646,7 @@
                 barmode: "stack",
                 showlegend: false,
                 dragmode: false,
-                bargap: 0.1,
+                bargap: 0.24,
                 ...getPlotLayoutTheme()
               };
 

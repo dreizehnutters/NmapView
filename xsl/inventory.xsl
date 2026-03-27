@@ -118,6 +118,9 @@
                     <xsl:attribute name="data-version">
                       <xsl:value-of select="service/@version"/>
                     </xsl:attribute>
+                    <xsl:attribute name="data-extra-info">
+                      <xsl:value-of select="service/@extrainfo"/>
+                    </xsl:attribute>
                     <xsl:attribute name="data-address">
                       <xsl:value-of select="ancestor::host[1]/address[not(@addrtype='mac')][1]/@addr"/>
                     </xsl:attribute>

@@ -13,6 +13,9 @@
                       <th scope="col">Address</th>
                       <th scope="col">Port</th>
                       <th scope="col">Protocol</th>
+                      <th scope="col">
+                        <span title="Unique hosts exposing this exact port/protocol across the scan. Lower values are rarer.">Count</span>
+                      </th>
                       <th scope="col">Service</th>
                       <th scope="col">Product</th>
                       <th scope="col">Version</th>
@@ -28,6 +31,9 @@
                           <xsl:call-template name="resolve-effective-hostname"/>
                         </xsl:variable>
                         <xsl:variable name="ip" select="../../address[not(@addrtype='mac')][1]/@addr"/>
+                        <xsl:variable name="port-id" select="@portid"/>
+                        <xsl:variable name="port-protocol" select="@protocol"/>
+                        <xsl:variable name="port-host-count" select="count(/nmaprun/host[ports/port[state/@state='open' and @portid=$port-id and @protocol=$port-protocol]])"/>
                         <xsl:variable name="http-headers-output" select="script[@id='http-headers']/@output"/>
                         <xsl:variable name="http-fingerprint-output" select="script[@id='fingerprint-strings']/elem[@key='GetRequest']"/>
                         <xsl:variable name="http-title">
@@ -141,6 +147,12 @@
                           </td>
                           <td>
                             <xsl:value-of select="@protocol"/>
+                          </td>
+                          <td>
+                            <xsl:attribute name="data-order">
+                              <xsl:value-of select="$port-host-count"/>
+                            </xsl:attribute>
+                            <xsl:value-of select="$port-host-count"/>
                           </td>
                           <td>
                             <xsl:call-template name="render-service-name"/>
