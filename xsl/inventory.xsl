@@ -6,7 +6,7 @@
           <xsl:choose>
             <xsl:when test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
               <div class="table-responsive">
-                <table id="service-inventory" class="table table-striped table-hover table-bordered align-middle dataTable" role="grid">
+                <table id="service-inventory" class="table table-hover table-bordered align-middle dataTable" role="grid">
                   <thead class="table-light">
                     <tr>
                       <th scope="col">Host Details</th>

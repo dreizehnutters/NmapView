@@ -371,7 +371,7 @@
   <xsl:template name="render-cpe-text">
     <xsl:param name="cpe"/>
     <xsl:choose>
-      <xsl:when test="string($cpe) != ''">
+      <xsl:when test="normalize-space($cpe) != '' and normalize-space($cpe) != 'unknown'">
         <a class="cpe-inline-link" target="_blank" rel="noopener noreferrer" title="Open CPE details in PentestFactory">
           <xsl:attribute name="href">
             <xsl:text>https://cve.pentestfactory.de/?cpe=</xsl:text>
@@ -380,9 +380,6 @@
           <span aria-hidden="true">⌕</span>
         </a>
       </xsl:when>
-      <xsl:otherwise>
-        <span class="text-muted">unknown</span>
-      </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 

@@ -22,6 +22,6 @@ done
 
 python3 tools/build_xsl.py xsl/main.xsl "$TMP_DIR/built.xsl"
 xmllint --noout "$TMP_DIR/built.xsl"
-xsltproc -o "$TMP_DIR/report.html" "$TMP_DIR/built.xsl" tests/nmap-scan.xml
+xsltproc -o "$TMP_DIR/report.html" "$TMP_DIR/built.xsl" tools/fixtures/nmap-scan.xml
 
 echo "XSL tooling validation passed"

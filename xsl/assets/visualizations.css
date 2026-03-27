@@ -1,0 +1,226 @@
+#topServicesLedger,
+#bottomServicesLedger {
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.85rem;
+  background: var(--report-surface);
+  border: 1px solid var(--report-border);
+  font-family: Arial, sans-serif;
+  line-height: 1.45;
+}
+
+.service-ledger-item {
+  display: inline;
+  padding: 0;
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+
+.service-ledger-name {
+  font-weight: 700;
+  color: #212529;
+  white-space: nowrap;
+}
+
+.service-ledger-separator {
+  display: inline-block;
+  margin: 0 0.2rem;
+  color: #6c757d;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.service-ledger-item .badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  background-color: #007bff;
+  color: white;
+  padding: 0.18rem 0.48rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  line-height: 1.1;
+  vertical-align: baseline;
+}
+
+.service-ledger-item a.badge {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.service-distribution-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.service-distribution-chart {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.service-distribution-chart > #serviceChart {
+  max-width: 100%;
+}
+
+.service-ledger-stack {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.6rem 0.85rem;
+}
+
+.service-ledger-section {
+  display: inline-grid;
+  justify-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.service-ledger-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+@media (max-width: 992px) {
+  .service-ledger-stack {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.visualization-grid {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.visualization-card {
+  border: 1px solid var(--report-border);
+  border-radius: 0.9rem;
+  background: var(--report-surface);
+  box-shadow: var(--report-shadow);
+  overflow: hidden;
+}
+
+.visualization-card-collapsible {
+  overflow: hidden;
+}
+
+.visualization-card-summary {
+  cursor: pointer;
+  background: var(--report-surface);
+  display: list-item;
+  padding: 1rem 1.1rem;
+  list-style-position: inside;
+}
+
+.visualization-card-summary::marker {
+  color: #3f5f74;
+  font-size: 1rem;
+}
+
+.visualization-card-summary::-webkit-details-marker {
+  color: #3f5f74;
+}
+
+.visualization-card-summary .visualization-card-header {
+  padding: 0;
+  display: inline-block;
+  vertical-align: top;
+  width: calc(100% - 1.4rem);
+  transform: translateY(0.08rem);
+}
+
+.visualization-card-collapsible[open] .visualization-card-summary {
+  border-bottom: 1px solid var(--report-border);
+}
+
+.visualization-card-header {
+  padding: 1rem 1.1rem 0;
+}
+
+.visualization-card-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.visualization-card-note {
+  margin: 0.35rem 0 0;
+  color: #6c757d;
+  font-size: 0.92rem;
+}
+
+.visualization-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.visualization-control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: min(100%, 26rem);
+}
+
+.visualization-control-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.visualization-control-group input[type="range"] {
+  flex: 1 1 auto;
+}
+
+.visualization-control-value {
+  min-width: 7rem;
+  font-size: 0.84rem;
+  color: #6c757d;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.visualization-card-body {
+  padding: 0.75rem 0.9rem 1rem;
+}
+
+.visualization-scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.2rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.visualization-scroll-x > div {
+  min-width: max-content;
+}
+
+.visualization-scroll-note {
+  margin: 0 0 0.55rem;
+  color: #6c757d;
+  font-size: 0.84rem;
+}
+
+.visualization-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.55rem;
+}
+
+.visualization-empty {
+  margin-top: 1rem;
+}

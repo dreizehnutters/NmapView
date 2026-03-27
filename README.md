@@ -1,7 +1,7 @@
 # NmapView
 
-[![Latest Release](https://img.shields.io/github/v/release/dreizehnutters/NmapView?label=latest%20release)](https://github.com/dreizehnutters/NmapView/releases/latest/download/nmap2html-standalone.xsl)
-[![Download Standalone XSL](https://img.shields.io/badge/download-standalone%20XSL-0d6efd)](https://github.com/dreizehnutters/NmapView/releases/latest/download/nmap2html-standalone.xsl)
+[![Latest Release](https://img.shields.io/github/v/release/dreizehnutters/NmapView?label=latest%20release)](https://github.com/dreizehnutters/NmapView/releases/latest/download/NmapView.xsl)
+[![Download Standalone XSL](https://img.shields.io/badge/download-standalone%20XSL-0d6efd)](https://github.com/dreizehnutters/NmapView/releases/latest/download/NmapView.xsl)
 
 NmapView turns raw Nmap XML into a single, portable HTML report - no backend, no database, just one file you can open, share, or archive.
 
@@ -16,14 +16,14 @@ Use it to turn scan output into something you can triage faster, share with a cl
 Download the latest standalone stylesheet, render your XML, and open the report:
 
 ```bash
-curl -fsSL -o nmap2html.xsl https://github.com/dreizehnutters/NmapView/releases/latest/download/nmap2html-standalone.xsl
-xsltproc -o NmapView-Report.html nmap2html.xsl nmap-scan.xml
+curl -fsSL -o NmapView.xsl https://github.com/dreizehnutters/NmapView/releases/latest/download/NmapView.xsl
+xsltproc -o report.html NmapView.xsl scan.xml
 ```
 
-For best results, include service detection, OS detection, and relevant scripts during nmap scans
+For best results, include service/version detection and useful NSE scripts, especially `http-*`, `ssl-*`, `ssh-*`, `default`, and `banner`. `vulners` is optional and also parsed if you include it.
 
 ```bash
-nmap -sV -O --script="default,vulners,http-headers,ssl-cert,banner" -oX nmap-scan.xml <target>
+nmap -sV --script="default,banner,http-*,ssl-*,ssh-*" -oX scan.xml <target>
 ```
 
 ## Why Security Teams Use It
@@ -67,7 +67,7 @@ No Python, Node, or backend required.
 PRs are welcome.
 
 - `xsl/`: split XSL source
-- `tools/build_xsl.py`: build the standalone stylesheet from source
+- `tools/`: build helper, checks, and local XML fixtures
 
 ## Feedback
 
