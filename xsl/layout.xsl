@@ -43,7 +43,7 @@
               </ul>
               <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                  <a class="nav-link navbar-version-link" href="https://github.com/dreizehnutters/NmapView">NmapView v3.3</a>
+                  <a class="nav-link navbar-version-link" href="https://github.com/dreizehnutters/NmapView">NmapView v3.3a</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="https://github.com/dreizehnutters/NmapView">
