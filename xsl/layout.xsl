@@ -47,10 +47,10 @@
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="https://github.com/dreizehnutters/NmapView">
-                    <svg height="64" width="64" viewBox="0 0 64 64" aria-hidden="true" style="max-height: 42px; width: auto;">
+                    <svg class="navbar-brand-mark" height="64" width="64" viewBox="0 0 64 64" aria-hidden="true" style="max-height: 42px; width: auto;">
                       <rect width="64" height="64" rx="14" fill="#f7f9fb"/>
-                      <circle cx="27" cy="27" r="15" fill="none" stroke="#24313d" stroke-width="6"/>
-                      <path d="M38 38 L52 52" stroke="#24313d" stroke-width="6" stroke-linecap="round"/>
+                      <circle class="navbar-brand-mark-lens" cx="27" cy="27" r="15" fill="none" stroke="#24313d" stroke-width="6"/>
+                      <path class="navbar-brand-mark-lens" d="M38 38 L52 52" stroke="#24313d" stroke-width="6" stroke-linecap="round"/>
                     </svg>
                   </a>
                 </li>

@@ -521,12 +521,20 @@ a {
   overflow: hidden;
 }
 
+.host-list .host-entry:nth-child(even) {
+  background: #f3f7fb;
+}
+
 .host-entry-summary {
   cursor: pointer;
   padding: 1rem 1.25rem;
   background: var(--report-surface-muted);
   font-weight: 600;
   position: relative;
+}
+
+.host-list .host-entry:nth-child(even) .host-entry-summary {
+  background: #dfe8f0;
 }
 
 .host-entry-anchor {
@@ -1092,6 +1100,10 @@ footer.footer.bg-light {
   align-items: center;
   height: 100%;
   margin-right: 0.35rem;
+}
+
+.navbar-brand-mark-lens {
+  opacity: 0.58;
 }
 
 #mainNavbar .container-fluid {
