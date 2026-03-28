@@ -52,7 +52,9 @@
               <div class="visualization-actions">
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="openPortsPerHostChart">Export PNG</button>
               </div>
-              <div id="openPortsPerHostChart" style="width: 100%;"/>
+              <div class="visualization-scroll-x">
+                <div id="openPortsPerHostChart" style="width: 100%;"/>
+              </div>
             </div>
           </details>
   </xsl:template>
