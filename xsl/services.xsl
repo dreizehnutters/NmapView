@@ -124,7 +124,7 @@
                         </xsl:variable>
                         <xsl:variable name="has-http-summary"
                           select="starts-with(service/@name, 'http') or script[@id='ssl-cert'] or string($http-title) != '' or string($http-location) != '' or string($http-server) != '' or string($http-powered-by-stack) != '' or string($http-powered-by-evidence) != ''"/>
-                        <tr>
+                        <tr data-address="{$ip}" data-portid="{$port-id}" data-protocol="{$port-protocol}" data-service="{service/@name}">
                           <td>
                             <xsl:call-template name="render-hostname-or-na">
                               <xsl:with-param name="hostname" select="$hostname"/>

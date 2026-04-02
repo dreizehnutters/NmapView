@@ -6,11 +6,12 @@
 	              initializeAboutDialog();
 	              initializeKeywordHighlighter();
 	              initializeCpeCopy();
-	              initializeCertificateExpiryAlerts();
+                initializeCertificateExpiryAlerts();
                 formatVulnersChunks();
                 buildServiceInventoryTable();
                 initializeServiceInventoryToggle();
                 initializeServiceInventoryNestedTables();
+	              initializeHostScopeControls();
 	              initializeHostToggle();
 	              initializeDataTable('#table-services');
 	              initializeDataTable('#table-overview');

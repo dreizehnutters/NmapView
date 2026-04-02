@@ -6,6 +6,15 @@
           <xsl:variable name="runstats-total-hosts" select="number(/nmaprun/runstats/hosts/@total)"/>
           <xsl:choose>
 	            <xsl:when test="$recorded-hosts &gt; 0">
+              <div class="host-scope-controls mb-3" id="hostScopeControls">
+                <span class="host-scope-label">Host Scope</span>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Host scope controls">
+                  <button type="button" class="btn btn-outline-secondary" id="selectVisibleHostsButton">All visible</button>
+                  <button type="button" class="btn btn-outline-secondary" id="clearVisibleHostsButton">None visible</button>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary" id="applyHostScopeButton" disabled="disabled">Apply Scope</button>
+                <span class="host-scope-summary" id="hostScopeSummary">All hosts selected</span>
+              </div>
 	              <div class="table-responsive">
                 <table id="table-overview" class="table table-striped table-hover align-middle" role="grid">
                   <thead class="table-light">
@@ -16,8 +25,8 @@
 	                      <th scope="col">OS (est.)</th>
 	                      <th scope="col">Address</th>
 	                      <th scope="col">Hostname</th>
-	                      <th scope="col">Open TCP Ports</th>
-	                      <th scope="col">Open UDP Ports</th>
+	                      <th scope="col">TCP Ports</th>
+	                      <th scope="col">UDP Ports</th>
 	                      <th scope="col">
 	                        <span title="Estimated by Nmap from TCP timestamps; useful as context, not an exact reboot time.">Uptime (est.)</span>
 	                      </th>
@@ -27,6 +36,7 @@
 	                      <th scope="col">
 	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Rarity</span>
 	                      </th>
+                        <th scope="col" class="host-scope-column not-export">Scope</th>
 	                    </tr>
 	                  </thead>
 	                  <tbody>
@@ -235,6 +245,9 @@
                             </xsl:otherwise>
                           </xsl:choose>
                         </td>
+                        <td class="host-scope-cell not-export">
+                          <input type="checkbox" class="form-check-input host-scope-checkbox" data-address="{$ip}" checked="checked" aria-label="Include {$ip} in recalculation"/>
+                        </td>
                       </tr>
                     </xsl:for-each>
                   </tbody>
@@ -261,6 +274,15 @@
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:variable>
+              <div class="host-scope-controls mb-3" id="hostScopeControls">
+                <span class="host-scope-label">Host Scope</span>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Host scope controls">
+                  <button type="button" class="btn btn-outline-secondary" id="selectVisibleHostsButton">All visible</button>
+                  <button type="button" class="btn btn-outline-secondary" id="clearVisibleHostsButton">None visible</button>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary" id="applyHostScopeButton" disabled="disabled">Apply Scope</button>
+                <span class="host-scope-summary" id="hostScopeSummary">All hosts selected</span>
+              </div>
               <div class="table-responsive">
                 <table id="table-overview" class="table table-striped table-hover align-middle" role="grid">
                   <thead class="table-light">
@@ -271,8 +293,8 @@
 	                      <th scope="col">OS (est.)</th>
 	                      <th scope="col">Address</th>
 	                      <th scope="col">Hostname</th>
-	                      <th scope="col">Open TCP Ports</th>
-	                      <th scope="col">Open UDP Ports</th>
+	                      <th scope="col">TCP Ports</th>
+	                      <th scope="col">UDP Ports</th>
 	                      <th scope="col">
 	                        <span title="Estimated by Nmap from TCP timestamps; useful as context, not an exact reboot time.">Uptime (est.)</span>
 	                      </th>
@@ -282,6 +304,7 @@
 	                      <th scope="col">
 	                        <span title="Relative rarity of this host's open services within this scan. Higher scores indicate hosts with less common service combinations.">Rarity</span>
 	                      </th>
+                        <th scope="col" class="host-scope-column not-export">Scope</th>
 	                    </tr>
 	                  </thead>
 	                  <tbody>
@@ -331,6 +354,9 @@
                         <td class="host-uniqueness-cell" data-order="-1" data-search="N/A">
                           <span class="text-muted">N/A</span>
                         </td>
+                        <td class="host-scope-cell not-export">
+                          <input type="checkbox" class="form-check-input host-scope-checkbox" data-address="{$scan-target}" checked="checked" aria-label="Include {$scan-target} in recalculation"/>
+                        </td>
                       </tr>
                     </tbody>
                 </table>
@@ -349,7 +375,7 @@
           <xsl:choose>
             <xsl:when test="count(/nmaprun/host[status/@state='up']) &gt; 0">
               <div class="host-controls mb-3">
-                <button type="button" class="btn btn-outline-secondary btn-sm" id="toggle-all-hosts" aria-controls="onlinehosts-list" aria-expanded="false">Expand all</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="toggle-all-hosts" aria-controls="onlinehosts-list" aria-expanded="false" title="Expand all visible host details">Toggle all</button>
               </div>
               <div class="host-list" id="onlinehosts-list">
                 <xsl:for-each select="/nmaprun/host[status/@state='up']">
@@ -360,7 +386,7 @@
                   <xsl:variable name="effective-hostname-source">
                     <xsl:call-template name="resolve-effective-hostname-source"/>
                   </xsl:variable>
-                  <details class="host-entry">
+                  <details class="host-entry" data-address="{address[not(@addrtype='mac')][1]/@addr}">
                     <xsl:attribute name="id">host-entry-<xsl:value-of select="$host-id"/></xsl:attribute>
                     <summary class="host-entry-summary">
                       <span class="host-entry-anchor">

@@ -16,7 +16,7 @@
   <xsl:template name="render-loading-overlay">
         <div id="reportLoadingOverlay" class="report-loading-overlay report-loading-overlay-no-blur" role="status" aria-live="polite" aria-label="Loading report">
           <div class="report-loading-card">
-            <p class="report-loading-title">Preparing Report<span class="report-loading-dots" aria-hidden="true"><span class="report-loading-dot"/><span class="report-loading-dot"/><span class="report-loading-dot"/></span></p>
+            <p class="report-loading-title"><span id="reportLoadingTitleText">Preparing Report</span><span class="report-loading-dots" aria-hidden="true"><span class="report-loading-dot"/><span class="report-loading-dot"/><span class="report-loading-dot"/></span></p>
           </div>
         </div>
   </xsl:template>
@@ -71,13 +71,13 @@
             <div class="report-dialog-header">
               <div>
                 <h2 id="aboutDialogTitle" class="report-dialog-title">About NmapView</h2>
-                <p class="report-dialog-subtitle">Project summary and runtime licenses.</p>
+                <p class="report-dialog-subtitle">Analysis stays local in the report and no scan data is sent anywhere.</p>
               </div>
               <button type="button" class="btn-close report-dialog-close" data-dialog-close="aboutDialog" aria-label="Close"></button>
             </div>
             <div class="report-dialog-body">
               <p class="report-dialog-lead">NmapView turns Nmap XML into a single interactive HTML analysis report. It helps you review hosts, open services, service variants, script output, and visualizations in one portable file.</p>
-              <p class="report-dialog-note"><kbd>/</kbd> Search active table</p>
+              <p class="report-dialog-note">Tip: <kbd class="report-dialog-note-kbd">/</kbd> Search active table</p>
               <p class="report-dialog-meta"><a class="report-dialog-version-link" href="https://github.com/dreizehnutters/NmapView/releases" target="_blank" rel="noopener noreferrer">NmapView v3.3a</a><span class="report-dialog-meta-separator">·</span><a class="report-dialog-version-link" href="https://github.com/dreizehnutters/NmapView" target="_blank" rel="noopener noreferrer">Documentation &amp; Source</a></p>
 
               <section class="report-dialog-section" aria-labelledby="aboutDialogProjectTitle">
@@ -217,7 +217,7 @@
                 <a class="summary-card-link" href="#openservices">
                   <div class="summary-card is-clickable">
                     <div class="summary-card-label">Open ports</div>
-                    <div class="summary-card-value">
+                    <div class="summary-card-value" id="summaryOpenPortsValue">
                       <xsl:value-of select="$open-ports"/>
                     </div>
                   </div>
@@ -227,7 +227,7 @@
                 <a class="summary-card-link" href="#serviceinventory">
                   <div class="summary-card is-clickable">
                     <div class="summary-card-label">Unique services</div>
-                    <div class="summary-card-value">
+                    <div class="summary-card-value" id="summaryUniqueServicesValue">
                       <xsl:value-of select="$unique-services"/>
                     </div>
                   </div>
@@ -237,7 +237,7 @@
                 <a class="summary-card-link" href="#openservices">
                   <div class="summary-card is-clickable">
                     <div class="summary-card-label">Rare services</div>
-                    <div class="summary-card-value">
+                    <div class="summary-card-value" id="summaryRareServicesValue">
                       <xsl:value-of select="$rare-services"/>
                     </div>
                   </div>
@@ -247,7 +247,7 @@
                 <a class="summary-card-link" href="#serviceinventory">
                   <div class="summary-card is-clickable">
                     <div class="summary-card-label">HTTP</div>
-                    <div class="summary-card-value">
+                    <div class="summary-card-value" id="summaryHttpBucketsValue">
                       <xsl:value-of select="$http-buckets"/>
                     </div>
                   </div>
@@ -255,7 +255,7 @@
               </div>
             </div>
             <div class="progress summary-progress">
-              <div class="progress-bar bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+              <div class="progress-bar bg-success" id="summaryUpHostsBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
                 <xsl:attribute name="style">
                   <xsl:text>width:</xsl:text>
                   <xsl:choose>
@@ -269,7 +269,7 @@
                 <xsl:value-of select="$up-hosts"/> Hosts up
               </div>
               <xsl:if test="number($down-hosts) &gt; 0">
-                <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                <div class="progress-bar bg-warning" id="summaryDownHostsBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
                   <xsl:attribute name="style">
                     <xsl:text>width:</xsl:text>
                     <xsl:choose>

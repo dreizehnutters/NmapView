@@ -127,6 +127,91 @@ async function copyTextWithFeedback(text, successMessage, emptyMessage = "Nothin
   }
 }
 
+function getHostScopeState() {
+  if (!window.nmapViewHostScopeState) {
+    window.nmapViewHostScopeState = {
+      allHosts: new Set(),
+      selectedHosts: new Set(),
+      pendingSelectedHosts: new Set(),
+      dirty: false,
+      redrawInProgress: false,
+      dataTableFilterRegistered: false
+    };
+  }
+
+  return window.nmapViewHostScopeState;
+}
+
+function normalizeHostAddress(address) {
+  return String(address || "").trim();
+}
+
+function isHostInScope(address) {
+  const normalizedAddress = normalizeHostAddress(address);
+  if (!normalizedAddress) {
+    return false;
+  }
+
+  const state = getHostScopeState();
+  if (state.allHosts.size === 0) {
+    return true;
+  }
+
+  return state.selectedHosts.has(normalizedAddress);
+}
+
+function getDataTableExportColumnSelector() {
+  return ":visible:not(.not-export)";
+}
+
+function isRowIncludedInCurrentExportScope(row) {
+  if (!row) {
+    return true;
+  }
+
+  const address = normalizeHostAddress(row.dataset ? row.dataset.address : "");
+  if (!address) {
+    return true;
+  }
+
+  return isHostInScope(address);
+}
+
+function getDataTableExportRowSelector() {
+  return function (_rowIndex, _rowData, rowNode) {
+    return isRowIncludedInCurrentExportScope(rowNode);
+  };
+}
+
+function getTableRows(tableId, options = {}) {
+  const {
+    searchApplied = false,
+    requireAddress = false
+  } = options;
+  const table = document.getElementById(tableId);
+  if (!table) {
+    return [];
+  }
+
+  let rows = [];
+  if (window.jQuery && $.fn.dataTable && $.fn.dataTable.isDataTable(table)) {
+    const tableApi = $(table).DataTable();
+    if (tableApi) {
+      rows = tableApi.rows(searchApplied ? { search: "applied" } : undefined).nodes().toArray();
+    }
+  }
+
+  if (rows.length === 0) {
+    rows = Array.from(table.querySelectorAll("tbody tr"));
+  }
+
+  if (requireAddress) {
+    rows = rows.filter(row => normalizeHostAddress(row.dataset.address));
+  }
+
+  return rows;
+}
+
 function initializeCpeCopy() {
   document.querySelectorAll(".cpe-copy").forEach(element => {
     element.addEventListener("click", async () => {
@@ -581,18 +666,20 @@ function normalizeServiceInventorySearchValue(value) {
 
 function buildDataTableJsonExportAction(exportName) {
   return function (e, dt) {
-    const visibleColumns = dt.columns(':visible');
+    const visibleColumns = dt.columns(getDataTableExportColumnSelector());
     const headerIndexes = visibleColumns.indexes().toArray();
     const headers = visibleColumns.header().toArray().map(h => $(h).text().trim());
 
-    const data = dt.rows({ search: 'applied' }).nodes().toArray().map(row => {
-      const obj = {};
-      headerIndexes.forEach((columnIndex, i) => {
-        const cell = $(row).find('th, td').get(columnIndex);
-        obj[headers[i]] = cell ? $(cell).text().trim() : '';
+    const data = dt.rows({ search: 'applied' }).nodes().toArray()
+      .filter(row => isRowIncludedInCurrentExportScope(row))
+      .map(row => {
+        const obj = {};
+        headerIndexes.forEach((columnIndex, i) => {
+          const cell = $(row).find('th, td').get(columnIndex);
+          obj[headers[i]] = cell ? $(cell).text().trim() : '';
+        });
+        return obj;
       });
-      return obj;
-    });
 
     const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
@@ -605,23 +692,30 @@ function buildDataTableJsonExportAction(exportName) {
   };
 }
 
+function getScopedDataTableRows(dt) {
+  if (!dt) {
+    return [];
+  }
+
+  return dt.rows({ search: 'applied' }).nodes().toArray()
+    .filter(row => isRowIncludedInCurrentExportScope(row));
+}
+
 function buildVisibleDataTableClipboardText(dt) {
-  if (!dt || !dt.buttons || typeof dt.buttons.exportData !== "function") {
+  if (!dt) {
     return { text: "", rowCount: 0 };
   }
 
-  const exportData = dt.buttons.exportData({
-    columns: ':visible',
-    modifier: {
-      search: 'applied',
-      order: 'applied'
-    },
-    orthogonal: 'export'
-  });
-
   const normalizeCell = value => String(value || "").replace(/\r?\n/g, " ").trim();
-  const header = Array.isArray(exportData.header) ? exportData.header.map(normalizeCell) : [];
-  const body = Array.isArray(exportData.body) ? exportData.body : [];
+  const visibleColumns = dt.columns(getDataTableExportColumnSelector());
+  const headerIndexes = visibleColumns.indexes().toArray();
+  const header = visibleColumns.header().toArray().map(cell => normalizeCell($(cell).text()));
+  const body = getScopedDataTableRows(dt).map(row =>
+    headerIndexes.map(columnIndex => {
+      const cell = $(row).find('th, td').get(columnIndex);
+      return normalizeCell(cell ? $(cell).text() : "");
+    })
+  );
   const lines = [];
 
   if (header.length > 0) {
@@ -811,7 +905,7 @@ function initializeServiceInventoryNestedTable(tableElement) {
         text: 'CSV',
         filename: exportName,
         fieldSeparator: ';',
-        exportOptions: { columns: ':visible', orthogonal: 'export' },
+        exportOptions: { rows: getDataTableExportRowSelector(), columns: getDataTableExportColumnSelector(), orthogonal: 'export' },
         className: 'btn btn-light'
       },
       {
@@ -819,7 +913,7 @@ function initializeServiceInventoryNestedTable(tableElement) {
         text: 'Excel',
         filename: exportName,
         autoFilter: true,
-        exportOptions: { columns: ':visible', orthogonal: 'export' },
+        exportOptions: { rows: getDataTableExportRowSelector(), columns: getDataTableExportColumnSelector(), orthogonal: 'export' },
         className: 'btn btn-light'
       },
       {
@@ -881,7 +975,7 @@ function buildServiceInventoryTable() {
     const variantLabel = buildServiceInventoryVariantLabel(product, version);
     const extraInfo = (entry.getAttribute("data-extra-info") || "").trim();
 
-    if (!service || !address) {
+    if (!service || !address || !isHostInScope(address)) {
       return;
     }
 
@@ -1595,16 +1689,26 @@ function navigateToInitialHash() {
   }
 }
 
-function finalizeReportInitialization() {
+function setReportLoadingOverlayVisible(isVisible, titleText = "Preparing Report") {
   const overlay = document.getElementById("reportLoadingOverlay");
+  const title = document.getElementById("reportLoadingTitleText");
+  if (!overlay) {
+    return;
+  }
 
+  if (title) {
+    title.textContent = titleText;
+  }
+
+  overlay.classList.toggle("is-hidden", !isVisible);
+  overlay.setAttribute("aria-hidden", isVisible ? "false" : "true");
+}
+
+function finalizeReportInitialization() {
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
       document.body.classList.remove("report-initializing");
-      if (overlay) {
-        overlay.classList.add("is-hidden");
-        overlay.setAttribute("aria-hidden", "true");
-      }
+      setReportLoadingOverlayVisible(false);
       navigateToInitialHash();
     });
   });
@@ -1615,33 +1719,451 @@ function getDataTableHeaderOffset() {
   return navbar ? Math.ceil(navbar.getBoundingClientRect().height) : 0;
 }
 
+function getHostOverviewTableRows() {
+  return getTableRows("table-overview", { requireAddress: true });
+}
+
+function getVisibleHostOverviewRows() {
+  return getTableRows("table-overview", { searchApplied: true, requireAddress: true });
+}
+
+function setEquals(left, right) {
+  if (left.size !== right.size) {
+    return false;
+  }
+
+  for (const value of left) {
+    if (!right.has(value)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function syncHostScopeSummary() {
+  const summary = document.getElementById("hostScopeSummary");
+  if (!summary) {
+    return;
+  }
+
+  const state = getHostScopeState();
+  const selectedCount = state.pendingSelectedHosts.size;
+  const totalCount = state.allHosts.size;
+  summary.textContent = `${selectedCount} of ${totalCount} host${totalCount === 1 ? "" : "s"} selected${state.dirty ? " · apply pending" : ""}`;
+}
+
+function syncHostScopeApplyButton() {
+  const button = document.getElementById("applyHostScopeButton");
+  if (!button) {
+    return;
+  }
+
+  const state = getHostScopeState();
+  button.disabled = !state.dirty || state.redrawInProgress;
+}
+
+function syncHostScopeCheckboxesAndRows() {
+  const state = getHostScopeState();
+  getHostOverviewTableRows().forEach(row => {
+    const address = normalizeHostAddress(row.dataset.address);
+    const checkbox = row.querySelector(".host-scope-checkbox");
+    const isSelected = !address || state.pendingSelectedHosts.has(address);
+
+    row.classList.toggle("host-scope-excluded", Boolean(address) && !isSelected);
+    if (checkbox) {
+      checkbox.checked = isSelected;
+    }
+  });
+
+  syncHostScopeSummary();
+  syncHostScopeApplyButton();
+}
+
+function registerHostScopeDataTableFilter() {
+  const state = getHostScopeState();
+  if (state.dataTableFilterRegistered || !(window.jQuery && $.fn.dataTable)) {
+    return;
+  }
+
+  $.fn.dataTable.ext.search.push((settings, _searchData, dataIndex) => {
+    const tableId = settings && settings.nTable ? settings.nTable.id : "";
+    if (tableId !== "table-services") {
+      return true;
+    }
+
+    const row = settings.aoData && settings.aoData[dataIndex] ? settings.aoData[dataIndex].nTr : null;
+    const address = row ? normalizeHostAddress(row.dataset.address) : "";
+    return !address || isHostInScope(address);
+  });
+
+  state.dataTableFilterRegistered = true;
+}
+
+function recalculateOpenServiceHostCounts() {
+  const table = document.getElementById("table-services");
+  if (!table) {
+    return;
+  }
+
+  const headers = Array.from(table.querySelectorAll("thead th")).map(header => (header.textContent || "").trim());
+  const countColumnIndex = headers.indexOf("Count");
+  if (countColumnIndex === -1) {
+    return;
+  }
+
+  const selectedCounts = new Map();
+  const rows = getTableRows("table-services", { requireAddress: true });
+
+  rows.forEach(row => {
+    if (!isHostInScope(row.dataset.address)) {
+      return;
+    }
+
+    const key = `${row.dataset.portid || ""}|${row.dataset.protocol || ""}`;
+    selectedCounts.set(key, (selectedCounts.get(key) || 0) + 1);
+  });
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll("td");
+    if (cells.length <= countColumnIndex) {
+      return;
+    }
+
+    const key = `${row.dataset.portid || ""}|${row.dataset.protocol || ""}`;
+    const count = selectedCounts.get(key) || 0;
+    cells[countColumnIndex].dataset.order = String(count);
+    cells[countColumnIndex].textContent = String(count);
+  });
+}
+
+function refreshOpenServicesForHostScope() {
+  const tableElement = document.getElementById("table-services");
+  if (!tableElement) {
+    return;
+  }
+
+  recalculateOpenServiceHostCounts();
+
+  if (window.jQuery && $.fn.dataTable && $.fn.dataTable.isDataTable(tableElement)) {
+    const tableApi = $(tableElement).DataTable();
+    if (tableApi) {
+      tableApi.rows().invalidate("dom").draw(false);
+      tableApi.columns.adjust();
+      if (tableApi.fixedHeader && typeof tableApi.fixedHeader.adjust === "function") {
+        tableApi.fixedHeader.adjust();
+      }
+    }
+  }
+}
+
+function updateHostDetailsVisibility() {
+  const hostEntries = document.querySelectorAll("#onlinehosts-list details.host-entry");
+  hostEntries.forEach(entry => {
+    const address = normalizeHostAddress(entry.dataset.address);
+    const isSelected = !address || isHostInScope(address);
+    entry.hidden = !isSelected;
+    if (!isSelected) {
+      entry.open = false;
+    }
+  });
+}
+
+function refreshServiceInventoryForHostScope() {
+  const tableElement = document.getElementById("service-inventory");
+  if (!tableElement) {
+    return;
+  }
+
+  let searchValue = "";
+  let orderValue = null;
+
+  if (window.jQuery && $.fn.dataTable && $.fn.dataTable.isDataTable(tableElement)) {
+    const tableApi = $(tableElement).DataTable();
+    if (tableApi) {
+      searchValue = tableApi.search();
+      orderValue = tableApi.order();
+      tableApi.destroy();
+    }
+  }
+
+  buildServiceInventoryTable();
+  initializeServiceInventoryToggle();
+  initializeServiceInventoryNestedTables();
+
+  const tableApi = initializeDataTable("#service-inventory");
+  if (tableApi) {
+    if (searchValue) {
+      tableApi.search(searchValue);
+    }
+    if (Array.isArray(orderValue) && orderValue.length > 0) {
+      tableApi.order(orderValue);
+    }
+    tableApi.draw(false);
+  }
+}
+
+function updateSummaryForHostScope() {
+  const selectedHostRows = getHostOverviewTableRows()
+    .filter(row => isHostInScope(row.dataset.address));
+  const selectedUpCount = selectedHostRows
+    .filter(row => normalizeHostAddress(row.dataset.state) === "up")
+    .length;
+  const selectedDownCount = selectedHostRows.length - selectedUpCount;
+  const selectedOpenServiceRows = getTableRows("table-services", { requireAddress: true })
+    .filter(row => isHostInScope(row.dataset.address));
+  const selectedInventoryEntries = Array.from(document.querySelectorAll("#serviceInventoryData .service-inventory-entry"))
+    .filter(entry => isHostInScope(entry.dataset.address));
+  const selectedMatrixHosts = Array.from(document.querySelectorAll("#matrixCount .host"))
+    .filter(entry => isHostInScope(entry.dataset.address));
+
+  const uniqueServices = new Set();
+  const httpBuckets = new Set();
+  const portProtocolCounts = new Map();
+  const rareServices = new Set();
+
+  selectedMatrixHosts.forEach(host => {
+    host.querySelectorAll(".port").forEach(portElement => {
+      const serviceKey = normalizeUniquenessService(portElement.dataset.service || "");
+      const portKey = `${normalizeHostAddress(portElement.dataset.port)}|${serviceKey.split(":")[0] || ""}`;
+      if (!serviceKey) {
+        return;
+      }
+
+      uniqueServices.add(serviceKey);
+      portProtocolCounts.set(portKey, (portProtocolCounts.get(portKey) || 0) + 1);
+    });
+  });
+
+  selectedInventoryEntries.forEach(entry => {
+    const service = normalizeHostAddress(entry.getAttribute("data-service"));
+    const product = normalizeHostAddress(entry.getAttribute("data-product"));
+    const version = normalizeHostAddress(entry.getAttribute("data-version"));
+    const looksHttp = service.toLowerCase().includes("http") ||
+      normalizeHostAddress(entry.getAttribute("data-http-title")) !== "" ||
+      normalizeHostAddress(entry.getAttribute("data-http-location")) !== "" ||
+      normalizeHostAddress(entry.getAttribute("data-http-server")) !== "" ||
+      normalizeHostAddress(entry.getAttribute("data-http-stack")) !== "" ||
+      normalizeHostAddress(entry.getAttribute("data-http-powered-by")) !== "";
+
+    if (looksHttp && service) {
+      httpBuckets.add(`${service}|${product}|${product ? version : ""}`);
+    }
+  });
+
+  selectedMatrixHosts.forEach(host => {
+    host.querySelectorAll(".port").forEach(portElement => {
+      const serviceKey = normalizeUniquenessService(portElement.dataset.service || "");
+      const portKey = `${normalizeHostAddress(portElement.dataset.port)}|${serviceKey.split(":")[0] || ""}`;
+      if (serviceKey && (portProtocolCounts.get(portKey) || 0) === 1) {
+        rareServices.add(serviceKey);
+      }
+    });
+  });
+
+  const openPortsValue = document.getElementById("summaryOpenPortsValue");
+  const uniqueServicesValue = document.getElementById("summaryUniqueServicesValue");
+  const rareServicesValue = document.getElementById("summaryRareServicesValue");
+  const httpBucketsValue = document.getElementById("summaryHttpBucketsValue");
+  const upHostsBar = document.getElementById("summaryUpHostsBar");
+  const downHostsBar = document.getElementById("summaryDownHostsBar");
+  const totalSelectedHosts = selectedHostRows.length;
+  const upWidth = totalSelectedHosts > 0 ? (selectedUpCount / totalSelectedHosts) * 100 : 0;
+  const downWidth = totalSelectedHosts > 0 ? (selectedDownCount / totalSelectedHosts) * 100 : 0;
+
+  if (openPortsValue) {
+    openPortsValue.textContent = String(selectedOpenServiceRows.length);
+  }
+  if (uniqueServicesValue) {
+    uniqueServicesValue.textContent = String(uniqueServices.size);
+  }
+  if (rareServicesValue) {
+    rareServicesValue.textContent = String(rareServices.size);
+  }
+  if (httpBucketsValue) {
+    httpBucketsValue.textContent = String(httpBuckets.size);
+  }
+  if (upHostsBar) {
+    upHostsBar.style.width = `${upWidth}%`;
+    upHostsBar.setAttribute("aria-valuenow", String(Math.round(upWidth)));
+    upHostsBar.textContent = `${selectedUpCount} Hosts up`;
+  }
+  if (downHostsBar) {
+    downHostsBar.style.width = `${downWidth}%`;
+    downHostsBar.setAttribute("aria-valuenow", String(Math.round(downWidth)));
+    downHostsBar.textContent = `${selectedDownCount} Hosts down`;
+  }
+}
+
+function applyHostScopeSelection() {
+  setReportLoadingOverlayVisible(true, "Updating Report");
+  syncHostScopeCheckboxesAndRows();
+  updateHostDetailsVisibility();
+  initializeHostToggle();
+
+  window.requestAnimationFrame(() => {
+    refreshOpenServicesForHostScope();
+    updateSummaryForHostScope();
+    initializeHostUniquenessScores();
+
+    window.requestAnimationFrame(() => {
+      refreshServiceInventoryForHostScope();
+
+      window.requestAnimationFrame(() => {
+        if (typeof window.renderServiceDistributionVisualizations === "function") {
+          window.renderServiceDistributionVisualizations();
+        }
+
+        if (typeof window.renderMatrixVisualizations === "function") {
+          window.renderMatrixVisualizations();
+        }
+
+        syncDataTableFixedHeaders();
+        const state = getHostScopeState();
+        state.redrawInProgress = false;
+        syncHostScopeApplyButton();
+        setReportLoadingOverlayVisible(false, "Preparing Report");
+      });
+    });
+  });
+}
+
+function initializeHostScopeControls() {
+  const controls = document.getElementById("hostScopeControls");
+  const table = document.getElementById("table-overview");
+  if (!controls || !table || table.dataset.hostScopeInitialized === "true") {
+    return;
+  }
+
+  const state = getHostScopeState();
+  const rows = getHostOverviewTableRows();
+  const addresses = rows
+    .map(row => normalizeHostAddress(row.dataset.address))
+    .filter(Boolean);
+
+  state.allHosts = new Set(addresses);
+  state.selectedHosts = new Set(addresses);
+  state.pendingSelectedHosts = new Set(addresses);
+  state.dirty = false;
+  registerHostScopeDataTableFilter();
+  syncHostScopeCheckboxesAndRows();
+
+  table.addEventListener("change", event => {
+    const checkbox = event.target.closest(".host-scope-checkbox");
+    if (!checkbox) {
+      return;
+    }
+
+    const address = normalizeHostAddress(checkbox.dataset.address);
+    if (!address) {
+      return;
+    }
+
+    if (checkbox.checked) {
+      state.pendingSelectedHosts.add(address);
+    } else {
+      state.pendingSelectedHosts.delete(address);
+    }
+
+    state.dirty = !setEquals(state.pendingSelectedHosts, state.selectedHosts);
+    syncHostScopeCheckboxesAndRows();
+  });
+
+  const selectVisibleButton = document.getElementById("selectVisibleHostsButton");
+  if (selectVisibleButton) {
+    selectVisibleButton.addEventListener("click", () => {
+      getVisibleHostOverviewRows().forEach(row => {
+        const address = normalizeHostAddress(row.dataset.address);
+        if (address) {
+          state.pendingSelectedHosts.add(address);
+        }
+      });
+      state.dirty = !setEquals(state.pendingSelectedHosts, state.selectedHosts);
+      syncHostScopeCheckboxesAndRows();
+    });
+  }
+
+  const clearVisibleButton = document.getElementById("clearVisibleHostsButton");
+  if (clearVisibleButton) {
+    clearVisibleButton.addEventListener("click", () => {
+      getVisibleHostOverviewRows().forEach(row => {
+        const address = normalizeHostAddress(row.dataset.address);
+        if (address) {
+          state.pendingSelectedHosts.delete(address);
+        }
+      });
+      state.dirty = !setEquals(state.pendingSelectedHosts, state.selectedHosts);
+      syncHostScopeCheckboxesAndRows();
+    });
+  }
+
+  const applyButton = document.getElementById("applyHostScopeButton");
+  if (applyButton) {
+    applyButton.addEventListener("click", () => {
+      if (state.redrawInProgress) {
+        return;
+      }
+
+      state.selectedHosts = new Set(state.pendingSelectedHosts);
+      state.dirty = false;
+      state.redrawInProgress = true;
+      syncHostScopeCheckboxesAndRows();
+      applyHostScopeSelection();
+    });
+  }
+
+  table.dataset.hostScopeInitialized = "true";
+}
+
 function initializeHostToggle() {
   const toggle = document.getElementById("toggle-all-hosts");
   const hostList = document.getElementById("onlinehosts-list");
   if (!toggle || !hostList) return;
 
-  const hostEntries = Array.from(hostList.querySelectorAll("details.host-entry"));
-  if (hostEntries.length === 0) {
-    toggle.hidden = true;
-    return;
+  function getVisibleHostEntries() {
+    return Array.from(hostList.querySelectorAll("details.host-entry"))
+      .filter(entry => !entry.hidden);
   }
 
   function syncLabel() {
+    const hostEntries = getVisibleHostEntries();
+    toggle.hidden = hostEntries.length === 0;
+    if (hostEntries.length === 0) {
+      return;
+    }
     const allOpen = hostEntries.every(entry => entry.open);
-    toggle.textContent = allOpen ? "Collapse all" : "Expand all";
     toggle.setAttribute("aria-expanded", allOpen ? "true" : "false");
+    toggle.setAttribute("title", allOpen ? "Collapse all visible host details" : "Expand all visible host details");
   }
 
-  toggle.addEventListener("click", () => {
-    const shouldOpen = !hostEntries.every(entry => entry.open);
-    hostEntries.forEach(entry => {
-      entry.open = shouldOpen;
-    });
-    syncLabel();
-  });
+  window.refreshHostToggleLabel = syncLabel;
 
-  hostEntries.forEach(entry => {
-    entry.addEventListener("toggle", syncLabel);
+  if (toggle.dataset.hostToggleInitialized !== "true") {
+    toggle.addEventListener("click", () => {
+      const hostEntries = getVisibleHostEntries();
+      if (hostEntries.length === 0) {
+        return;
+      }
+      const shouldOpen = !hostEntries.every(entry => entry.open);
+      hostEntries.forEach(entry => {
+        entry.open = shouldOpen;
+      });
+      syncLabel();
+    });
+    toggle.dataset.hostToggleInitialized = "true";
+  }
+
+  Array.from(hostList.querySelectorAll("details.host-entry")).forEach(entry => {
+    if (entry.dataset.hostToggleBound === "true") {
+      return;
+    }
+
+    entry.addEventListener("toggle", () => {
+      if (typeof window.refreshHostToggleLabel === "function") {
+        window.refreshHostToggleLabel();
+      }
+    });
+    entry.dataset.hostToggleBound = "true";
   });
 
   syncLabel();
@@ -1652,28 +2174,49 @@ function initializeServiceInventoryToggle() {
   const tableBody = document.getElementById("serviceInventoryTableBody");
   if (!toggle || !tableBody) return;
 
-  const serviceEntries = Array.from(tableBody.querySelectorAll("details.service-inventory-service-details"));
-  if (serviceEntries.length === 0) {
-    toggle.hidden = true;
-    return;
+  function getServiceEntries() {
+    return Array.from(tableBody.querySelectorAll("details.service-inventory-service-details"));
   }
 
   function syncLabel() {
+    const serviceEntries = getServiceEntries();
+    toggle.hidden = serviceEntries.length === 0;
+    if (serviceEntries.length === 0) {
+      return;
+    }
     const allOpen = serviceEntries.every(entry => entry.open);
-    toggle.textContent = allOpen ? "Collapse all" : "Expand all";
     toggle.setAttribute("aria-expanded", allOpen ? "true" : "false");
+    toggle.setAttribute("title", allOpen ? "Collapse all visible service details" : "Expand all visible service details");
   }
 
-  toggle.addEventListener("click", () => {
-    const shouldOpen = !serviceEntries.every(entry => entry.open);
-    serviceEntries.forEach(entry => {
-      entry.open = shouldOpen;
-    });
-    syncLabel();
-  });
+  window.refreshServiceInventoryToggleLabel = syncLabel;
 
-  serviceEntries.forEach(entry => {
-    entry.addEventListener("toggle", syncLabel);
+  if (toggle.dataset.serviceInventoryToggleInitialized !== "true") {
+    toggle.addEventListener("click", () => {
+      const serviceEntries = getServiceEntries();
+      if (serviceEntries.length === 0) {
+        return;
+      }
+      const shouldOpen = !serviceEntries.every(entry => entry.open);
+      serviceEntries.forEach(entry => {
+        entry.open = shouldOpen;
+      });
+      syncLabel();
+    });
+    toggle.dataset.serviceInventoryToggleInitialized = "true";
+  }
+
+  Array.from(tableBody.querySelectorAll("details.service-inventory-service-details")).forEach(entry => {
+    if (entry.dataset.serviceInventoryToggleBound === "true") {
+      return;
+    }
+
+    entry.addEventListener("toggle", () => {
+      if (typeof window.refreshServiceInventoryToggleLabel === "function") {
+        window.refreshServiceInventoryToggleLabel();
+      }
+    });
+    entry.dataset.serviceInventoryToggleBound = "true";
   });
 
   syncLabel();
@@ -2092,7 +2635,7 @@ function initializeDataTable(selector) {
         text: 'CSV',
         filename: exportName,
         fieldSeparator: ';',
-        exportOptions: { columns: ':visible', orthogonal: 'export' },
+        exportOptions: { columns: getDataTableExportColumnSelector(), orthogonal: 'export' },
         className: 'btn btn-light'
       },
       {
@@ -2100,18 +2643,20 @@ function initializeDataTable(selector) {
         text: 'Excel',
         filename: exportName,
         autoFilter: true,
-        exportOptions: { columns: ':visible', orthogonal: 'export' },
+        exportOptions: { columns: getDataTableExportColumnSelector(), orthogonal: 'export' },
         className: 'btn btn-light'
       },
       {
         text: 'JSON',
         className: 'btn btn-light',
         action: function (e, dt, node, config) {
-          const visibleColumns = dt.columns(':visible');
+          const visibleColumns = dt.columns(getDataTableExportColumnSelector());
           const headerIndexes = visibleColumns.indexes().toArray();
           const headers = visibleColumns.header().toArray().map(h => $(h).text().trim());
 
-          const data = dt.rows({ search: 'applied' }).nodes().toArray().map(row => {
+          const data = dt.rows({ search: 'applied' }).nodes().toArray()
+            .filter(row => isRowIncludedInCurrentExportScope(row))
+            .map(row => {
             const obj = {};
             headerIndexes.forEach((columnIndex, i) => {
               const cell = $(row).find('td').get(columnIndex);
@@ -2137,7 +2682,7 @@ function initializeDataTable(selector) {
         extend: 'copyHtml5',
         text: 'Copy',
         title: exportName,
-        exportOptions: { columns: ':visible', orthogonal: 'export' },
+        exportOptions: { rows: getDataTableExportRowSelector(), columns: getDataTableExportColumnSelector(), orthogonal: 'export' },
         className: 'btn btn-light'
       });
     }
@@ -2160,7 +2705,7 @@ function initializeDataTable(selector) {
           action: async function (e, dt) {
             const addresses = [];
 
-            dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+            getScopedDataTableRows(dt).forEach(row => {
               const cells = $(row).find('td');
               const address = ($(cells.get(1)).text() || '').trim();
 
@@ -2186,7 +2731,7 @@ function initializeDataTable(selector) {
           action: async function (e, dt) {
             const ports = [];
 
-            dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+            getScopedDataTableRows(dt).forEach(row => {
               const cells = $(row).find('td');
               const port = ($(cells.get(2)).text() || '').trim();
 
@@ -2212,7 +2757,7 @@ function initializeDataTable(selector) {
           action: async function (e, dt) {
             const endpoints = [];
 
-            dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+            getScopedDataTableRows(dt).forEach(row => {
               const cells = $(row).find('td');
               const address = ($(cells.get(1)).text() || '').trim();
               const port = ($(cells.get(2)).text() || '').trim();
@@ -2250,7 +2795,7 @@ function initializeDataTable(selector) {
           action: async function (e, dt) {
             const addresses = [];
 
-            dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+            getScopedDataTableRows(dt).forEach(row => {
               const cells = $(row).find('td');
               const address = ($(cells.get(4)).text() || '').trim();
 
@@ -2276,7 +2821,7 @@ function initializeDataTable(selector) {
           action: async function (e, dt) {
             const hostnames = [];
 
-            dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+            getScopedDataTableRows(dt).forEach(row => {
               const cells = $(row).find('td');
               const hostname = ($(cells.get(5)).text() || '').trim();
 
@@ -2318,8 +2863,8 @@ function initializeDataTable(selector) {
       "Uptime (est.)",
       "Hops",
       "Rarity",
-      "Open TCP Ports",
-      "Open UDP Ports"
+      "TCP Ports",
+      "UDP Ports"
     ].forEach(headerName => {
       const columnIndex = headers.indexOf(headerName);
       if (columnIndex !== -1) {
@@ -2331,6 +2876,14 @@ function initializeDataTable(selector) {
       const hostDetailsColumnIndex = headers.indexOf("Host Details");
       if (hostDetailsColumnIndex !== -1) {
         columnDefs.push({ targets: [hostDetailsColumnIndex], type: 'num' });
+      }
+    }
+
+    if (selector === '#table-overview') {
+      const scopeColumnIndex = Array.from(tableElement.querySelectorAll("thead th"))
+        .findIndex(header => header.classList.contains("host-scope-column"));
+      if (scopeColumnIndex !== -1) {
+        columnDefs.push({ targets: [scopeColumnIndex], orderable: false, searchable: false });
       }
     }
 

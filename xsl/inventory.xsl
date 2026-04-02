@@ -6,7 +6,7 @@
           <xsl:choose>
             <xsl:when test="count(//host/ports/port[state/@state='open' and service/@name]) &gt; 0">
               <div class="service-inventory-controls mb-3">
-                <button type="button" class="btn btn-outline-secondary btn-sm" id="toggle-all-service-inventory" aria-controls="serviceInventoryTableBody" aria-expanded="false">Expand all</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="toggle-all-service-inventory" aria-controls="serviceInventoryTableBody" aria-expanded="false" title="Expand all visible service details">Toggle all</button>
               </div>
               <div class="table-responsive">
                 <table id="service-inventory" class="table table-hover table-bordered align-middle dataTable" role="grid">

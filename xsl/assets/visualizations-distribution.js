@@ -1,94 +1,120 @@
-document.addEventListener("DOMContentLoaded", function() {
-  initializePlotExportButtons();
+function getScopedServiceCountElements() {
+  return Array.from(document.querySelectorAll("#serviceCounts .service")).filter(element => {
+    const address = (element.getAttribute("data-address") || "").trim();
+    return !window.isHostInScope || window.isHostInScope(address);
+  });
+}
+
+function renderServiceChart() {
   const serviceChart = document.getElementById("serviceChart");
-  if (serviceChart) {
-    const serviceCounts = {};
-    const serviceHosts = new Map();
-
-    document.querySelectorAll("#serviceCounts .service").forEach(element => {
-      const service = element.getAttribute("data-service");
-      const port = element.getAttribute("data-portid");
-      const protocol = element.getAttribute("data-porto");
-      const address = (element.getAttribute("data-address") || "").trim();
-
-      if (service && port) {
-        const key = `${service} (${protocol}/${port})`;
-        serviceCounts[key] = (serviceCounts[key] || 0) + 1;
-        if (address) {
-          if (!serviceHosts.has(key)) {
-            serviceHosts.set(key, new Set());
-          }
-          serviceHosts.get(key).add(address);
-        }
-      }
-    });
-
-    const sortedServices = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1]);
-    const colorPalette = [
-      "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
-      "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
-      "#393b79", "#637939", "#8c6d31", "#843c39", "#7b4173",
-      "#3182bd", "#f33", "#11b", "#fb0", "#0f0", "#999", "#05a"
-    ];
-
-    const traces = sortedServices.map(([service, count], index) => ({
-      y: [""],
-      x: [count],
-      name: service,
-      type: "bar",
-      orientation: "h",
-      marker: {
-        color: colorPalette[index % colorPalette.length]
-      },
-      text: service,
-      hovertext: `Service: ${service}; Hosts: ${count}`,
-      textposition: "inside",
-      insidetextanchor: "start",
-      hoverinfo: "text",
-      textfont: {
-        color: "white",
-        size: 12
-      }
-    }));
-
-    const layout = {
-      title: "",
-      barmode: "stack",
-      height: 220,
-      xaxis: {
-        title: "Frequency",
-        automargin: true,
-        fixedrange: true,
-        showticklabels: false,
-        showgrid: false
-      },
-      yaxis: {
-        automargin: true,
-        fixedrange: true,
-        showgrid: false
-      },
-      showlegend: false,
-      margin: {
-        t: 24,
-        b: 34,
-        l: 50,
-        r: 30
-      },
-      ...getPlotLayoutTheme()
-    };
-
-    Plotly.newPlot("serviceChart", traces, layout, {
-      displayModeBar: false,
-      responsive: true
-    });
-
-    renderServiceLedgers(sortedServices, serviceHosts);
+  if (!serviceChart) {
+    return;
   }
 
-  const hostOverviewTable = document.getElementById("table-overview");
-  const hostOverviewRows = Array.from(document.querySelectorAll("#table-overview tbody tr"));
+  const serviceCounts = {};
+  const serviceHosts = new Map();
 
-  if (!hostOverviewTable || hostOverviewRows.length === 0) {
+  getScopedServiceCountElements().forEach(element => {
+    const service = element.getAttribute("data-service");
+    const port = element.getAttribute("data-portid");
+    const protocol = element.getAttribute("data-porto");
+    const address = (element.getAttribute("data-address") || "").trim();
+
+    if (!service || !port) {
+      return;
+    }
+
+    const key = `${service} (${protocol}/${port})`;
+    serviceCounts[key] = (serviceCounts[key] || 0) + 1;
+    if (address) {
+      if (!serviceHosts.has(key)) {
+        serviceHosts.set(key, new Set());
+      }
+      serviceHosts.get(key).add(address);
+    }
+  });
+
+  const sortedServices = Object.entries(serviceCounts).sort((a, b) => b[1] - a[1]);
+  renderServiceLedgers(sortedServices, serviceHosts);
+
+  if (sortedServices.length === 0) {
+    if (window.Plotly) {
+      Plotly.purge(serviceChart);
+    }
+    serviceChart.innerHTML = "";
+    return;
+  }
+
+  const colorPalette = [
+    "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
+    "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
+    "#393b79", "#637939", "#8c6d31", "#843c39", "#7b4173",
+    "#3182bd", "#f33", "#11b", "#fb0", "#0f0", "#999", "#05a"
+  ];
+
+  const traces = sortedServices.map(([service, count], index) => ({
+    y: [""],
+    x: [count],
+    name: service,
+    type: "bar",
+    orientation: "h",
+    marker: {
+      color: colorPalette[index % colorPalette.length]
+    },
+    text: service,
+    hovertext: `Service: ${service}; Hosts: ${count}`,
+    textposition: "inside",
+    insidetextanchor: "start",
+    hoverinfo: "text",
+    textfont: {
+      color: "white",
+      size: 12
+    }
+  }));
+
+  const layout = {
+    title: "",
+    barmode: "stack",
+    height: 220,
+    xaxis: {
+      title: "Frequency",
+      automargin: true,
+      fixedrange: true,
+      showticklabels: false,
+      showgrid: false
+    },
+    yaxis: {
+      automargin: true,
+      fixedrange: true,
+      showgrid: false
+    },
+    showlegend: false,
+    margin: {
+      t: 24,
+      b: 34,
+      l: 50,
+      r: 30
+    },
+    ...getPlotLayoutTheme()
+  };
+
+  const config = {
+    displayModeBar: false,
+    responsive: true
+  };
+
+  if (serviceChart.data) {
+    Plotly.react(serviceChart, traces, layout, config);
+    return;
+  }
+
+  Plotly.newPlot(serviceChart, traces, layout, config);
+}
+
+function renderOsTreemap() {
+  const hostOverviewTable = document.getElementById("table-overview");
+  const osTreemap = document.getElementById("osTreemap");
+  if (!hostOverviewTable || !osTreemap) {
     return;
   }
 
@@ -99,6 +125,11 @@ document.addEventListener("DOMContentLoaded", function() {
   if (osColumnIndex === -1 || addressColumnIndex === -1 || hostnameColumnIndex === -1) {
     return;
   }
+
+  const hostOverviewRows = (typeof window.getTableRows === "function"
+    ? window.getTableRows("table-overview", { requireAddress: true })
+    : Array.from(document.querySelectorAll("#table-overview tbody tr")))
+    .filter(row => !window.isHostInScope || window.isHostInScope(row.dataset.address || ""));
 
   const osMap = new Map();
   hostOverviewRows.forEach(row => {
@@ -124,8 +155,11 @@ document.addEventListener("DOMContentLoaded", function() {
       sensitivity: "base"
     }));
 
-  const osTreemap = document.getElementById("osTreemap");
-  if (!osTreemap || osEntries.length === 0) {
+  if (osEntries.length === 0) {
+    if (window.Plotly) {
+      Plotly.purge(osTreemap);
+    }
+    osTreemap.innerHTML = "";
     return;
   }
 
@@ -192,7 +226,7 @@ document.addEventListener("DOMContentLoaded", function() {
     treemapColors.push(familyLightColorMap[family] || familyLightColorMap.unknown);
   });
 
-  Plotly.newPlot("osTreemap", [{
+  const data = [{
     type: "treemap",
     labels: treemapLabels,
     parents: treemapParents,
@@ -212,14 +246,41 @@ document.addEventListener("DOMContentLoaded", function() {
       packing: "squarify"
     },
     hovertemplate: "%{hovertext}<extra></extra>"
-  }], {
+  }];
+
+  const layout = {
     title: "",
     width: treemapWidth,
     height: treemapHeight,
     margin: { t: 10, l: 10, r: 10, b: 10 },
     ...getPlotLayoutTheme()
-  }, {
+  };
+
+  const config = {
     displayModeBar: false,
     responsive: true
-  });
+  };
+
+  if (osTreemap.data) {
+    Plotly.react(osTreemap, data, layout, config);
+    return;
+  }
+
+  Plotly.newPlot(osTreemap, data, layout, config);
+}
+
+function renderServiceDistributionVisualizations() {
+  if (!window.Plotly) {
+    return;
+  }
+
+  renderServiceChart();
+  renderOsTreemap();
+}
+
+window.renderServiceDistributionVisualizations = renderServiceDistributionVisualizations;
+
+document.addEventListener("DOMContentLoaded", function() {
+  initializePlotExportButtons();
+  renderServiceDistributionVisualizations();
 });

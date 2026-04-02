@@ -167,10 +167,22 @@ function setHostUniquenessCell(cell, options = {}) {
     rawScore = 0,
     contributors = [],
     isUp = false,
-    hasQualifyingServices = false
+    hasQualifyingServices = false,
+    isExcluded = false
   } = options;
 
   cell.textContent = "";
+
+  if (isExcluded) {
+    cell.dataset.order = "-1";
+    cell.dataset.search = "Out";
+
+    const placeholder = document.createElement("span");
+    placeholder.className = "text-muted";
+    placeholder.textContent = "Out";
+    cell.appendChild(placeholder);
+    return;
+  }
 
   if (!isUp) {
     cell.dataset.order = "-1";
@@ -234,14 +246,17 @@ function buildHostUniquenessScoreMap(hostOverviewTable) {
     return new Map();
   }
 
-  const upRows = rows.filter(row => (row.dataset.state || "").trim() === "up");
+  const upRows = rows.filter(row =>
+    (row.dataset.state || "").trim() === "up" &&
+    (!window.isHostInScope || window.isHostInScope(row.dataset.address || ""))
+  );
   const totalUpHosts = upRows.length;
   const hostServices = new Map();
   const serviceFrequency = new Map();
 
   document.querySelectorAll("#matrixCount .host").forEach(hostElement => {
     const address = (hostElement.dataset.address || "").trim();
-    if (!address) {
+    if (!address || (window.isHostInScope && !window.isHostInScope(address))) {
       return;
     }
 
@@ -354,13 +369,18 @@ function initializeHostUniquenessScores() {
     }
 
     const cell = cells[uniquenessColumnIndex];
+    const address = (row.dataset.address || (cells.length > addressColumnIndex ? cells[addressColumnIndex].textContent : "") || "").trim();
+    if (address && window.isHostInScope && !window.isHostInScope(address)) {
+      setHostUniquenessCell(cell, { isExcluded: true });
+      return;
+    }
+
     const isUp = (row.dataset.state || "").trim() === "up";
     if (!isUp) {
       setHostUniquenessCell(cell, { isUp: false });
       return;
     }
 
-    const address = (row.dataset.address || cells[addressColumnIndex].textContent || "").trim();
     const scoreDetails = hostScores.get(address) || {
       score: 0,
       rawScore: 0,

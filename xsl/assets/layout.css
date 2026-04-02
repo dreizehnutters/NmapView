@@ -775,6 +775,39 @@ a {
   align-items: center;
 }
 
+.host-scope-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.host-scope-label {
+  color: #334150;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.host-scope-summary {
+  color: #5f6e7d;
+  font-size: 0.88rem;
+}
+
+.host-scope-column,
+.host-scope-cell {
+  width: 1%;
+  white-space: nowrap;
+  text-align: center;
+}
+
+#table-overview tbody tr.host-scope-excluded {
+  opacity: 0.55;
+}
+
+#table-overview tbody tr.host-scope-excluded .host-scope-checkbox {
+  opacity: 1;
+}
+
 .summary-note {
   margin: 0.85rem 0 0;
   color: #5f6e7d;
@@ -1259,8 +1292,9 @@ footer.footer.bg-light {
 
 .report-dialog-subtitle {
   margin: 0.2rem 0 0;
-  color: #5f6e7d;
+  color: #334150;
   font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .report-dialog-body {
@@ -1278,6 +1312,11 @@ footer.footer.bg-light {
   color: #6f7d8b;
   font-size: 0.78rem;
   line-height: 1.35;
+}
+
+.report-dialog-note-kbd {
+  font-size: 0.72rem;
+  padding: 0.08rem 0.28rem;
 }
 
 .report-dialog-meta {
