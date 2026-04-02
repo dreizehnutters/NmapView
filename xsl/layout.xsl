@@ -43,21 +43,98 @@
               </ul>
               <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                  <a class="nav-link navbar-version-link" href="https://github.com/dreizehnutters/NmapView">NmapView v3.3a</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="https://github.com/dreizehnutters/NmapView">
+                  <button
+                    type="button"
+                    class="nav-link navbar-about-trigger"
+                    id="aboutDialogTrigger"
+                    aria-haspopup="dialog"
+                    aria-controls="aboutDialog"
+                    aria-label="Get NmapView source and licenses"
+                    title="Get NmapView source"
+                  >
+                    <span class="navbar-about-trigger-label">NmapView</span>
                     <svg class="navbar-brand-mark" height="64" width="64" viewBox="0 0 64 64" aria-hidden="true" style="max-height: 42px; width: auto;">
                       <rect width="64" height="64" rx="14" fill="#f7f9fb"/>
                       <circle class="navbar-brand-mark-lens" cx="27" cy="27" r="15" fill="none" stroke="#24313d" stroke-width="6"/>
                       <path class="navbar-brand-mark-lens" d="M38 38 L52 52" stroke="#24313d" stroke-width="6" stroke-linecap="round"/>
                     </svg>
-                  </a>
+                  </button>
                 </li>
               </ul>
             </div>
           </div>
         </nav>
+  </xsl:template>
+  <xsl:template name="render-about-dialog">
+        <dialog id="aboutDialog" class="report-dialog" aria-labelledby="aboutDialogTitle">
+          <div class="report-dialog-shell">
+            <div class="report-dialog-header">
+              <div>
+                <h2 id="aboutDialogTitle" class="report-dialog-title">About NmapView</h2>
+                <p class="report-dialog-subtitle">Project summary and runtime licenses.</p>
+              </div>
+              <button type="button" class="btn-close report-dialog-close" data-dialog-close="aboutDialog" aria-label="Close"></button>
+            </div>
+            <div class="report-dialog-body">
+              <p class="report-dialog-lead">NmapView turns Nmap XML into a single interactive HTML analysis report. It helps you review hosts, open services, service variants, script output, and visualizations in one portable file.</p>
+              <p class="report-dialog-meta"><a class="report-dialog-version-link" href="https://github.com/dreizehnutters/NmapView/releases" target="_blank" rel="noopener noreferrer">NmapView v3.3a</a><span class="report-dialog-meta-separator">·</span><a class="report-dialog-version-link" href="https://github.com/dreizehnutters/NmapView" target="_blank" rel="noopener noreferrer">Documentation &amp; Source</a></p>
+
+              <section class="report-dialog-section" aria-labelledby="aboutDialogProjectTitle">
+                <h3 id="aboutDialogProjectTitle" class="report-dialog-section-title">Project</h3>
+                <div class="report-source-list">
+                  <div class="report-source-item">
+                    <div class="report-source-top">
+                      <a class="report-source-name" href="https://github.com/dreizehnutters/NmapView" target="_blank" rel="noopener noreferrer">NmapView</a>
+                      <span class="report-license-badge">MIT</span>
+                    </div>
+                    <p class="report-source-note">Project source, releases, and standalone XSL download.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="report-dialog-section" aria-labelledby="aboutDialogSourcesTitle">
+                <h3 id="aboutDialogSourcesTitle" class="report-dialog-section-title">Runtime Libraries</h3>
+                <div class="report-source-list">
+                  <div class="report-source-item">
+                    <div class="report-source-top">
+                      <a class="report-source-name" href="https://getbootstrap.com/" target="_blank" rel="noopener noreferrer">Bootstrap 5.3.8</a>
+                      <span class="report-license-badge">MIT</span>
+                    </div>
+                    <p class="report-source-note">Base layout, spacing, and UI components.</p>
+                  </div>
+                  <div class="report-source-item">
+                    <div class="report-source-top">
+                      <a class="report-source-name" href="https://datatables.net/" target="_blank" rel="noopener noreferrer">DataTables 2.3.7 + Buttons, ColVis, FixedHeader</a>
+                      <span class="report-license-badge">MIT</span>
+                    </div>
+                    <p class="report-source-note">Searchable tables, column toggles, and export controls.</p>
+                  </div>
+                  <div class="report-source-item">
+                    <div class="report-source-top">
+                      <a class="report-source-name" href="https://jquery.com/" target="_blank" rel="noopener noreferrer">jQuery 3.7.0</a>
+                      <span class="report-license-badge">MIT</span>
+                    </div>
+                    <p class="report-source-note">Loaded as a DataTables runtime dependency.</p>
+                  </div>
+                  <div class="report-source-item">
+                    <div class="report-source-top">
+                      <a class="report-source-name" href="https://stuk.github.io/jszip/" target="_blank" rel="noopener noreferrer">JSZip 3.10.1</a>
+                      <span class="report-license-badge">MIT or GPL-3.0+</span>
+                    </div>
+                    <p class="report-source-note">Loaded via the DataTables bundle for client-side export support.</p>
+                  </div>
+                  <div class="report-source-item">
+                    <div class="report-source-top">
+                      <a class="report-source-name" href="https://plotly.com/javascript/" target="_blank" rel="noopener noreferrer">Plotly.js 3.3.0</a>
+                      <span class="report-license-badge">MIT</span>
+                    </div>
+                    <p class="report-source-note">Interactive charts and PNG plot export.</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </dialog>
   </xsl:template>
   <xsl:template name="render-summary">
           <xsl:variable name="recorded-hosts" select="count(/nmaprun/host)"/>

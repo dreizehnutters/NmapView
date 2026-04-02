@@ -2,6 +2,68 @@ function appendText(parent, text) {
   parent.appendChild(document.createTextNode(text));
 }
 
+function initializeAboutDialog() {
+  const trigger = document.getElementById("aboutDialogTrigger");
+  const dialog = document.getElementById("aboutDialog");
+  if (!trigger || !dialog) {
+    return;
+  }
+
+  let returnFocusTarget = trigger;
+
+  function openDialog() {
+    returnFocusTarget = document.activeElement instanceof HTMLElement ? document.activeElement : trigger;
+    if (typeof dialog.showModal === "function") {
+      dialog.showModal();
+    } else {
+      dialog.setAttribute("open", "open");
+    }
+  }
+
+  function closeDialog() {
+    if (typeof dialog.close === "function") {
+      dialog.close();
+    } else {
+      dialog.removeAttribute("open");
+    }
+
+    if (returnFocusTarget && typeof returnFocusTarget.focus === "function") {
+      returnFocusTarget.focus();
+    }
+  }
+
+  trigger.addEventListener("click", event => {
+    event.preventDefault();
+    openDialog();
+  });
+
+  dialog.querySelectorAll("[data-dialog-close='aboutDialog']").forEach(button => {
+    button.addEventListener("click", closeDialog);
+  });
+
+  dialog.addEventListener("click", event => {
+    if (event.target !== dialog) {
+      return;
+    }
+
+    const rect = dialog.getBoundingClientRect();
+    const insideDialog = rect.top <= event.clientY &&
+      event.clientY <= rect.bottom &&
+      rect.left <= event.clientX &&
+      event.clientX <= rect.right;
+
+    if (!insideDialog) {
+      closeDialog();
+    }
+  });
+
+  dialog.addEventListener("close", () => {
+    if (returnFocusTarget && typeof returnFocusTarget.focus === "function") {
+      returnFocusTarget.focus();
+    }
+  });
+}
+
 async function copyTextToClipboard(text) {
   if (navigator.clipboard && window.isSecureContext) {
     await navigator.clipboard.writeText(text);

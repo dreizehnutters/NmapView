@@ -3,6 +3,7 @@
 	              pinReportToSummaryView();
 	              initializeNavbarToggle();
 	              initializeSectionNav();
+	              initializeAboutDialog();
 	              initializeKeywordHighlighter();
 	              initializeCpeCopy();
 	              initializeCertificateExpiryAlerts();

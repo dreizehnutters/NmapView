@@ -18,6 +18,7 @@ Andreas Hontzia (@honze_net) & LRVT (@l4rm4nd) & Fabian Kopp (@dreizehnutters)
       <body class="report-initializing">
         <xsl:call-template name="render-loading-overlay"/>
         <xsl:call-template name="render-navbar"/>
+        <xsl:call-template name="render-about-dialog"/>
         <div id="reportContent" class="container-fluid px-4">
           <xsl:call-template name="render-summary"/>
           <xsl:call-template name="render-scanned-hosts"/>
