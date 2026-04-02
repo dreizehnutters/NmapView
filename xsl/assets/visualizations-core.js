@@ -449,7 +449,36 @@ function getPlotLayoutTheme() {
   };
 }
 
+function computeStableHashFragment(value, length = 4) {
+  const normalized = String(value || "");
+  let hash = 2166136261;
+
+  for (let index = 0; index < normalized.length; index += 1) {
+    hash ^= normalized.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0).toString(36).padStart(length, "0").slice(0, length);
+}
+
+function getReportExportHash() {
+  const body = document.body;
+  if (!body) {
+    return "0000";
+  }
+
+  const fingerprintSource = [
+    body.dataset.reportCommand || "",
+    body.dataset.reportStart || "",
+    body.dataset.reportVersion || "",
+    document.title || ""
+  ].join("|");
+
+  return computeStableHashFragment(fingerprintSource, 4);
+}
+
 function initializePlotExportButtons() {
+  const reportExportHash = getReportExportHash();
   document.querySelectorAll("[data-plot-export]").forEach(button => {
     button.addEventListener("click", () => {
       const plotId = button.getAttribute("data-plot-export");
@@ -460,7 +489,7 @@ function initializePlotExportButtons() {
 
       Plotly.downloadImage(plotElement, {
         format: "png",
-        filename: `nmapview-${plotId}`,
+        filename: `nmapview-${plotId}-${reportExportHash}`,
         width: plotElement.clientWidth || undefined,
         height: plotElement.clientHeight || undefined,
         scale: 2

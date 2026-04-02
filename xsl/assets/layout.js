@@ -81,6 +81,52 @@ async function copyTextToClipboard(text) {
   document.body.removeChild(input);
 }
 
+let clipboardFeedbackTimer = null;
+
+function showClipboardFeedback(message, isError = false) {
+  if (!message) {
+    return;
+  }
+
+  let feedback = document.getElementById("clipboardFeedback");
+  if (!feedback) {
+    feedback = document.createElement("div");
+    feedback.id = "clipboardFeedback";
+    feedback.className = "clipboard-feedback";
+    feedback.setAttribute("aria-live", "polite");
+    document.body.appendChild(feedback);
+  }
+
+  feedback.textContent = message;
+  feedback.classList.toggle("is-error", isError);
+  feedback.classList.add("is-visible");
+
+  if (clipboardFeedbackTimer) {
+    window.clearTimeout(clipboardFeedbackTimer);
+  }
+
+  clipboardFeedbackTimer = window.setTimeout(() => {
+    feedback.classList.remove("is-visible");
+  }, 1400);
+}
+
+async function copyTextWithFeedback(text, successMessage, emptyMessage = "Nothing to copy") {
+  const normalizedText = String(text || "");
+  if (!normalizedText.trim()) {
+    showClipboardFeedback(emptyMessage, true);
+    return false;
+  }
+
+  try {
+    await copyTextToClipboard(normalizedText);
+    showClipboardFeedback(successMessage || "Copied");
+    return true;
+  } catch (error) {
+    showClipboardFeedback("Copy failed", true);
+    return false;
+  }
+}
+
 function initializeCpeCopy() {
   document.querySelectorAll(".cpe-copy").forEach(element => {
     element.addEventListener("click", async () => {
@@ -526,6 +572,13 @@ function buildServiceInventoryScriptSummary(scriptRecords, hostDisplayLabel) {
   }).join("; ");
 }
 
+function normalizeServiceInventorySearchValue(value) {
+  return String(value || "")
+    .replace(/https?:\/\//gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function buildDataTableJsonExportAction(exportName) {
   return function (e, dt) {
     const visibleColumns = dt.columns(':visible');
@@ -552,6 +605,48 @@ function buildDataTableJsonExportAction(exportName) {
   };
 }
 
+function buildVisibleDataTableClipboardText(dt) {
+  if (!dt || !dt.buttons || typeof dt.buttons.exportData !== "function") {
+    return { text: "", rowCount: 0 };
+  }
+
+  const exportData = dt.buttons.exportData({
+    columns: ':visible',
+    modifier: {
+      search: 'applied',
+      order: 'applied'
+    },
+    orthogonal: 'export'
+  });
+
+  const normalizeCell = value => String(value || "").replace(/\r?\n/g, " ").trim();
+  const header = Array.isArray(exportData.header) ? exportData.header.map(normalizeCell) : [];
+  const body = Array.isArray(exportData.body) ? exportData.body : [];
+  const lines = [];
+
+  if (header.length > 0) {
+    lines.push(header.join("\t"));
+  }
+
+  body.forEach(row => {
+    lines.push((Array.isArray(row) ? row : []).map(normalizeCell).join("\t"));
+  });
+
+  return {
+    text: lines.join("\n"),
+    rowCount: body.length
+  };
+}
+
+async function copyVisibleDataTableRows(dt, rowLabel = "row") {
+  const { text, rowCount } = buildVisibleDataTableClipboardText(dt);
+  await copyTextWithFeedback(
+    text,
+    `Copied ${rowCount} ${rowLabel}${rowCount === 1 ? "" : "s"}`,
+    "Nothing to copy"
+  );
+}
+
 function formatServiceInventoryRowsAsDelimited(rows, delimiter = "\t") {
   const lines = [
     serviceInventoryExportColumns.join(delimiter),
@@ -571,6 +666,10 @@ function sanitizeServiceInventoryFilename(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "service";
+}
+
+function buildServiceVariantAnchorId(serviceName, variantLabel) {
+  return `servicevariant-${sanitizeServiceInventoryFilename(serviceName)}-${sanitizeServiceInventoryFilename(variantLabel)}`;
 }
 
 function initializeServiceInventoryNestedTable(tableElement) {
@@ -605,32 +704,107 @@ function initializeServiceInventoryNestedTable(tableElement) {
         className: 'btn btn-light'
       },
       {
+        extend: 'collection',
         text: 'Copy',
         className: 'btn btn-light',
-        action: async function (e, dt) {
-          const endpoints = [];
-
-          dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
-            const address = (row.getAttribute('data-address') || '').trim();
-            const rawPorts = (row.getAttribute('data-ports') || '').trim();
-            if (!address || !rawPorts) {
-              return;
+        buttons: [
+          {
+            text: 'All',
+            action: async function (e, dt) {
+              await copyVisibleDataTableRows(dt);
             }
+          },
+          {
+            text: 'IP:Ports',
+            action: async function (e, dt) {
+              const endpoints = [];
 
-            rawPorts
-              .split(',')
-              .map(port => port.trim())
-              .filter(Boolean)
-              .forEach(portLabel => {
-                const [port] = portLabel.split('/');
-                if (port) {
-                  endpoints.push(`${address}:${port}`);
+              dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+                const address = (row.getAttribute('data-address') || '').trim();
+                const rawPorts = (row.getAttribute('data-ports') || '').trim();
+                if (!address || !rawPorts) {
+                  return;
+                }
+
+                rawPorts
+                  .split(',')
+                  .map(port => port.trim())
+                  .filter(Boolean)
+                  .forEach(portLabel => {
+                    const [port] = portLabel.split('/');
+                    if (port) {
+                      endpoints.push(`${address}:${port}`);
+                    }
+                  });
+              });
+
+              const uniqueEndpoints = [...new Set(endpoints)];
+              await copyTextWithFeedback(
+                uniqueEndpoints.join('\n'),
+                `Copied ${uniqueEndpoints.length} IP:Port entr${uniqueEndpoints.length === 1 ? "y" : "ies"}`
+              );
+            }
+          },
+          {
+            text: 'IPs',
+            action: async function (e, dt) {
+              const addresses = [];
+
+              dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+                const address = (row.getAttribute('data-address') || '').trim();
+                if (address) {
+                  addresses.push(address);
                 }
               });
-          });
 
-          await copyTextToClipboard([...new Set(endpoints)].join('\n'));
-        }
+              const uniqueAddresses = [...new Set(addresses)]
+                .sort((left, right) => left.localeCompare(right, undefined, {
+                  numeric: true,
+                  sensitivity: 'base'
+                }));
+
+              await copyTextWithFeedback(
+                uniqueAddresses.join('\n'),
+                `Copied ${uniqueAddresses.length} IP${uniqueAddresses.length === 1 ? "" : "s"}`
+              );
+            }
+          },
+          {
+            text: 'Ports',
+            action: async function (e, dt) {
+              const ports = [];
+
+              dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+                const rawPorts = (row.getAttribute('data-ports') || '').trim();
+                if (!rawPorts) {
+                  return;
+                }
+
+                rawPorts
+                  .split(',')
+                  .map(port => port.trim())
+                  .filter(Boolean)
+                  .forEach(portLabel => {
+                    const [port] = portLabel.split('/');
+                    if (port) {
+                      ports.push(port);
+                    }
+                  });
+              });
+
+              const uniquePorts = [...new Set(ports)]
+                .sort((left, right) => Number(left) - Number(right) || left.localeCompare(right, undefined, {
+                  numeric: true,
+                  sensitivity: 'base'
+                }));
+
+              await copyTextWithFeedback(
+                uniquePorts.join(','),
+                `Copied ${uniquePorts.length} port${uniquePorts.length === 1 ? "" : "s"}`
+              );
+            }
+          }
+        ]
       },
       {
         extend: 'csvHtml5',
@@ -855,6 +1029,7 @@ function buildServiceInventoryTable() {
       }
       return compareInventoryText(left.productGroup, right.productGroup) || compareInventoryText(left.label, right.label);
     });
+    const searchTerms = new Set();
 
     serviceDetails.className = "service-inventory-service-details";
     serviceSummary.className = "service-inventory-service-summary";
@@ -872,6 +1047,7 @@ function buildServiceInventoryTable() {
 
     hostsCell.className = "service-inventory-hosts-cell";
     hostsCell.dataset.order = String(serviceRecord.hosts.size);
+    searchTerms.add(normalizeServiceInventorySearchValue(serviceRecord.name));
 
     serviceTitle.textContent = serviceRecord.name;
     serviceMeta.textContent = `${formatInventoryHostCount(serviceRecord.hosts.size)} • ${formatInventoryVariantSummary(variants)}`;
@@ -893,6 +1069,10 @@ function buildServiceInventoryTable() {
     const serviceScopedExportRows = [];
 
     variants.forEach(variantRecord => {
+      searchTerms.add(normalizeServiceInventorySearchValue(variantRecord.label));
+      searchTerms.add(normalizeServiceInventorySearchValue(variantRecord.productGroup));
+      const variantAnchorId = buildServiceVariantAnchorId(serviceRecord.name, variantRecord.label);
+      let variantAnchorAssigned = false;
       const hosts = Array.from(variantRecord.hosts.values()).sort((left, right) => {
         const leftLabel = buildServiceInventoryHostLabel(left.hostname, left.address);
         const rightLabel = buildServiceInventoryHostLabel(right.hostname, right.address);
@@ -902,7 +1082,7 @@ function buildServiceInventoryTable() {
       hosts.forEach(hostRecord => {
         const row = document.createElement("tr");
         const bucketCell = document.createElement("td");
-        const bucketLabel = document.createElement("div");
+        const bucketLabel = document.createElement("a");
         const hostCell = document.createElement("td");
         const portsCell = document.createElement("td");
         const serviceCell = document.createElement("td");
@@ -922,13 +1102,36 @@ function buildServiceInventoryTable() {
           !shouldSuppressRawHttpScript(scriptRecord.id, httpDetails.length > 0)
         );
         const primaryHttpRecord = httpDetails[0] || {};
+        const hostSearchTerms = [
+          hostDisplayLabel,
+          hostRecord.address,
+          hostRecord.hostname,
+          ...portLabels,
+          ...extraInfoRecords.map(record => record.value),
+          ...httpDetails.flatMap(record => [
+            record.title,
+            record.server,
+            record.location,
+            record.stack,
+            record.poweredBy
+          ]),
+          ...filteredScriptRecords.map(record => record.id)
+        ];
 
         row.setAttribute("data-address", hostRecord.address);
         row.setAttribute("data-ports", portLabels.join(","));
+        hostSearchTerms
+          .map(normalizeServiceInventorySearchValue)
+          .filter(Boolean)
+          .forEach(term => searchTerms.add(term));
 
         link.className = "service-inventory-host-link";
         link.href = `#onlinehosts-${hostRecord.address.replace(/[.:]/g, "-")}`;
         link.textContent = hostDisplayLabel;
+        if (!variantAnchorAssigned) {
+          row.id = variantAnchorId;
+          variantAnchorAssigned = true;
+        }
         if (variantRecord.productGroup !== previousProductGroup) {
           row.classList.add("service-inventory-product-separator");
           previousProductGroup = variantRecord.productGroup;
@@ -937,6 +1140,7 @@ function buildServiceInventoryTable() {
         }
         previousVariantLabel = variantRecord.label;
         bucketLabel.className = "service-inventory-bucket-label";
+        bucketLabel.href = `#${variantAnchorId}`;
         bucketLabel.textContent = variantRecord.label;
         bucketCell.appendChild(bucketLabel);
         hostCell.appendChild(link);
@@ -959,11 +1163,18 @@ function buildServiceInventoryTable() {
           const detailsGroup = document.createElement("details");
           const detailsSummary = document.createElement("summary");
           const detailsBody = document.createElement("div");
+          const hiddenScriptCount = filteredScriptRecords.length;
+          const hiddenDetailCount = extraInfoRecords.length +
+            httpDetails.length +
+            vulnersRecords.length +
+            hiddenScriptCount;
 
           detailsGroup.className = "service-inventory-script-group-details";
           detailsSummary.className = "service-inventory-script-group-summary";
           detailsBody.className = "service-inventory-script-group-body";
-          detailsSummary.textContent = "Show Details";
+          detailsSummary.textContent = hiddenScriptCount > 0
+            ? `Show Details (${hiddenScriptCount} script${hiddenScriptCount === 1 ? "" : "s"})`
+            : `Show Details (${hiddenDetailCount})`;
 
           if (extraInfoRecords.length > 0) {
             const extraInfoContainer = document.createElement("div");
@@ -1137,6 +1348,7 @@ function buildServiceInventoryTable() {
     serviceDetails.appendChild(serviceSummary);
     serviceDetails.appendChild(serviceBody);
     hostsCell.appendChild(serviceDetails);
+    hostsCell.dataset.search = Array.from(searchTerms).join(" ");
 
     row.appendChild(hostsCell);
     tableBody.appendChild(row);
@@ -1177,7 +1389,12 @@ function initializeSectionNav() {
   }
 
   function setActiveLink(hash) {
-    const normalizedHash = hash && hash.startsWith("#onlinehosts-") ? "#onlinehosts" : hash;
+    let normalizedHash = hash;
+    if (hash && hash.startsWith("#onlinehosts-")) {
+      normalizedHash = "#onlinehosts";
+    } else if (hash && hash.startsWith("#servicevariant-")) {
+      normalizedHash = "#serviceinventory";
+    }
     sections.forEach(({ link, hash: sectionHash }) => {
       const isActive = sectionHash === normalizedHash;
       link.classList.toggle("is-active", isActive);
@@ -1221,6 +1438,68 @@ function initializeSectionNav() {
   setActiveLink(window.location.hash || sections[0].hash);
 }
 
+function isEditableShortcutTarget(target) {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  const tagName = target.tagName;
+  return target.isContentEditable ||
+    tagName === "INPUT" ||
+    tagName === "TEXTAREA" ||
+    tagName === "SELECT";
+}
+
+function getSectionSearchInput(selector) {
+  const tableElement = selector ? document.querySelector(selector) : null;
+  if (!tableElement) {
+    return null;
+  }
+
+  const wrapper = tableElement.closest(".dt-container, .dataTables_wrapper");
+  if (!wrapper) {
+    return null;
+  }
+
+  return wrapper.querySelector(".dataTables_filter input, .dt-search input");
+}
+
+function focusActiveSectionSearch() {
+  const activeLink = document.querySelector("#navbarNav .navbar-nav.me-auto .nav-link[aria-current='page']");
+  const activeHash = activeLink ? activeLink.getAttribute("href") : "";
+  const selectorBySection = {
+    "#scannedhosts": "#table-overview",
+    "#openservices": "#table-services",
+    "#serviceinventory": "#service-inventory"
+  };
+  const searchInput = getSectionSearchInput(selectorBySection[activeHash || ""]);
+  if (!searchInput) {
+    return false;
+  }
+
+  searchInput.focus();
+  if (typeof searchInput.select === "function") {
+    searchInput.select();
+  }
+  return true;
+}
+
+function initializeSlashSearchShortcut() {
+  document.addEventListener("keydown", event => {
+    if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
+    if (isEditableShortcutTarget(event.target)) {
+      return;
+    }
+
+    if (focusActiveSectionSearch()) {
+      event.preventDefault();
+    }
+  });
+}
+
 function openLinkedHost(hash) {
   if (!hash || !hash.startsWith("#onlinehosts-")) {
     return null;
@@ -1236,6 +1515,20 @@ function openLinkedHost(hash) {
     hostEntry.open = true;
   }
 
+  return target;
+}
+
+function openLinkedServiceVariant(hash) {
+  if (!hash || !hash.startsWith("#servicevariant-")) {
+    return null;
+  }
+
+  const target = document.querySelector(hash);
+  if (!target) {
+    return null;
+  }
+
+  openAncestorDetails(target);
   return target;
 }
 
@@ -1286,6 +1579,12 @@ function navigateToInitialHash() {
   const hostTarget = openLinkedHost(hash);
   if (hostTarget) {
     scrollToReportTarget(hostTarget);
+    return;
+  }
+
+  const serviceVariantTarget = openLinkedServiceVariant(hash);
+  if (serviceVariantTarget) {
+    scrollToReportTarget(serviceVariantTarget);
     return;
   }
 
@@ -1342,6 +1641,38 @@ function initializeHostToggle() {
   });
 
   hostEntries.forEach(entry => {
+    entry.addEventListener("toggle", syncLabel);
+  });
+
+  syncLabel();
+}
+
+function initializeServiceInventoryToggle() {
+  const toggle = document.getElementById("toggle-all-service-inventory");
+  const tableBody = document.getElementById("serviceInventoryTableBody");
+  if (!toggle || !tableBody) return;
+
+  const serviceEntries = Array.from(tableBody.querySelectorAll("details.service-inventory-service-details"));
+  if (serviceEntries.length === 0) {
+    toggle.hidden = true;
+    return;
+  }
+
+  function syncLabel() {
+    const allOpen = serviceEntries.every(entry => entry.open);
+    toggle.textContent = allOpen ? "Collapse all" : "Expand all";
+    toggle.setAttribute("aria-expanded", allOpen ? "true" : "false");
+  }
+
+  toggle.addEventListener("click", () => {
+    const shouldOpen = !serviceEntries.every(entry => entry.open);
+    serviceEntries.forEach(entry => {
+      entry.open = shouldOpen;
+    });
+    syncLabel();
+  });
+
+  serviceEntries.forEach(entry => {
     entry.addEventListener("toggle", syncLabel);
   });
 
@@ -1497,6 +1828,102 @@ function syncDataTableSearchInputState(table, wrapper) {
 
   const hasActiveSearch = String(table.search() || "").trim() !== "";
   searchInput.classList.toggle("datatable-filter-active", hasActiveSearch);
+}
+
+function resolveDataTableResetScrollTarget(table, selector) {
+  const sectionIdsBySelector = {
+    "#table-services": "openservices",
+    "#table-overview": "scannedhosts",
+    "#service-inventory": "serviceinventory"
+  };
+
+  const mappedSectionId = sectionIdsBySelector[selector];
+  if (mappedSectionId) {
+    const mappedSection = document.getElementById(mappedSectionId);
+    if (mappedSection) {
+      return mappedSection;
+    }
+  }
+
+  const tableNode = table && typeof table.table === "function" ? table.table().node() : null;
+  const tableWrapper = tableNode ? tableNode.closest(".table-responsive") : null;
+  let current = tableWrapper || tableNode;
+  while (current) {
+    let sibling = current.previousElementSibling;
+    while (sibling) {
+      if (/^H[1-6]$/.test(sibling.tagName)) {
+        return sibling;
+      }
+      sibling = sibling.previousElementSibling;
+    }
+    current = current.parentElement;
+  }
+
+  return tableNode;
+}
+
+function resetDataTableExpandedState(selector) {
+  if (selector !== "#service-inventory") {
+    return;
+  }
+
+  const serviceInventoryTableBody = document.getElementById("serviceInventoryTableBody");
+  if (!serviceInventoryTableBody) {
+    return;
+  }
+
+  serviceInventoryTableBody.querySelectorAll("details[open]").forEach(details => {
+    details.open = false;
+  });
+}
+
+function initializeDataTableResetButton(table, wrapper, selector, defaultOrder) {
+  if (!table || !wrapper) {
+    return;
+  }
+
+  const resetContainer = wrapper.querySelector(".datatable-footer-end");
+  if (!resetContainer || resetContainer.querySelector(".datatable-reset-button")) {
+    return;
+  }
+
+  const resetButton = document.createElement("button");
+  resetButton.type = "button";
+  resetButton.className = "btn btn-outline-secondary btn-sm datatable-reset-button";
+  resetButton.textContent = "Reset";
+  resetButton.setAttribute("aria-label", "Reset table filters and sort order");
+  resetContainer.appendChild(resetButton);
+
+  resetButton.addEventListener("click", () => {
+    const searchInput = wrapper.querySelector(".dataTables_filter input, .dt-search input");
+    if (searchInput) {
+      searchInput.value = "";
+      searchInput.classList.remove("datatable-filter-active");
+    }
+
+    const serviceFilter = wrapper.querySelector(".datatable-inline-filter .form-select");
+    if (serviceFilter) {
+      serviceFilter.value = "";
+      serviceFilter.classList.remove("datatable-filter-active");
+      serviceFilter.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    table.search("");
+    table.columns().search("");
+    table.order((defaultOrder || [[0, "desc"]]).map(([columnIndex, direction]) => [Number(columnIndex), direction]));
+    table.page("first").draw();
+    resetDataTableExpandedState(selector);
+
+    const resetScrollTarget = resolveDataTableResetScrollTarget(table, selector);
+    if (resetScrollTarget) {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({
+          top: getReportScrollTop(resetScrollTarget),
+          behavior: "smooth"
+        });
+      });
+    }
+  });
 }
 
 function initializeServiceDropdownFilter(table, tableElement, options = {}) {
@@ -1705,7 +2132,7 @@ function initializeDataTable(selector) {
       }
     );
 
-    if (selector !== '#table-services') {
+    if (selector !== '#table-services' && selector !== '#table-overview') {
       buttons.splice(1, 0, {
         extend: 'copyHtml5',
         text: 'Copy',
@@ -1720,13 +2147,13 @@ function initializeDataTable(selector) {
     buttons.push({
       extend: 'collection',
       text: 'Copy',
-      className: 'btn btn-light btn-subtle-action',
+      className: 'btn btn-light',
       buttons: [
         {
-          extend: 'copyHtml5',
           text: 'All',
-          title: exportName,
-          exportOptions: { columns: ':visible', orthogonal: 'export' }
+          action: async function (e, dt) {
+            await copyVisibleDataTableRows(dt);
+          }
         },
         {
           text: 'IPs',
@@ -1748,7 +2175,10 @@ function initializeDataTable(selector) {
                 sensitivity: 'base'
               }));
 
-            await copyTextToClipboard(uniqueAddresses.join('\n'));
+            await copyTextWithFeedback(
+              uniqueAddresses.join('\n'),
+              `Copied ${uniqueAddresses.length} IP${uniqueAddresses.length === 1 ? "" : "s"}`
+            );
           }
         },
         {
@@ -1771,7 +2201,10 @@ function initializeDataTable(selector) {
                 sensitivity: 'base'
               }));
 
-            await copyTextToClipboard(uniquePorts.join(','));
+            await copyTextWithFeedback(
+              uniquePorts.join(','),
+              `Copied ${uniquePorts.length} port${uniquePorts.length === 1 ? "" : "s"}`
+            );
           }
         },
         {
@@ -1790,7 +2223,78 @@ function initializeDataTable(selector) {
             });
 
             const uniqueEndpoints = [...new Set(endpoints)];
-            await copyTextToClipboard(uniqueEndpoints.join('\n'));
+            await copyTextWithFeedback(
+              uniqueEndpoints.join('\n'),
+              `Copied ${uniqueEndpoints.length} IP:Port entr${uniqueEndpoints.length === 1 ? "y" : "ies"}`
+            );
+          }
+        }
+      ]
+    });
+  }
+
+  if (selector === '#table-overview') {
+    buttons.push({
+      extend: 'collection',
+      text: 'Copy',
+      className: 'btn btn-light',
+      buttons: [
+        {
+          text: 'All',
+          action: async function (e, dt) {
+            await copyVisibleDataTableRows(dt);
+          }
+        },
+        {
+          text: 'IPs',
+          action: async function (e, dt) {
+            const addresses = [];
+
+            dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+              const cells = $(row).find('td');
+              const address = ($(cells.get(4)).text() || '').trim();
+
+              if (address && address.toLowerCase() !== 'n/a') {
+                addresses.push(address);
+              }
+            });
+
+            const uniqueAddresses = [...new Set(addresses)]
+              .sort((left, right) => left.localeCompare(right, undefined, {
+                numeric: true,
+                sensitivity: 'base'
+              }));
+
+            await copyTextWithFeedback(
+              uniqueAddresses.join('\n'),
+              `Copied ${uniqueAddresses.length} IP${uniqueAddresses.length === 1 ? "" : "s"}`
+            );
+          }
+        },
+        {
+          text: 'Hostnames',
+          action: async function (e, dt) {
+            const hostnames = [];
+
+            dt.rows({ search: 'applied' }).nodes().toArray().forEach(row => {
+              const cells = $(row).find('td');
+              const hostname = ($(cells.get(5)).text() || '').trim();
+
+              if (hostname && hostname.toLowerCase() !== 'n/a') {
+                hostnames.push(hostname);
+              }
+            });
+
+            const uniqueHostnames = [...new Set(hostnames)]
+              .sort((left, right) => left.localeCompare(right, undefined, {
+                numeric: true,
+                sensitivity: 'base'
+              }));
+
+            await copyTextWithFeedback(
+              uniqueHostnames.join('\n'),
+              `Copied ${uniqueHostnames.length} hostname${uniqueHostnames.length === 1 ? "" : "s"}`
+            );
           }
         }
       ]
@@ -1836,7 +2340,7 @@ function initializeDataTable(selector) {
     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
     order: defaultOrders[selector] || [[0, 'desc']],
     columnDefs: columnDefs,
-    dom: '<"d-flex justify-content-between align-items-center mb-2"lfB>rtip',
+    dom: '<"datatable-toolbar"<"datatable-toolbar-start"l><"datatable-toolbar-center"f><"datatable-toolbar-end"B>>rt<"datatable-footer"<"datatable-footer-start"ip><"datatable-footer-end">>',
     stateSave: false,
     buttons: buttons,
     fixedHeader: {
@@ -1854,6 +2358,8 @@ function initializeDataTable(selector) {
       table.on("search.dt", syncSearchState);
       syncSearchState();
     }
+
+    initializeDataTableResetButton(table, wrapper, selector, defaultOrders[selector] || [[0, "desc"]]);
   }
 
   if (selector === '#table-services') {

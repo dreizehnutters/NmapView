@@ -296,8 +296,17 @@ a {
 }
 
 .service-inventory-bucket-label {
+  color: #24313d;
+  display: inline-flex;
   font-weight: 500;
   overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.service-inventory-bucket-label:hover,
+.service-inventory-bucket-label:focus-visible {
+  color: #0a58ca;
+  text-decoration: underline;
 }
 
 .service-inventory-script-list {
@@ -888,6 +897,34 @@ body.report-density-dense .summary-command pre {
   color: #0a58ca !important;
 }
 
+.clipboard-feedback {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1085;
+  max-width: min(22rem, calc(100vw - 2rem));
+  padding: 0.55rem 0.8rem;
+  border-radius: 0.6rem;
+  background: rgba(33, 37, 41, 0.92);
+  color: #f8f9fa;
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: 0 0.8rem 1.8rem rgba(15, 23, 42, 0.22);
+  opacity: 0;
+  transform: translateY(0.45rem);
+  pointer-events: none;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.clipboard-feedback.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.clipboard-feedback.is-error {
+  background: rgba(139, 0, 0, 0.94);
+}
+
 .cpe-inline-link {
   display: inline-flex;
   align-items: center;
@@ -948,14 +985,18 @@ body.report-density-dense .summary-command pre {
 
 .datatable-inline-filter-label {
   margin: 0;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #495057;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
   white-space: nowrap;
 }
 
 .datatable-inline-filter .form-select {
   min-width: 11rem;
+}
+
+.datatable-reset-button {
+  line-height: 1.2;
 }
 
 .datatable-filter-active {
@@ -1068,26 +1109,85 @@ footer.footer.bg-light {
   padding: 0.85rem 0.9rem 0.7rem;
 }
 
-.dt-buttons .btn.btn-subtle-action,
-.dt-buttons .dt-button.btn-subtle-action {
-  opacity: 0.72;
+.datatable-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
 }
 
-.dt-buttons .btn.btn-subtle-action:hover,
-.dt-buttons .btn.btn-subtle-action:focus,
-.dt-buttons .dt-button.btn-subtle-action:hover,
-.dt-buttons .dt-button.btn-subtle-action:focus {
-  opacity: 1;
+.datatable-toolbar-start,
+.datatable-toolbar-center,
+.datatable-toolbar-end {
+  display: flex;
+  align-items: center;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.datatable-toolbar-start {
+  justify-content: flex-start;
+}
+
+.datatable-toolbar-center {
+  justify-content: center;
+}
+
+.datatable-toolbar-end {
+  justify-content: flex-end;
+}
+
+.datatable-toolbar-center .dataTables_filter,
+.datatable-toolbar-center .dt-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.datatable-toolbar-center .dataTables_filter label,
+.datatable-toolbar-center .dt-search label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.datatable-toolbar-center .dataTables_filter input,
+.datatable-toolbar-center .dt-search input {
+  min-width: min(100%, 18rem);
+  margin: 0;
+}
+
+.datatable-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.datatable-footer-start,
+.datatable-footer-end {
+  display: flex;
+  align-items: center;
+}
+
+.datatable-footer-start {
+  justify-content: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.datatable-footer-end {
+  justify-content: flex-end;
 }
 
 .table-responsive > .dt-container .table {
   margin-bottom: 0.75rem;
-}
-
-.table-responsive > .dt-container .d-flex.justify-content-between.align-items-center.mb-2 {
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.85rem !important;
 }
 
 .keyword-highlight-controls .form-control {
@@ -1171,6 +1271,13 @@ footer.footer.bg-light {
   margin: 0;
   color: #334150;
   line-height: 1.55;
+}
+
+.report-dialog-note {
+  margin: 0.45rem 0 0;
+  color: #6f7d8b;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .report-dialog-meta {
@@ -1349,6 +1456,15 @@ footer.footer.bg-light {
   .report-source-top {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .datatable-toolbar-start,
+  .datatable-toolbar-center,
+  .datatable-toolbar-end,
+  .datatable-footer-start,
+  .datatable-footer-end {
+    flex: 1 1 100%;
+    justify-content: flex-start;
   }
 
 }

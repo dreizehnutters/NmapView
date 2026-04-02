@@ -33,7 +33,7 @@
             </summary>
             <div class="visualization-card-body">
               <div class="visualization-actions">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="osTreemap">Export PNG</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="osTreemap">Export</button>
               </div>
               <div id="osTreemap" style="width: 1250px; max-width: 100%; height: 420px; margin: 0 auto;"/>
             </div>
@@ -50,7 +50,7 @@
             </summary>
             <div class="visualization-card-body">
               <div class="visualization-actions">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="openPortsPerHostChart">Export PNG</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="openPortsPerHostChart">Export</button>
               </div>
               <div class="visualization-scroll-x">
                 <div id="openPortsPerHostChart" style="width: 100%;"/>
@@ -69,7 +69,7 @@
             </summary>
             <div class="visualization-card-body">
               <div class="visualization-actions">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="hostServiceGraph">Export PNG</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="hostServiceGraph">Export</button>
               </div>
               <div id="hostServiceGraph" style="width: 100%;"/>
             </div>
@@ -131,7 +131,7 @@
             </summary>
             <div class="visualization-card-body">
               <div class="visualization-actions">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="portHostMatrix">Export PNG</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="portHostMatrix">Export</button>
               </div>
               <div class="visualization-scroll-x">
                 <div id="portHostMatrix" style="width: 100%;"/>
@@ -150,7 +150,7 @@
             </summary>
             <div class="visualization-card-body">
               <div class="visualization-actions">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="protocolPortMatrix">Export PNG</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="protocolPortMatrix">Export</button>
               </div>
               <div class="visualization-scroll-x">
                 <div id="protocolPortMatrix" style="width: 100%;"/>

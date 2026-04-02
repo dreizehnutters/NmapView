@@ -77,6 +77,7 @@
             </div>
             <div class="report-dialog-body">
               <p class="report-dialog-lead">NmapView turns Nmap XML into a single interactive HTML analysis report. It helps you review hosts, open services, service variants, script output, and visualizations in one portable file.</p>
+              <p class="report-dialog-note"><kbd>/</kbd> Search active table</p>
               <p class="report-dialog-meta"><a class="report-dialog-version-link" href="https://github.com/dreizehnutters/NmapView/releases" target="_blank" rel="noopener noreferrer">NmapView v3.3a</a><span class="report-dialog-meta-separator">·</span><a class="report-dialog-version-link" href="https://github.com/dreizehnutters/NmapView" target="_blank" rel="noopener noreferrer">Documentation &amp; Source</a></p>
 
               <section class="report-dialog-section" aria-labelledby="aboutDialogProjectTitle">

@@ -15,7 +15,7 @@ Andreas Hontzia (@honze_net) & LRVT (@l4rm4nd) & Fabian Kopp (@dreizehnutters)
   <xsl:template match="/">
     <html lang="en">
       <xsl:call-template name="render-head"/>
-      <body class="report-initializing">
+      <body class="report-initializing" data-report-command="{/nmaprun/@args}" data-report-start="{/nmaprun/@start}" data-report-version="{/nmaprun/@version}">
         <xsl:call-template name="render-loading-overlay"/>
         <xsl:call-template name="render-navbar"/>
         <xsl:call-template name="render-about-dialog"/>

@@ -139,6 +139,9 @@
                             <xsl:attribute name="data-order">
                               <xsl:value-of select="@portid"/>
                             </xsl:attribute>
+                            <xsl:attribute name="data-search">
+                              <xsl:value-of select="@portid"/>
+                            </xsl:attribute>
                             <xsl:call-template name="render-endpoint-link">
                               <xsl:with-param name="address" select="$ip"/>
                               <xsl:with-param name="port" select="@portid"/>
@@ -276,7 +279,7 @@
                 </summary>
                 <div class="visualization-card-body">
                   <div class="visualization-actions">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="serviceChart">Export PNG</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="serviceChart">Export</button>
                   </div>
                   <div class="service-distribution-layout">
                     <div class="service-ledger-stack">
