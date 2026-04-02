@@ -55,6 +55,23 @@ function buildScopedMatrixData() {
   };
 }
 
+function isPortHostPercentileHighlightEnabled() {
+  const toggle = document.getElementById("portHostPercentileToggle");
+  return Boolean(toggle && toggle.checked);
+}
+
+function initializePortHostMatrixControls() {
+  const toggle = document.getElementById("portHostPercentileToggle");
+  if (!toggle || toggle.dataset.initialized === "true") {
+    return;
+  }
+
+  toggle.addEventListener("change", () => {
+    renderMatrixVisualizations();
+  });
+  toggle.dataset.initialized = "true";
+}
+
 function renderPortHostMatrix(hosts, ports, openServices, matrixConfig) {
   const portHostMatrix = document.getElementById("portHostMatrix");
   if (!portHostMatrix) {
@@ -67,6 +84,7 @@ function renderPortHostMatrix(hosts, ports, openServices, matrixConfig) {
   }
 
   const fixedPercentile = 0.95;
+  const highlightPercentile = isPortHostPercentileHighlightEnabled();
   const sortedHosts = [...hosts].sort((a, b) => a.localeCompare(b, undefined, {
     numeric: true,
     sensitivity: "base"
@@ -124,8 +142,12 @@ function renderPortHostMatrix(hosts, ports, openServices, matrixConfig) {
     ...getPlotLayoutTheme()
   };
 
-  const anomalyHostThreshold = calculatePercentile(hostCountValues, fixedPercentile);
-  const anomalyPortThreshold = calculatePercentile(portCountValues, fixedPercentile);
+  const anomalyHostThreshold = highlightPercentile
+    ? calculatePercentile(hostCountValues, fixedPercentile)
+    : 0;
+  const anomalyPortThreshold = highlightPercentile
+    ? calculatePercentile(portCountValues, fixedPercentile)
+    : 0;
   const z = sortedHosts.map(host =>
     ports.map(port => {
       const serviceName = openServices[host][port];
@@ -135,7 +157,7 @@ function renderPortHostMatrix(hosts, ports, openServices, matrixConfig) {
 
       const portHostCount = portHostCounts[port] || 0;
       const hostServiceCount = hostServiceCounts[host] || 0;
-      if (portHostCount <= anomalyPortThreshold && hostServiceCount <= anomalyHostThreshold) {
+      if (highlightPercentile && portHostCount <= anomalyPortThreshold && hostServiceCount <= anomalyHostThreshold) {
         return 3;
       }
 
@@ -152,17 +174,15 @@ function renderPortHostMatrix(hosts, ports, openServices, matrixConfig) {
       openServices[host][port] || "No open service",
       openServices[host][port] ? String(hostServiceCounts[host] || 0) : "0",
       openServices[host][port] ? String(portHostCounts[port] || 0) : "0",
-      openServices[host][port] ? String(anomalyHostThreshold) : "0",
-      openServices[host][port] ? String(anomalyPortThreshold) : "0",
       openServices[host][port]
         ? (() => {
-            const portHostCount = portHostCounts[port] || 0;
-            const hostServiceCount = hostServiceCounts[host] || 0;
-            if (portHostCount <= anomalyPortThreshold && hostServiceCount <= anomalyHostThreshold) {
-              return "Port anomaly";
-            }
-            return "Common port exposure";
-          })()
+          const portHostCount = portHostCounts[port] || 0;
+          const hostServiceCount = hostServiceCounts[host] || 0;
+          if (highlightPercentile && portHostCount <= anomalyPortThreshold && hostServiceCount <= anomalyHostThreshold) {
+            return "95th percentile uncommon port";
+          }
+          return "Open service";
+        })()
         : "No open service"
     ])
   );
@@ -187,7 +207,7 @@ function renderPortHostMatrix(hosts, ports, openServices, matrixConfig) {
     xgap: 2,
     ygap: 2,
     hoverongaps: false,
-    hovertemplate: "Host: %{customdata[0]}<br>Port: %{customdata[1]}<br>Service: %{customdata[2]}<br>Open services on host: %{customdata[3]}<br>Hosts with port: %{customdata[4]}<extra></extra>",
+    hovertemplate: "Host: %{customdata[0]}<br>Port: %{customdata[1]}<br>Service: %{customdata[2]}<br>Open services on host: %{customdata[3]}<br>Hosts with port: %{customdata[4]}<br>Status: %{customdata[5]}<extra></extra>",
     text: zText
   }];
 
@@ -769,5 +789,6 @@ function renderMatrixVisualizations() {
 window.renderMatrixVisualizations = renderMatrixVisualizations;
 
 document.addEventListener("DOMContentLoaded", function() {
+  initializePortHostMatrixControls();
   renderMatrixVisualizations();
 });

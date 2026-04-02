@@ -221,6 +221,17 @@
   margin-bottom: 0.55rem;
 }
 
+.visualization-actions-split {
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.visualization-actions-split .form-check {
+  margin-right: auto;
+}
+
 .visualization-empty {
   margin-top: 1rem;
 }

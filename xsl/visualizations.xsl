@@ -126,11 +126,15 @@
             <summary class="visualization-card-summary">
               <div class="visualization-card-header">
                 <h4 class="visualization-card-title">Host-Port Matrix</h4>
-                <p class="visualization-card-note">See which ports appear on which hosts and spot unusual exposure patterns. The 95th percentile of uncommon ports from the scan data is highlighted.</p>
+                <p class="visualization-card-note">See which ports appear on which hosts and spot unusual exposure patterns.</p>
               </div>
             </summary>
             <div class="visualization-card-body">
-              <div class="visualization-actions">
+              <div class="visualization-actions visualization-actions-split">
+                <div class="form-check form-switch mb-0">
+                  <input type="checkbox" class="form-check-input" id="portHostPercentileToggle"/>
+                  <label class="form-check-label small" for="portHostPercentileToggle">Mark 95th percentile uncommon ports</label>
+                </div>
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="portHostMatrix">Export</button>
               </div>
               <div class="visualization-scroll-x">
