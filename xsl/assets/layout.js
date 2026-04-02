@@ -1586,7 +1586,7 @@ function initializeDataTable(selector) {
   };
   const exportName = exportNames[selector] || "nmapview-table-export";
   const defaultOrders = {
-    "#table-services": [[4, "asc"], [2, "asc"]],
+    "#table-services": [[2, "asc"], [1, "asc"]],
     "#service-inventory": [[0, "desc"]]
   };
   const buttons = [];
@@ -1767,6 +1767,7 @@ function initializeDataTable(selector) {
         columnDefs.push({ targets: [hostDetailsColumnIndex], type: 'num' });
       }
     }
+
   }
 
   const table = $(selector).DataTable({

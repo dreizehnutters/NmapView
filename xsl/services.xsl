@@ -136,6 +136,9 @@
                             </xsl:call-template>
                           </td>
                           <td>
+                            <xsl:attribute name="data-order">
+                              <xsl:value-of select="@portid"/>
+                            </xsl:attribute>
                             <xsl:call-template name="render-endpoint-link">
                               <xsl:with-param name="address" select="$ip"/>
                               <xsl:with-param name="port" select="@portid"/>
