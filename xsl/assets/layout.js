@@ -1768,13 +1768,26 @@ function syncHostScopeCheckboxesAndRows() {
   getHostOverviewTableRows().forEach(row => {
     const address = normalizeHostAddress(row.dataset.address);
     const checkbox = row.querySelector(".host-scope-checkbox");
+    const scopeCell = checkbox ? checkbox.closest(".host-scope-cell") : null;
     const isSelected = !address || state.pendingSelectedHosts.has(address);
 
     row.classList.toggle("host-scope-excluded", Boolean(address) && !isSelected);
     if (checkbox) {
       checkbox.checked = isSelected;
     }
+    if (scopeCell) {
+      scopeCell.dataset.order = isSelected ? "1" : "0";
+      scopeCell.dataset.search = isSelected ? "Included" : "Excluded";
+    }
   });
+
+  const overviewTable = document.getElementById("table-overview");
+  if (overviewTable && window.jQuery && $.fn.dataTable && $.fn.dataTable.isDataTable(overviewTable)) {
+    const tableApi = $(overviewTable).DataTable();
+    if (tableApi) {
+      tableApi.rows().invalidate("dom").draw(false);
+    }
+  }
 
   syncHostScopeSummary();
   syncHostScopeApplyButton();
@@ -2883,7 +2896,7 @@ function initializeDataTable(selector) {
       const scopeColumnIndex = Array.from(tableElement.querySelectorAll("thead th"))
         .findIndex(header => header.classList.contains("host-scope-column"));
       if (scopeColumnIndex !== -1) {
-        columnDefs.push({ targets: [scopeColumnIndex], orderable: false, searchable: false });
+        columnDefs.push({ targets: [scopeColumnIndex], type: "num", searchable: false });
       }
     }
 

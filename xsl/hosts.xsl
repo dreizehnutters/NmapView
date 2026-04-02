@@ -245,7 +245,7 @@
                             </xsl:otherwise>
                           </xsl:choose>
                         </td>
-                        <td class="host-scope-cell not-export">
+                        <td class="host-scope-cell not-export" data-order="1" data-search="Included">
                           <input type="checkbox" class="form-check-input host-scope-checkbox" data-address="{$ip}" checked="checked" aria-label="Include {$ip} in recalculation"/>
                         </td>
                       </tr>
@@ -354,7 +354,7 @@
                         <td class="host-uniqueness-cell" data-order="-1" data-search="N/A">
                           <span class="text-muted">N/A</span>
                         </td>
-                        <td class="host-scope-cell not-export">
+                        <td class="host-scope-cell not-export" data-order="1" data-search="Included">
                           <input type="checkbox" class="form-check-input host-scope-checkbox" data-address="{$scan-target}" checked="checked" aria-label="Include {$scan-target} in recalculation"/>
                         </td>
                       </tr>
