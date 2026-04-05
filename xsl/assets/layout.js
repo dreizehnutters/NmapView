@@ -425,6 +425,182 @@ function formatVulnersChunks() {
   });
 }
 
+function initializeOpenServiceDetails() {
+  document.querySelectorAll("#table-services tbody tr").forEach(row => {
+    const detailsCell = row.querySelector(".open-service-details-cell");
+    const source = row.querySelector(".open-service-detail-source");
+    if (!detailsCell) {
+      return;
+    }
+
+    detailsCell.textContent = "";
+    if (!source) {
+      detailsCell.dataset.order = "0";
+      detailsCell.dataset.search = "";
+      return;
+    }
+
+    const address = (source.getAttribute("data-address") || row.dataset.address || "").trim();
+    const port = (source.getAttribute("data-port") || row.dataset.portid || "").trim();
+    const protocol = (source.getAttribute("data-protocol") || row.dataset.protocol || "").trim();
+    const fallbackPortLabel = port && protocol ? `${port}/${protocol}` : "";
+    const httpRecord = {
+      title: (source.getAttribute("data-http-title") || "").trim(),
+      location: (source.getAttribute("data-http-location") || "").trim(),
+      server: (source.getAttribute("data-http-server") || "").trim(),
+      stack: (source.getAttribute("data-http-stack") || "").trim(),
+      poweredBy: (source.getAttribute("data-http-powered-by") || "").trim()
+    };
+    const hasHttpDetails = Object.values(httpRecord).some(Boolean);
+    const vulnersEntries = parseVulnersEntries(source.getAttribute("data-vulners") || "");
+    const scriptRecords = Array.from(source.querySelectorAll(".open-service-script"))
+      .map(scriptEntry => {
+        const scriptPort = (scriptEntry.getAttribute("data-port") || "").trim();
+        const scriptProtocol = (scriptEntry.getAttribute("data-protocol") || "").trim();
+        return {
+          id: (scriptEntry.getAttribute("data-id") || "").trim(),
+          output: (scriptEntry.textContent || "").trim(),
+          portLabel: scriptPort && scriptProtocol ? `${scriptPort}/${scriptProtocol}` : fallbackPortLabel,
+          validFrom: (scriptEntry.getAttribute("data-valid-from") || "").trim(),
+          validTo: (scriptEntry.getAttribute("data-valid-to") || "").trim(),
+          selfSigned: (scriptEntry.getAttribute("data-self-signed") || "").trim() === "true"
+        };
+      })
+      .filter(scriptRecord => scriptRecord.id && scriptRecord.output)
+      .filter(scriptRecord => scriptRecord.id !== "vulners" && !shouldSuppressRawHttpScript(scriptRecord.id, hasHttpDetails))
+      .sort(compareInventoryScriptRecords);
+
+    if (!hasHttpDetails && vulnersEntries.length === 0 && scriptRecords.length === 0) {
+      detailsCell.dataset.order = "0";
+      detailsCell.dataset.search = "";
+      return;
+    }
+
+    const detailsGroup = document.createElement("details");
+    const detailsSummary = document.createElement("summary");
+    const detailsBody = document.createElement("div");
+    const hiddenScriptCount = scriptRecords.length;
+    const hiddenDetailCount = (hasHttpDetails ? 1 : 0) + (vulnersEntries.length > 0 ? 1 : 0) + hiddenScriptCount;
+    const searchTerms = [];
+
+    detailsGroup.className = "service-inventory-script-group-details";
+    detailsSummary.className = "service-inventory-script-group-summary";
+    detailsBody.className = "service-inventory-script-group-body";
+    detailsSummary.textContent = hiddenScriptCount > 0
+      ? `Show Details (${hiddenScriptCount} script${hiddenScriptCount === 1 ? "" : "s"})`
+      : `Show Details (${hiddenDetailCount})`;
+
+    if (hasHttpDetails) {
+      const httpBlock = document.createElement("div");
+      httpBlock.className = "http-details-block service-inventory-http-block";
+
+      if (fallbackPortLabel) {
+        const httpPortLabel = document.createElement("div");
+        httpPortLabel.className = "service-inventory-http-port-label";
+        httpPortLabel.textContent = `HTTP (${fallbackPortLabel})`;
+        httpBlock.appendChild(httpPortLabel);
+      }
+
+      appendServiceInventoryDetailRow(httpBlock, "Title", httpRecord.title);
+      appendServiceInventoryDetailRow(httpBlock, "Server", httpRecord.server);
+      appendServiceInventoryDetailRow(httpBlock, "Location", httpRecord.location);
+      appendServiceInventoryDetailRow(httpBlock, "Stack", httpRecord.stack);
+      appendServiceInventoryDetailRow(httpBlock, "Powered-By", httpRecord.poweredBy);
+      detailsBody.appendChild(httpBlock);
+      searchTerms.push(httpRecord.title, httpRecord.server, httpRecord.location, httpRecord.stack, httpRecord.poweredBy);
+    }
+
+    if (vulnersEntries.length > 0) {
+      const vulnersContainer = document.createElement("div");
+      const vulnersSummary = document.createElement("div");
+      const vulnersList = document.createElement("div");
+      const topFinding = vulnersEntries[0];
+
+      vulnersContainer.className = "service-inventory-vulners";
+      vulnersSummary.className = "service-inventory-vulners-summary";
+      vulnersList.className = "service-inventory-vulners-list";
+      vulnersSummary.textContent = topFinding
+        ? `Vulners: ${vulnersEntries.length} finding${vulnersEntries.length === 1 ? "" : "s"}, top CVSS ${topFinding.scoreText}`
+        : `Vulners: ${vulnersEntries.length} finding${vulnersEntries.length === 1 ? "" : "s"}`;
+
+      vulnersEntries.slice(0, 3).forEach(entry => {
+        const item = document.createElement("div");
+        const score = document.createElement("strong");
+        const link = document.createElement("a");
+
+        item.className = "service-inventory-vulners-item";
+        score.textContent = `CVSS ${entry.scoreText}`;
+        link.href = entry.href;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = fallbackPortLabel ? `${entry.id} (${fallbackPortLabel})` : entry.id;
+        item.appendChild(score);
+        item.appendChild(link);
+        vulnersList.appendChild(item);
+      });
+
+      if (vulnersEntries.length > 3) {
+        const more = document.createElement("div");
+        more.className = "service-inventory-vulners-more";
+        more.textContent = `Showing a compact subset of ${vulnersEntries.length} findings`;
+        vulnersList.appendChild(more);
+      }
+
+      vulnersContainer.appendChild(vulnersSummary);
+      vulnersContainer.appendChild(vulnersList);
+      detailsBody.appendChild(vulnersContainer);
+      searchTerms.push(...vulnersEntries.map(entry => entry.id), ...vulnersEntries.map(entry => entry.scoreText));
+    }
+
+    if (scriptRecords.length > 0) {
+      const scriptList = document.createElement("div");
+      scriptList.className = "service-inventory-script-list service-inventory-script-group-body";
+
+      scriptRecords.forEach(scriptRecord => {
+        const scriptItem = document.createElement("details");
+        const scriptLabel = document.createElement("summary");
+        const scriptOutput = document.createElement("pre");
+
+        scriptItem.className = "service-inventory-script-item-details";
+        scriptLabel.className = "service-inventory-script-item-summary";
+        scriptOutput.className = "service-inventory-script-output";
+        scriptLabel.textContent = scriptRecord.portLabel
+          ? `${scriptRecord.id} (${address} | ${scriptRecord.portLabel})`
+          : `${scriptRecord.id} (${address})`;
+        if (scriptRecord.id === "ssl-cert" && scriptRecord.validTo) {
+          const expiryBadge = buildCertificateExpiryBadge(scriptRecord.validFrom, scriptRecord.validTo);
+          if (expiryBadge) {
+            scriptLabel.appendChild(expiryBadge);
+          }
+        }
+        if (scriptRecord.id === "ssl-cert" && scriptRecord.selfSigned) {
+          const selfSignedBadge = document.createElement("span");
+          selfSignedBadge.className = "certificate-expiry-badge is-self-signed";
+          selfSignedBadge.textContent = "Self-signed";
+          selfSignedBadge.title = "Certificate subject and issuer match";
+          scriptLabel.appendChild(selfSignedBadge);
+        }
+        scriptOutput.textContent = formatServiceInventoryScriptOutput(scriptRecord);
+        scriptItem.appendChild(scriptLabel);
+        scriptItem.appendChild(scriptOutput);
+        scriptList.appendChild(scriptItem);
+        searchTerms.push(scriptRecord.id, scriptRecord.output);
+      });
+
+      detailsBody.appendChild(scriptList);
+    }
+
+    detailsGroup.appendChild(detailsSummary);
+    detailsGroup.appendChild(detailsBody);
+    detailsCell.appendChild(detailsGroup);
+    detailsCell.dataset.order = String(hiddenDetailCount);
+    detailsCell.dataset.search = searchTerms
+      .map(normalizeServiceInventorySearchValue)
+      .filter(Boolean)
+      .join(" ");
+  });
+}
+
 function buildServiceInventoryVariantLabel(product, version) {
   const normalizedProduct = (product || "").trim();
   const normalizedVersion = (version || "").trim();

@@ -7,7 +7,7 @@
 	              initializeKeywordHighlighter();
 	              initializeCpeCopy();
                 initializeCertificateExpiryAlerts();
-                formatVulnersChunks();
+                initializeOpenServiceDetails();
                 buildServiceInventoryTable();
                 initializeServiceInventoryToggle();
                 initializeServiceInventoryNestedTables();

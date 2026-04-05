@@ -21,7 +21,7 @@
                       <th scope="col">Version</th>
                       <th scope="col">Extra Info</th>
                       <th scope="col">CPE</th>
-                      <th scope="col">Exploits</th>
+                      <th scope="col">Details</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -122,19 +122,18 @@
                             <xsl:with-param name="value" select="$http-stack-source"/>
                           </xsl:call-template>
                         </xsl:variable>
+                        <xsl:variable name="raw-vulners-output" select=".//script[@id='vulners']/@output"/>
                         <xsl:variable name="has-http-summary"
                           select="starts-with(service/@name, 'http') or script[@id='ssl-cert'] or string($http-title) != '' or string($http-location) != '' or string($http-server) != '' or string($http-powered-by-stack) != '' or string($http-powered-by-evidence) != ''"/>
+                        <xsl:variable name="has-script-details"
+                          select="count(script[string(@output) != '' and not(contains(@output, 'ERROR: '))]) &gt; 0"/>
                         <tr data-address="{$ip}" data-portid="{$port-id}" data-protocol="{$port-protocol}" data-service="{service/@name}">
                           <td>
                             <xsl:call-template name="render-hostname-or-na">
                               <xsl:with-param name="hostname" select="$hostname"/>
                             </xsl:call-template>
                           </td>
-                          <td>
-                            <xsl:call-template name="render-onlinehosts-link">
-                              <xsl:with-param name="address" select="$ip"/>
-                            </xsl:call-template>
-                          </td>
+                          <td><xsl:call-template name="render-onlinehosts-link"><xsl:with-param name="address" select="$ip"/></xsl:call-template></td>
                           <td>
                             <xsl:attribute name="data-order">
                               <xsl:value-of select="@portid"/>
@@ -170,43 +169,53 @@
                             <xsl:value-of select="service/@version"/>
                           </td>
                           <td>
-                            <xsl:if test="string(service/@extrainfo) != ''">
-                              <div>
-                                <xsl:value-of select="service/@extrainfo"/>
-                              </div>
-                            </xsl:if>
-                            <xsl:if test="$has-http-summary">
-                              <div class="http-details-block service-extra-http">
-                                <xsl:call-template name="render-http-row">
-                                  <xsl:with-param name="label" select="'Title'"/>
-                                  <xsl:with-param name="value" select="$http-title"/>
-                                </xsl:call-template>
-                                <xsl:call-template name="render-http-row">
-                                  <xsl:with-param name="label" select="'Location'"/>
-                                  <xsl:with-param name="value" select="$http-location"/>
-                                </xsl:call-template>
-                                <xsl:call-template name="render-http-row">
-                                  <xsl:with-param name="label" select="'Server'"/>
-                                  <xsl:with-param name="value" select="$http-server"/>
-                                </xsl:call-template>
-                                <xsl:call-template name="render-http-row">
-                                  <xsl:with-param name="label" select="'Stack'"/>
-                                  <xsl:with-param name="value" select="$http-powered-by-stack"/>
-                                </xsl:call-template>
-                                <xsl:call-template name="render-http-row">
-                                  <xsl:with-param name="label" select="'Powered-By'"/>
-                                  <xsl:with-param name="value" select="$http-powered-by-evidence"/>
-                                </xsl:call-template>
-                              </div>
-                            </xsl:if>
+                            <xsl:value-of select="service/@extrainfo"/>
                           </td>
                           <td>
                             <xsl:call-template name="render-cpe-text">
                               <xsl:with-param name="cpe" select="service/cpe"/>
                             </xsl:call-template>
                           </td>
-                          <td>
-                            <div class="vulners-chunks" data-raw="{.//script[@id='vulners']/@output}"/>
+                          <td class="open-service-details-cell">
+                            <xsl:if test="$has-http-summary or string($raw-vulners-output) != '' or $has-script-details">
+                              <div class="open-service-detail-source d-none"
+                                   data-address="{$ip}"
+                                   data-port="{$port-id}"
+                                   data-protocol="{$port-protocol}"
+                                   data-http-title="{$http-title}"
+                                   data-http-location="{$http-location}"
+                                   data-http-server="{$http-server}"
+                                   data-http-stack="{$http-powered-by-stack}"
+                                   data-http-powered-by="{$http-powered-by-evidence}"
+                                   data-vulners="{$raw-vulners-output}">
+                                <xsl:for-each select="script[string(@output) != '' and not(contains(@output, 'ERROR: '))]">
+                                  <span class="open-service-script">
+                                    <xsl:attribute name="data-id">
+                                      <xsl:value-of select="@id"/>
+                                    </xsl:attribute>
+                                    <xsl:attribute name="data-port">
+                                      <xsl:value-of select="../@portid"/>
+                                    </xsl:attribute>
+                                    <xsl:attribute name="data-protocol">
+                                      <xsl:value-of select="../@protocol"/>
+                                    </xsl:attribute>
+                                    <xsl:attribute name="data-valid-from">
+                                      <xsl:value-of select="table[@key='validity']/elem[@key='notBefore']"/>
+                                    </xsl:attribute>
+                                    <xsl:attribute name="data-valid-to">
+                                      <xsl:value-of select="table[@key='validity']/elem[@key='notAfter']"/>
+                                    </xsl:attribute>
+                                    <xsl:attribute name="data-self-signed">
+                                      <xsl:choose>
+                                        <xsl:when test="@id = 'ssl-cert' and normalize-space(concat(table[@key='subject']/elem[@key='commonName'], '|', table[@key='subject']/elem[@key='organizationName'])) != '' and normalize-space(concat(table[@key='subject']/elem[@key='commonName'], '|', table[@key='subject']/elem[@key='organizationName'])) = normalize-space(concat(table[@key='issuer']/elem[@key='commonName'], '|', table[@key='issuer']/elem[@key='organizationName']))">true</xsl:when>
+                                        <xsl:otherwise>false</xsl:otherwise>
+                                      </xsl:choose>
+                                    </xsl:attribute>
+                                    <xsl:value-of select="@output"/>
+                                  </span>
+                                </xsl:for-each>
+                              </div>
+                            </xsl:if>
                           </td>
                         </tr>
                       </xsl:for-each>

@@ -95,23 +95,7 @@
                             </xsl:otherwise>
                           </xsl:choose>
                         </td>
-                        <td>
-                          <xsl:attribute name="data-order">
-                            <xsl:call-template name="render-address-sort-key">
-                              <xsl:with-param name="address" select="$ip"/>
-                            </xsl:call-template>
-                          </xsl:attribute>
-                          <xsl:choose>
-                            <xsl:when test="$is-up">
-                              <xsl:call-template name="render-onlinehosts-link">
-                                <xsl:with-param name="address" select="$ip"/>
-                              </xsl:call-template>
-                            </xsl:when>
-                            <xsl:otherwise>
-                              <xsl:value-of select="$ip"/>
-                            </xsl:otherwise>
-                          </xsl:choose>
-                        </td>
+                        <td><xsl:attribute name="data-order"><xsl:call-template name="render-address-sort-key"><xsl:with-param name="address" select="$ip"/></xsl:call-template></xsl:attribute><xsl:choose><xsl:when test="$is-up"><xsl:call-template name="render-onlinehosts-link"><xsl:with-param name="address" select="$ip"/></xsl:call-template></xsl:when><xsl:otherwise><xsl:value-of select="$ip"/></xsl:otherwise></xsl:choose></td>
 	                        <td>
 	                          <xsl:choose>
 	                            <xsl:when test="string(normalize-space($hostname)) != ''">

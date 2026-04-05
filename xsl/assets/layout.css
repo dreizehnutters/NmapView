@@ -165,6 +165,12 @@ a {
   --service-inventory-nested-bg-soft: var(--service-inventory-row-bg-soft);
 }
 
+#table-services thead th:last-child,
+#table-services tbody td.open-service-details-cell,
+#table-services tbody td.open-service-details-cell * {
+  text-align: left;
+}
+
 .service-inventory-service-details {
   border: 1px solid var(--report-border);
   border-radius: 0.55rem;
