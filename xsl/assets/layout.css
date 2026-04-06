@@ -171,6 +171,18 @@ a {
   text-align: left;
 }
 
+#table-services thead th:last-child,
+#table-services tbody td.open-service-details-cell {
+  width: 16rem;
+  max-width: 16rem;
+}
+
+#table-services tbody td.open-service-details-cell {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 .service-inventory-service-details {
   border: 1px solid var(--report-border);
   border-radius: 0.55rem;
@@ -1267,8 +1279,8 @@ footer.footer.bg-light {
 }
 
 .report-dialog {
-  width: min(100% - 2rem, 48rem);
-  max-width: 48rem;
+  width: min(100% - 2rem, 53rem);
+  max-width: 53rem;
   border: 1px solid var(--report-border);
   border-radius: 0.95rem;
   padding: 0;
@@ -1329,7 +1341,7 @@ footer.footer.bg-light {
 }
 
 .report-dialog-note-kbd {
-  font-size: 0.72rem;
+  font-size: inherit;
   padding: 0.08rem 0.28rem;
 }
 
