@@ -56,6 +56,7 @@ Open the generated HTML file in your browser.
 ## Report Sections
 
 - **Host Overview**: Triage hosts by IP, hostname, vendor, OS guess, open TCP/UDP port counts or service rarity.
+- **Host Scope**: Keep or exclude visible hosts and recalculate downstream tables, exports, and plots against only that selected subset.
 - **Open Services**: Review exposed services across hosts with versions, extra info, clickable CPEs, and Vulners-linked context.
 - **Service Summary**: Group service and NSE output by service, port, product, and version so repeated software, web stacks, and unusual variants stand out across hosts.
 - **Host Details**: Drill into each host scanned ports and corresponding complete script output
