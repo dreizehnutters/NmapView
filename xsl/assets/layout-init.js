@@ -10,12 +10,15 @@
                 initializeOpenServiceDetails();
                 buildServiceInventoryTable();
                 initializeServiceInventoryToggle();
-                initializeServiceInventoryNestedTables();
-	              initializeHostScopeControls();
+                initializeHostScopeControls();
 	              initializeHostToggle();
+                recalculateOpenServiceMetrics();
 	              initializeDataTable('#table-services');
 	              initializeDataTable('#table-overview');
+                const detachedServiceInventoryNestedTables = detachServiceInventoryNestedTables();
 	              initializeDataTable('#service-inventory');
+                restoreServiceInventoryNestedTables(detachedServiceInventoryNestedTables);
+                initializeServiceInventoryNestedTables();
                 initializeSlashSearchShortcut();
                 initializeHostUniquenessScores();
                 initializeDensityToggle();

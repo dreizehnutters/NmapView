@@ -805,6 +805,7 @@ let serviceInventoryExportRows = [];
 const serviceInventoryExportColumns = [
   "Service",
   "Bucket",
+  "Host Count",
   "Host",
   "Port(s)",
   "HTTP Title",
@@ -942,6 +943,78 @@ function buildServiceVariantAnchorId(serviceName, variantLabel) {
   return `servicevariant-${sanitizeServiceInventoryFilename(serviceName)}-${sanitizeServiceInventoryFilename(variantLabel)}`;
 }
 
+function detachServiceInventoryNestedTables() {
+  return Array.from(document.querySelectorAll(".service-inventory-host-table")).map(table => {
+    const parent = table.parentNode;
+    const nextSibling = table.nextSibling;
+    if (parent) {
+      parent.removeChild(table);
+    }
+    return { table, parent, nextSibling };
+  });
+}
+
+function restoreServiceInventoryNestedTables(detachedTables) {
+  (Array.isArray(detachedTables) ? detachedTables : []).forEach(entry => {
+    if (!entry || !entry.parent || !entry.table) {
+      return;
+    }
+
+    if (entry.nextSibling && entry.nextSibling.parentNode === entry.parent) {
+      entry.parent.insertBefore(entry.table, entry.nextSibling);
+    } else {
+      entry.parent.appendChild(entry.table);
+    }
+  });
+}
+
+function refreshServiceInventoryNestedTableGrouping(tableElement) {
+  if (!tableElement) {
+    return;
+  }
+
+  const headers = Array.from(tableElement.querySelectorAll("thead th")).map(header => (header.textContent || "").trim());
+  const hostCountColumnIndex = headers.indexOf("Host Count");
+  const rows = Array.from(tableElement.querySelectorAll("tbody tr"));
+  let previousProductGroup = "";
+  let previousVariantLabel = "";
+
+  rows.forEach((row, rowIndex) => {
+    row.classList.remove("service-inventory-product-separator", "service-inventory-variant-separator");
+
+    const productGroup = (row.dataset.productGroup || "").trim();
+    const variantLabel = (row.dataset.variantLabel || "").trim();
+    const hostCountDisplay = (row.dataset.variantHostCountDisplay || "").trim();
+    const cells = row.querySelectorAll("td");
+
+    if (hostCountColumnIndex !== -1 && cells.length > hostCountColumnIndex) {
+      cells[hostCountColumnIndex].textContent = "";
+    }
+
+    if (rowIndex === 0) {
+      if (hostCountColumnIndex !== -1 && cells.length > hostCountColumnIndex) {
+        cells[hostCountColumnIndex].textContent = hostCountDisplay;
+      }
+      previousProductGroup = productGroup;
+      previousVariantLabel = variantLabel;
+      return;
+    }
+
+    if (productGroup !== previousProductGroup) {
+      row.classList.add("service-inventory-product-separator");
+    } else if (variantLabel !== previousVariantLabel) {
+      row.classList.add("service-inventory-variant-separator");
+    }
+
+    if (variantLabel !== previousVariantLabel && hostCountColumnIndex !== -1 && cells.length > hostCountColumnIndex) {
+      cells[hostCountColumnIndex].textContent = hostCountDisplay;
+    }
+
+    previousProductGroup = productGroup;
+    previousVariantLabel = variantLabel;
+  });
+}
+
 function initializeServiceInventoryNestedTable(tableElement) {
   if (!tableElement || !(window.jQuery && $.fn.dataTable)) {
     return;
@@ -954,6 +1027,7 @@ function initializeServiceInventoryNestedTable(tableElement) {
       existingWrapper.classList.add("service-inventory-host-table-wrapper");
     }
     existing.columns.adjust();
+    refreshServiceInventoryNestedTableGrouping(tableElement);
     return existing;
   }
 
@@ -963,7 +1037,7 @@ function initializeServiceInventoryNestedTable(tableElement) {
     searching: true,
     info: true,
     ordering: true,
-    order: [[0, 'asc'], [1, 'asc']],
+    order: [[0, 'asc'], [2, 'asc']],
     stateSave: false,
     autoWidth: false,
     dom: '<"d-flex justify-content-between align-items-center mb-2"fB>rti',
@@ -1099,10 +1173,14 @@ function initializeServiceInventoryNestedTable(tableElement) {
       }
     ]
   });
+  api.on("draw.dt", function () {
+    refreshServiceInventoryNestedTableGrouping(tableElement);
+  });
   const wrapper = api.table().container();
   if (wrapper) {
     wrapper.classList.add("service-inventory-host-table-wrapper");
   }
+  refreshServiceInventoryNestedTableGrouping(tableElement);
   return api;
 }
 
@@ -1289,6 +1367,7 @@ function buildServiceInventoryTable() {
     const hostTableHead = document.createElement("thead");
     const hostTableHeadRow = document.createElement("tr");
     const hostTableBucketHeader = document.createElement("th");
+    const hostTableHostCountHeader = document.createElement("th");
     const hostTableHostHeader = document.createElement("th");
     const hostTablePortsHeader = document.createElement("th");
     const hostTableServiceHeader = document.createElement("th");
@@ -1311,6 +1390,7 @@ function buildServiceInventoryTable() {
     hostTable.id = `serviceInventoryNestedTable${nestedTableIndex += 1}`;
     hostTable.setAttribute("data-export-name", `nmapview-service-${sanitizeServiceInventoryFilename(serviceRecord.name)}`);
     hostTableBucketHeader.className = "service-inventory-host-bucket-column";
+    hostTableHostCountHeader.className = "service-inventory-host-count-column";
     hostTableHostHeader.className = "service-inventory-host-column";
     hostTablePortsHeader.className = "service-inventory-host-ports-column";
     hostTableServiceHeader.className = "service-inventory-host-service-column";
@@ -1325,17 +1405,17 @@ function buildServiceInventoryTable() {
     serviceLine.appendChild(serviceMeta);
     serviceSummary.appendChild(serviceLine);
     hostTableBucketHeader.textContent = "Product";
+    hostTableHostCountHeader.innerHTML = '<span title="Unique in-scope hosts in this product/version variant.">Host Count</span>';
     hostTableHostHeader.textContent = "Host";
     hostTablePortsHeader.textContent = "Port(s)";
     hostTableServiceHeader.textContent = "Details";
     hostTableHeadRow.appendChild(hostTableBucketHeader);
+    hostTableHeadRow.appendChild(hostTableHostCountHeader);
     hostTableHeadRow.appendChild(hostTableHostHeader);
     hostTableHeadRow.appendChild(hostTablePortsHeader);
     hostTableHeadRow.appendChild(hostTableServiceHeader);
     hostTableHead.appendChild(hostTableHeadRow);
 
-    let previousProductGroup = "";
-    let previousVariantLabel = "";
     const serviceScopedExportRows = [];
 
     variants.forEach(variantRecord => {
@@ -1343,6 +1423,7 @@ function buildServiceInventoryTable() {
       searchTerms.add(normalizeServiceInventorySearchValue(variantRecord.productGroup));
       const variantAnchorId = buildServiceVariantAnchorId(serviceRecord.name, variantRecord.label);
       let variantAnchorAssigned = false;
+      const variantHostCount = variantRecord.hosts.size;
       const hosts = Array.from(variantRecord.hosts.values()).sort((left, right) => {
         const leftLabel = buildServiceInventoryHostLabel(left.hostname, left.address);
         const rightLabel = buildServiceInventoryHostLabel(right.hostname, right.address);
@@ -1352,6 +1433,7 @@ function buildServiceInventoryTable() {
       hosts.forEach(hostRecord => {
         const row = document.createElement("tr");
         const bucketCell = document.createElement("td");
+        const hostCountCell = document.createElement("td");
         const bucketLabel = document.createElement("a");
         const hostCell = document.createElement("td");
         const portsCell = document.createElement("td");
@@ -1390,6 +1472,9 @@ function buildServiceInventoryTable() {
 
         row.setAttribute("data-address", hostRecord.address);
         row.setAttribute("data-ports", portLabels.join(","));
+        row.dataset.productGroup = variantRecord.productGroup;
+        row.dataset.variantLabel = variantRecord.label;
+        row.dataset.variantHostCountDisplay = String(variantHostCount);
         hostSearchTerms
           .map(normalizeServiceInventorySearchValue)
           .filter(Boolean)
@@ -1398,21 +1483,20 @@ function buildServiceInventoryTable() {
         link.className = "service-inventory-host-link";
         link.href = `#onlinehosts-${hostRecord.address.replace(/[.:]/g, "-")}`;
         link.textContent = hostDisplayLabel;
+        const isFirstRowForVariant = !variantAnchorAssigned;
         if (!variantAnchorAssigned) {
           row.id = variantAnchorId;
           variantAnchorAssigned = true;
         }
-        if (variantRecord.productGroup !== previousProductGroup) {
-          row.classList.add("service-inventory-product-separator");
-          previousProductGroup = variantRecord.productGroup;
-        } else if (variantRecord.label !== previousVariantLabel) {
-          row.classList.add("service-inventory-variant-separator");
-        }
-        previousVariantLabel = variantRecord.label;
         bucketLabel.className = "service-inventory-bucket-label";
         bucketLabel.href = `#${variantAnchorId}`;
         bucketLabel.textContent = variantRecord.label;
         bucketCell.appendChild(bucketLabel);
+        hostCountCell.dataset.order = String(variantHostCount);
+        hostCountCell.dataset.search = String(variantHostCount);
+        if (isFirstRowForVariant) {
+          hostCountCell.textContent = String(variantHostCount);
+        }
         hostCell.appendChild(link);
         if (portLabels.length > 0) {
           portLabels.forEach((portLabel, index) => {
@@ -1592,6 +1676,7 @@ function buildServiceInventoryTable() {
         const exportRow = {
           "Service": serviceRecord.name,
           "Bucket": variantRecord.label,
+          "Host Count": String(variantHostCount),
           "Host": hostDisplayLabel,
           "Port(s)": formatInventoryPortList(hostRecord.ports),
           "HTTP Title": primaryHttpRecord.title || "",
@@ -1605,6 +1690,7 @@ function buildServiceInventoryTable() {
         serviceInventoryExportRows.push(exportRow);
         serviceScopedExportRows.push(exportRow);
         row.appendChild(bucketCell);
+        row.appendChild(hostCountCell);
         row.appendChild(hostCell);
         row.appendChild(portsCell);
         row.appendChild(serviceCell);
@@ -1989,7 +2075,7 @@ function registerHostScopeDataTableFilter() {
   state.dataTableFilterRegistered = true;
 }
 
-function recalculateOpenServiceHostCounts() {
+function recalculateOpenServiceMetrics() {
   const table = document.getElementById("table-services");
   if (!table) {
     return;
@@ -1997,7 +2083,8 @@ function recalculateOpenServiceHostCounts() {
 
   const headers = Array.from(table.querySelectorAll("thead th")).map(header => (header.textContent || "").trim());
   const countColumnIndex = headers.indexOf("Count");
-  if (countColumnIndex === -1) {
+  const serviceColumnIndex = headers.indexOf("Service");
+  if (countColumnIndex === -1 || serviceColumnIndex === -1) {
     return;
   }
 
@@ -2009,17 +2096,24 @@ function recalculateOpenServiceHostCounts() {
       return;
     }
 
-    const key = `${row.dataset.portid || ""}|${row.dataset.protocol || ""}`;
+    const cells = row.querySelectorAll("td");
+    if (cells.length <= serviceColumnIndex) {
+      return;
+    }
+
+    const serviceText = (cells[serviceColumnIndex].textContent || "").trim().toLowerCase();
+    const key = `${serviceText}|${row.dataset.portid || ""}|${row.dataset.protocol || ""}`;
     selectedCounts.set(key, (selectedCounts.get(key) || 0) + 1);
   });
 
   rows.forEach(row => {
     const cells = row.querySelectorAll("td");
-    if (cells.length <= countColumnIndex) {
+    if (cells.length <= countColumnIndex || cells.length <= serviceColumnIndex) {
       return;
     }
 
-    const key = `${row.dataset.portid || ""}|${row.dataset.protocol || ""}`;
+    const serviceText = (cells[serviceColumnIndex].textContent || "").trim().toLowerCase();
+    const key = `${serviceText}|${row.dataset.portid || ""}|${row.dataset.protocol || ""}`;
     const count = selectedCounts.get(key) || 0;
     cells[countColumnIndex].dataset.order = String(count);
     cells[countColumnIndex].textContent = String(count);
@@ -2032,7 +2126,7 @@ function refreshOpenServicesForHostScope() {
     return;
   }
 
-  recalculateOpenServiceHostCounts();
+  recalculateOpenServiceMetrics();
 
   if (window.jQuery && $.fn.dataTable && $.fn.dataTable.isDataTable(tableElement)) {
     const tableApi = $(tableElement).DataTable();
@@ -2078,9 +2172,11 @@ function refreshServiceInventoryForHostScope() {
 
   buildServiceInventoryTable();
   initializeServiceInventoryToggle();
-  initializeServiceInventoryNestedTables();
 
+  const detachedNestedTables = detachServiceInventoryNestedTables();
   const tableApi = initializeDataTable("#service-inventory");
+  restoreServiceInventoryNestedTables(detachedNestedTables);
+  initializeServiceInventoryNestedTables();
   if (tableApi) {
     if (searchValue) {
       tableApi.search(searchValue);

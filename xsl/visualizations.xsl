@@ -71,7 +71,9 @@
               <div class="visualization-actions">
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-plot-export="hostServiceGraph">Export</button>
               </div>
-              <div id="hostServiceGraph" style="width: 100%;"/>
+              <div class="visualization-scroll-x">
+                <div id="hostServiceGraph" style="width: 100%;"/>
+              </div>
             </div>
           </details>
   </xsl:template>

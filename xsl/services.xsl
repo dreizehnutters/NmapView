@@ -14,7 +14,7 @@
                       <th scope="col">Port</th>
                       <th scope="col">Protocol</th>
                       <th scope="col">
-                        <span title="Unique hosts exposing this exact port/protocol across the scan. Lower values are rarer.">Count</span>
+                        <span title="Unique hosts exposing this exact service/port combination within the current host scope. Lower values are rarer.">Count</span>
                       </th>
                       <th scope="col">Service</th>
                       <th scope="col">Product</th>
