@@ -236,7 +236,7 @@
                 </a>
               </div>
               <div class="col-6 col-lg">
-                <a class="summary-card-link" href="#openservices">
+                <a class="summary-card-link" href="#serviceChart">
                   <div class="summary-card is-clickable">
                     <div class="summary-card-label">Rare services</div>
                     <div class="summary-card-value" id="summaryRareServicesValue">
@@ -246,14 +246,10 @@
                 </a>
               </div>
               <div class="col-6 col-lg">
-                <a class="summary-card-link" href="#serviceinventory">
-                  <div class="summary-card is-clickable">
-                    <div class="summary-card-label">HTTP</div>
-                    <div class="summary-card-value" id="summaryHttpBucketsValue">
-                      <xsl:value-of select="$http-buckets"/>
-                    </div>
-                  </div>
-                </a>
+                <div class="summary-card" title="Shannon entropy of the in-scope subnet's service distribution across up hosts. Higher values indicate a more heterogeneous service mix.">
+                  <div class="summary-card-label">Subnet Entropy</div>
+                  <div class="summary-card-value" id="summaryServiceEntropyValue">Calculating...</div>
+                </div>
               </div>
             </div>
             <div class="progress summary-progress">

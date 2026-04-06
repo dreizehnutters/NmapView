@@ -12,6 +12,7 @@
                 initializeServiceInventoryToggle();
                 initializeHostScopeControls();
 	              initializeHostToggle();
+                updateSummaryForHostScope();
                 recalculateOpenServiceMetrics();
 	              initializeDataTable('#table-services');
 	              initializeDataTable('#table-overview');
@@ -21,6 +22,9 @@
                 initializeServiceInventoryNestedTables();
                 initializeSlashSearchShortcut();
                 initializeHostUniquenessScores();
+                if (typeof window.renderMatrixVisualizations === "function") {
+                  window.renderMatrixVisualizations();
+                }
                 initializeDensityToggle();
 
 

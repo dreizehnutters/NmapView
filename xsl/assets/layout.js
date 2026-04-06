@@ -978,9 +978,15 @@ function refreshServiceInventoryNestedTableGrouping(tableElement) {
   const rows = Array.from(tableElement.querySelectorAll("tbody tr"));
   let previousProductGroup = "";
   let previousVariantLabel = "";
+  let variantBandIndex = -1;
 
   rows.forEach((row, rowIndex) => {
-    row.classList.remove("service-inventory-product-separator", "service-inventory-variant-separator");
+    row.classList.remove(
+      "service-inventory-product-separator",
+      "service-inventory-variant-separator",
+      "service-inventory-variant-band-even",
+      "service-inventory-variant-band-odd"
+    );
 
     const productGroup = (row.dataset.productGroup || "").trim();
     const variantLabel = (row.dataset.variantLabel || "").trim();
@@ -992,9 +998,11 @@ function refreshServiceInventoryNestedTableGrouping(tableElement) {
     }
 
     if (rowIndex === 0) {
+      variantBandIndex = 0;
       if (hostCountColumnIndex !== -1 && cells.length > hostCountColumnIndex) {
         cells[hostCountColumnIndex].textContent = hostCountDisplay;
       }
+      row.classList.add("service-inventory-variant-band-even");
       previousProductGroup = productGroup;
       previousVariantLabel = variantLabel;
       return;
@@ -1005,6 +1013,14 @@ function refreshServiceInventoryNestedTableGrouping(tableElement) {
     } else if (variantLabel !== previousVariantLabel) {
       row.classList.add("service-inventory-variant-separator");
     }
+
+    if (variantLabel !== previousVariantLabel) {
+      variantBandIndex += 1;
+    }
+
+    row.classList.add(variantBandIndex % 2 === 0
+      ? "service-inventory-variant-band-even"
+      : "service-inventory-variant-band-odd");
 
     if (variantLabel !== previousVariantLabel && hostCountColumnIndex !== -1 && cells.length > hostCountColumnIndex) {
       cells[hostCountColumnIndex].textContent = hostCountDisplay;
@@ -2197,17 +2213,16 @@ function updateSummaryForHostScope() {
   const selectedDownCount = selectedHostRows.length - selectedUpCount;
   const selectedOpenServiceRows = getTableRows("table-services", { requireAddress: true })
     .filter(row => isHostInScope(row.dataset.address));
-  const selectedInventoryEntries = Array.from(document.querySelectorAll("#serviceInventoryData .service-inventory-entry"))
-    .filter(entry => isHostInScope(entry.dataset.address));
   const selectedMatrixHosts = Array.from(document.querySelectorAll("#matrixCount .host"))
     .filter(entry => isHostInScope(entry.dataset.address));
 
   const uniqueServices = new Set();
-  const httpBuckets = new Set();
   const portProtocolCounts = new Map();
   const rareServices = new Set();
+  const serviceFrequency = new Map();
 
   selectedMatrixHosts.forEach(host => {
+    const hostServices = new Set();
     host.querySelectorAll(".port").forEach(portElement => {
       const serviceKey = normalizeUniquenessService(portElement.dataset.service || "");
       const portKey = `${normalizeHostAddress(portElement.dataset.port)}|${serviceKey.split(":")[0] || ""}`;
@@ -2216,24 +2231,13 @@ function updateSummaryForHostScope() {
       }
 
       uniqueServices.add(serviceKey);
+      hostServices.add(serviceKey);
       portProtocolCounts.set(portKey, (portProtocolCounts.get(portKey) || 0) + 1);
     });
-  });
 
-  selectedInventoryEntries.forEach(entry => {
-    const service = normalizeHostAddress(entry.getAttribute("data-service"));
-    const product = normalizeHostAddress(entry.getAttribute("data-product"));
-    const version = normalizeHostAddress(entry.getAttribute("data-version"));
-    const looksHttp = service.toLowerCase().includes("http") ||
-      normalizeHostAddress(entry.getAttribute("data-http-title")) !== "" ||
-      normalizeHostAddress(entry.getAttribute("data-http-location")) !== "" ||
-      normalizeHostAddress(entry.getAttribute("data-http-server")) !== "" ||
-      normalizeHostAddress(entry.getAttribute("data-http-stack")) !== "" ||
-      normalizeHostAddress(entry.getAttribute("data-http-powered-by")) !== "";
-
-    if (looksHttp && service) {
-      httpBuckets.add(`${service}|${product}|${product ? version : ""}`);
-    }
+    hostServices.forEach(serviceKey => {
+      serviceFrequency.set(serviceKey, (serviceFrequency.get(serviceKey) || 0) + 1);
+    });
   });
 
   selectedMatrixHosts.forEach(host => {
@@ -2249,12 +2253,20 @@ function updateSummaryForHostScope() {
   const openPortsValue = document.getElementById("summaryOpenPortsValue");
   const uniqueServicesValue = document.getElementById("summaryUniqueServicesValue");
   const rareServicesValue = document.getElementById("summaryRareServicesValue");
-  const httpBucketsValue = document.getElementById("summaryHttpBucketsValue");
+  const serviceEntropyValue = document.getElementById("summaryServiceEntropyValue");
   const upHostsBar = document.getElementById("summaryUpHostsBar");
   const downHostsBar = document.getElementById("summaryDownHostsBar");
   const totalSelectedHosts = selectedHostRows.length;
   const upWidth = totalSelectedHosts > 0 ? (selectedUpCount / totalSelectedHosts) * 100 : 0;
   const downWidth = totalSelectedHosts > 0 ? (selectedDownCount / totalSelectedHosts) * 100 : 0;
+  const totalServiceObservations = Array.from(serviceFrequency.values())
+    .reduce((sum, count) => sum + count, 0);
+  const serviceEntropy = totalServiceObservations > 0
+    ? Array.from(serviceFrequency.values()).reduce((sum, count) => {
+      const probability = count / totalServiceObservations;
+      return probability > 0 ? sum - (probability * Math.log2(probability)) : sum;
+    }, 0)
+    : 0;
 
   if (openPortsValue) {
     openPortsValue.textContent = String(selectedOpenServiceRows.length);
@@ -2265,8 +2277,8 @@ function updateSummaryForHostScope() {
   if (rareServicesValue) {
     rareServicesValue.textContent = String(rareServices.size);
   }
-  if (httpBucketsValue) {
-    httpBucketsValue.textContent = String(httpBuckets.size);
+  if (serviceEntropyValue) {
+    serviceEntropyValue.textContent = totalServiceObservations > 0 ? serviceEntropy.toFixed(2) : "N/A";
   }
   if (upHostsBar) {
     upHostsBar.style.width = `${upWidth}%`;

@@ -272,6 +272,14 @@ a {
   border-top: 0;
 }
 
+.service-inventory-host-table tbody tr.service-inventory-variant-band-even td {
+  background: rgba(247, 249, 251, 0.94);
+}
+
+.service-inventory-host-table tbody tr.service-inventory-variant-band-odd td {
+  background: rgba(238, 243, 247, 0.94);
+}
+
 .service-inventory-host-table tbody tr.service-inventory-product-separator td {
   border-top: 0.22rem solid var(--report-border-strong);
 }
