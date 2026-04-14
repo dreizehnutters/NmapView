@@ -23,6 +23,10 @@ NmapView transforms flat Nmap XML into a **single, portable, interactive HTML da
   <a target="_blank" href="https://möbius.band/report.html">&gt; Open Demo Report &lt;</a>
 </p>
 
+<p align="center">
+  <a target="_blank" href="https://möbius.band/blog/nmapview/">&gt; Blog Post &lt;</a>
+</p>
+
 ## Quick Start
 
 Render any existing Nmap XML file in seconds using `xsltproc` (pre-installed on most Linux/macOS systems):
