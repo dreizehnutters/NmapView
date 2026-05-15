@@ -4,7 +4,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/dreizehnutters/NmapView/report-html-regression.yml?label=ci)](https://github.com/dreizehnutters/NmapView/actions/workflows/report-html-regression.yml)
 [![Demo Report](https://img.shields.io/badge/demo-live%20report-1f6feb)](https://möbius.band/report.html)
 [![Download Standalone XSL](https://img.shields.io/badge/download-standalone%20XSL-0d6efd)](https://github.com/dreizehnutters/NmapView/releases/latest/download/NmapView.xsl)
-[![Stats](https://img.shields.io/github/downloads/dreizehnutters/nmapview/total.svg)](https://img.shields.io/github/downloads/dreizehnutters/nmapview/total.svg)
+[![Stats](https://img.shields.io/github/downloads/dreizehnutters/nmapview/total.svg)](https://github.com/dreizehnutters/NmapView/releases/)
 
 **Stop staring at raw XML. Get instant, interactive insights.**
 
