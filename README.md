@@ -42,8 +42,7 @@ xsltproc -o report.html NmapView.xsl scan.xml
 
 Open the generated HTML file in your browser.
 
-
-### Optional: Convenience Mode
+### Optional: convenience Mode
 
 As an alternative to `xsltproc`, you can transform Nmap XML files directly in your browser using NmapView.
 
