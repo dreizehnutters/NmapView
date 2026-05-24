@@ -46,7 +46,7 @@ Open the generated HTML file in your browser.
 
 As an alternative to `xsltproc`, you can transform Nmap XML files directly in your browser using NmapView.
 
-→[](https://möbius.band/proc/)
+→[NmapView Web Transformer](https://möbius.band/proc/)
 
 > Nmap XML data is processed entirely client-side. No network transmission of scan data.
 
