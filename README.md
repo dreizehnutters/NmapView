@@ -11,7 +11,7 @@
 NmapView transforms flat Nmap XML into a **single, portable, interactive HTML dashboard** for analysis and triage.
 
 
-> No backend, no database, and no reporting pipeline required. Open it locally amd review hosts, open services, service variants, and visualizations in one file. Share it, export from it, or archive it.
+> No backend, no database, and no reporting pipeline required. Open it locally and review hosts, open services, service variants & visualizations in one file. Share it, export from it, or archive it.
 
 
 <p align="center">
