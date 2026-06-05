@@ -1,4 +1,4 @@
-# NmapView
+# NmapView – Nmap XML Report Viewer
 
 [![Latest Release](https://img.shields.io/github/v/release/dreizehnutters/NmapView?label=latest%20release)](https://github.com/dreizehnutters/NmapView/releases/latest/download/NmapView.xsl)
 [![CI](https://img.shields.io/github/actions/workflow/status/dreizehnutters/NmapView/report-html-regression.yml?label=ci)](https://github.com/dreizehnutters/NmapView/actions/workflows/report-html-regression.yml)
