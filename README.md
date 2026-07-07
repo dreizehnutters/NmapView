@@ -6,7 +6,7 @@
 [![Download Standalone XSL](https://img.shields.io/badge/download-standalone%20XSL-0d6efd)](https://github.com/dreizehnutters/NmapView/releases/latest/download/NmapView.xsl)
 [![Stats](https://img.shields.io/github/downloads/dreizehnutters/nmapview/total.svg)](https://github.com/dreizehnutters/NmapView/releases/)
 
-**Stop staring at raw XML. Get instant, interactive insights.**
+**Stop staring at raw data. Get instant, interactive insights.**
 
 NmapView transforms flat Nmap XML into a **single, portable, interactive HTML dashboard** for analysis and triage.
 
